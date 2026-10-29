@@ -1,6 +1,17 @@
 # Decisions log
 
 Newest first. Each entry: date, decision, reason.
+All external sources behind these decisions are listed in `docs/references.md`.
+
+## 2026-10-29 — Tafsir segments cover an ayah range (approved by Aya & Mohamed)
+Ibn Kathir often explains several ayat in one passage; the source data copies the same text into each
+ayah of the group (73:2 = 73:3, 20,860 chars; 73:1 empty — see `docs/sources.md`).
+- `segment_id` = `<book>:<surah>:<first_ayah>-<last_ayah>:<n>`, e.g. `ibn-kathir:73:1-9:1`.
+  A single-ayah passage still uses a range: `ibn-kathir:2:255-255:1`.
+- `(:TafsirSegment)-[:COVERS]->(:Ayah)` for every ayah in the range.
+- The duplicated text is stored once. Phase 3 gate "no ayah without tafsir" is checked through COVERS.
+- span_id is unchanged in shape: `<segment_id>#<start>-<end>`, e.g. `ibn-kathir:73:1-9:1#120-245`.
+- The plan files (`docs/plan/*.docx`) still show the old format; update the Arabic plan, then the English one.
 
 ## 2026-10-29 — Runtime: Windows native, not WSL2
 agy, Ollama, Python 3.12 and Docker Desktop are installed on Windows; WSL Ubuntu is unused.
@@ -14,13 +25,13 @@ This differs from the plan's "free, local" tier 3: usage limits apply and text l
 ## 2026-10-29 — Repository
 Private GitHub repo `quran-graph`. Repo root is `C:\MSA\QuranGDBExplanation`. Plans kept in `docs/plan/`.
 
-## IDs (from plan section 2)
+## IDs (plan section 2, segment_id amended 2026-10-29)
 | ID | Format | Example |
 |---|---|---|
 | surah_id | integer 1–114 | `2` |
 | ayah_id | `<surah>:<ayah>` | `2:255` |
-| segment_id | `<book>:<ayah_id>:<n>` | `ibn-kathir:2:255:1` |
-| span_id | `<segment_id>#<start>-<end>` | `ibn-kathir:2:255:1#120-245` |
+| segment_id | `<book>:<surah>:<first_ayah>-<last_ayah>:<n>` | `ibn-kathir:73:1-9:1` |
+| span_id | `<segment_id>#<start>-<end>` | `ibn-kathir:73:1-9:1#120-245` |
 | hadith_id | `<collection>:<number>` | `bukhari:1` |
 
 ## Open questions

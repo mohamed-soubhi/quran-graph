@@ -24,8 +24,11 @@ Every agent (Claude, agy, GLM scripts) follows these rules. The full plan is in
 2. Work in small steps (1–2 lines of code or one command), run it, check the result, then continue.
 3. Add or update a test in `tests/` for what you built.
 4. Run `python scripts/tasks.py test` — all tests must pass.
-5. Commit with a message starting with the ticket id, e.g. `T0.3: add Neo4j client and smoke test`.
-6. Do not start another ticket. Stop and report: what was done, test output, anything unclear.
+5. In `docs/tickets/TRACKER.md`, set your ticket to `review` and fill the Notes column.
+6. Any external URL you used (download, docs, dataset, model page) goes into `docs/references.md`
+   with what it was used for and the date. Model tags, versions and counts go into `docs/decisions.md`.
+7. Commit with a message starting with the ticket id, e.g. `T0.3: add Neo4j client and smoke test`.
+8. Do not start another ticket. Stop and report: what was done, test output, anything unclear.
 
 ## Environment
 - Windows native. Python 3.12 venv in `.venv\` (`.venv\Scripts\python.exe`).
@@ -36,7 +39,7 @@ Every agent (Claude, agy, GLM scripts) follows these rules. The full plan is in
 
 ## Layout
 ```
-docs/      plan/, tickets/, decisions.md, schema.md, sources.md
+docs/      plan/, tickets/ (+ TRACKER.md), decisions.md, references.md, schema.md, sources.md
 data/      raw/ (read-only), interim/ (JSONL), gold/ (human-reviewed)
 src/       ingest/, extract/, graph/, analysis/
 tests/  logs/  scripts/

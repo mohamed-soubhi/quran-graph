@@ -2,6 +2,7 @@
 
 Input to Phase 1. Status: **researched 2026-10-29, nothing downloaded yet.**
 Downloads go to `data/raw/<source>/` with a SHA-256 per file in `data/raw/CHECKSUMS.txt`.
+Full list of every link consulted: `docs/references.md`.
 
 ## Selected sources
 
@@ -33,7 +34,7 @@ Downloads go to `data/raw/<source>/` with a SHA-256 per file in `data/raw/CHECKS
 | Sanadset | ☑ CC BY 4.0 | ☐ to check | ☐ to check | ☐ to check |
 
 ## Risks / decisions for Phase 2
-1. **Grouped tafsir passages** → one `TafsirSegment` must link to an ayah *range*. Proposal: segment_id = `ibn-kathir:<surah>:<first_ayah>-<last_ayah>:<n>`, with `(:TafsirSegment)-[:COVERS]->(:Ayah)` for every ayah in the range. Phase 3 gate "no ayah without tafsir" is then checked via COVERS.
+1. **Grouped tafsir passages** → one `TafsirSegment` links to an ayah *range*. **Decided 2026-10-29** (see `docs/decisions.md`): segment_id = `ibn-kathir:<surah>:<first_ayah>-<last_ayah>:<n>`, with `(:TafsirSegment)-[:COVERS]->(:Ayah)` for every ayah in the range. Phase 3 gate "no ayah without tafsir" is checked via COVERS.
 2. **Musnad Ahmad gap** → Phase 5 recall on Ibn Kathir hadith will be capped until a licensed Ahmad source is added.
 3. **Text normalization**: Tanzil Uthmani vs the tafsir's quoted text (`﴿…﴾`) use different orthography → 4a matching must use the normalized forms + Simple-Clean.
 4. **Licence wording**: "no changes" (Tanzil, Corpus) is satisfied because raw files stay verbatim in `data/raw/`; spans/normalization are separate derived data.
