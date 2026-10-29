@@ -19,7 +19,8 @@ def get_venv_python() -> str:
 
     if venv_py.exists():
         return str(venv_py)
-    return sys.executable
+    print("Error: .venv not found. Create it with: python -m venv .venv", file=sys.stderr)
+    sys.exit(1)
 
 
 def run_test(args=None) -> None:
@@ -33,11 +34,15 @@ def run_test(args=None) -> None:
 
 
 def run_up() -> None:
-    print("not implemented yet")
+    """Start services with docker compose."""
+    res = subprocess.run(["docker", "compose", "up", "-d"], cwd=ROOT)
+    sys.exit(res.returncode)
 
 
 def run_down() -> None:
-    print("not implemented yet")
+    """Stop services with docker compose."""
+    res = subprocess.run(["docker", "compose", "down"], cwd=ROOT)
+    sys.exit(res.returncode)
 
 
 def run_smoke() -> None:

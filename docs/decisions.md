@@ -3,6 +3,11 @@
 Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
+## 2026-10-29 — Neo4j and GDS versions (T0.2)
+- Neo4j: `5.26.32` Community Edition (`neo4j:5` Docker image).
+- Graph Data Science (GDS): `2.13.14` (installed via `NEO4J_PLUGINS=["graph-data-science"]`).
+- Memory allocation: 4 GB initial/max heap, 4 GB page cache.
+
 ## 2026-10-29 — Tafsir segments cover an ayah range (approved by Aya & Mohamed)
 Ibn Kathir often explains several ayat in one passage; the source data copies the same text into each
 ayah of the group (73:2 = 73:3, 20,860 chars; 73:1 empty — see `docs/sources.md`).
