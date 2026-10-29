@@ -4,7 +4,7 @@ Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
 ## 2026-10-29 — Neo4j and GDS versions (T0.2)
-- Neo4j: `5.26.32` Community Edition (`neo4j:5` Docker image).
+- Neo4j: `5.26.32` Community Edition. Image pinned to `neo4j:5.26.32` in review; bump deliberately.
 - Graph Data Science (GDS): `2.13.14` (installed via `NEO4J_PLUGINS=["graph-data-science"]`).
 - Memory allocation: 4 GB initial/max heap, 4 GB page cache.
 

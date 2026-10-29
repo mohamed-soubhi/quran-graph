@@ -7,8 +7,8 @@ Single source of truth for ticket status. Update this file in the same commit as
 | ID | Title | Phase | Owner | Status | Depends on | Commit | Notes |
 |---|---|---|---|---|---|---|---|
 | T0.0 | Repo skeleton, AGENTS.md, decisions, tickets | 0 | Claude | done | — | af3c104 | |
-| T0.1 | Python environment + tasks script | 0 | agy | done | T0.0 | 6b2659e | Reviewed 2026-10-29: 1 test passes. Follow-up: tasks.py should fail if `.venv` is missing. |
-| T0.2 | Neo4j + GDS in Docker | 0 | agy | review | T0.1 | | Neo4j 5.26.32 with GDS 2.13.14 running in Docker; test node persistence verified across restart; 5 tests pass. |
+| T0.1 | Python environment + tasks script | 0 | agy | done | T0.0 | 6b2659e | Reviewed 2026-10-29: 1 test passes. Follow-up (tasks.py fails if `.venv` is missing) fixed in T0.2. |
+| T0.2 | Neo4j + GDS in Docker | 0 | agy | done | T0.1 | 88ffac6 | Neo4j 5.26.32 + GDS 2.13.14; persistence re-verified by Claude. Review fixes: image pinned, GDS test skips without password and no longer hardcodes the version. |
 | T0.3 | Python driver smoke test | 0 | agy | todo | T0.2 | | |
 | T0.4 | Ollama models (bge-m3, GLM Arabic check) | 0 | agy | in-progress | T0.1 | | |
 | T0.5 | Extraction smoke test (GLM → HadithSpan JSON) | 0 | agy + GLM | todo | T0.4 | | Claude supplies `tests/fixtures/tafsir_sample.txt` |
