@@ -70,3 +70,4 @@ ticket or decision relies on an outside source. Accessed dates are when the link
 | [Neo4j Graph Data Science](https://neo4j.com/docs/graph-data-science/current/) | GDS plugin for Phase 0 / 6 | 2026-10-29 |
 | [Neo4j Docker Hub](https://hub.docker.com/_/neo4j) | Official Neo4j Docker image (`neo4j:5`) configuration and plugin documentation | 2026-10-29 |
 | [Neo4j GDS Ninja repository](https://graphdatascience.ninja/versions.json) | Upstream plugin repository used by Neo4j container to install GDS 2.13.14 | 2026-10-29 |
+| [Neo4j Python Driver](https://neo4j.com/docs/python-manual/current/) | Python driver API reference for client connectivity and Cypher execution (T0.3) | 2026-10-29 |
