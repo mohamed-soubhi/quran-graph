@@ -11,7 +11,7 @@ Single source of truth for ticket status. Update this file in the same commit as
 | T0.2 | Neo4j + GDS in Docker | 0 | agy | done | T0.1 | 88ffac6 | Neo4j 5.26.32 + GDS 2.13.14; persistence re-verified by Claude. Review fixes: image pinned, GDS test skips without password and no longer hardcodes the version. |
 | T0.3 | Python driver smoke test | 0 | agy | todo | T0.2 | | |
 | T0.4 | Ollama models (bge-m3, GLM Arabic check) | 0 | agy | in-progress | T0.1 | | |
-| T0.5 | Extraction smoke test (GLM → HadithSpan JSON) | 0 | agy + GLM | todo | T0.4 | | Claude supplies `tests/fixtures/tafsir_sample.txt` |
+| T0.5 | Extraction smoke test (GLM → HadithSpan JSON) | 0 | agy + GLM | todo | T0.4 | | Fixture + expected spans ready (Ibn Kathir 2:255 para 0); expected spans are a Claude draft, need human review |
 | T0.6 | Logging + smoke target | 0 | agy | todo | T0.3, T0.5 | | |
 | T0.7 | AGENTS.md validation (re-do T0.3 cold) | 0 | agy + Claude | todo | T0.6 | | |
 | G0 | Phase 0 gate | 0 | Claude | todo | T0.1–T0.7 | | |
@@ -26,4 +26,7 @@ Single source of truth for ticket status. Update this file in the same commit as
 |---|---|---|
 | Update Arabic plan (then English) with the segment range ID | Aya & Mohamed | todo |
 | Resolve T0.5 model name: `Citation` (AR) vs `HadithSpan` (EN) | Aya & Mohamed | todo |
+| Update plans: FOOTNOTE span type + NFC normalization rule | Aya & Mohamed | todo |
+| Review `tests/fixtures/tafsir_sample.expected.json` (then it can seed `data/gold/`) | Aya & Mohamed | todo |
+| Phase 5: parse `[[…برقم (n)]]` footnotes as first linking candidate | Claude (ticket) | todo |
 | Find a licensed Musnad Ahmad source | Claude | todo (Phase 5) |

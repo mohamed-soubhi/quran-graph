@@ -8,6 +8,23 @@ All external sources behind these decisions are listed in `docs/references.md`.
 - Graph Data Science (GDS): `2.13.14` (installed via `NEO4J_PLUGINS=["graph-data-science"]`).
 - Memory allocation: 4 GB initial/max heap, 4 GB page cache.
 
+## 2026-10-29 — FOOTNOTE span type (approved by Aya & Mohamed)
+The Ibn Kathir text contains editor (muhaqqiq) notes in `[[…]]` — 93 in 2:255 alone. They are not
+Ibn Kathir's words, so they get their own span type instead of COMMENTARY/OTHER.
+- Span `type` enum is now: `QURAN, HADITH, COMMENTARY, FOOTNOTE, OTHER`.
+- A FOOTNOTE span includes the `[[` and `]]` markers. Spans inside a footnote are not created in Phase 4.
+- Footnotes often carry exact hadith references, e.g. `صحيح مسلم برقم (٨١٠)`, `صحيح البخاري برقم (٢٣١١، ٣٢٧٥)`
+  (Arabic-Indic digits). Phase 5 uses them as the **first** linking candidate, before fuzzy/embedding match.
+  `المسند (٥/١٤١)` style references are volume/page, not hadith numbers.
+- Plan files still list 4 types; update the Arabic plan, then the English one.
+
+## 2026-10-29 — Normalize with Unicode NFC before any text matching
+The tafsir stores shadda before the vowel (U+0651 U+064E) while normally typed Arabic has the vowel first
+(U+064E U+0651). A literal search for typed «حَدَّثَنَا» finds 0 hits in 2:255; after stripping diacritics, 40.
+- Every regex/n-gram match (Phase 4a and 4b) runs on normalized text: NFC → strip diacritics (Mn) →
+  unify alef/ya/ta marbuta, with an offset map back to the ORIGINAL text.
+- Stored offsets always refer to the original, un-normalized text.
+
 ## 2026-10-29 — Tafsir segments cover an ayah range (approved by Aya & Mohamed)
 Ibn Kathir often explains several ayat in one passage; the source data copies the same text into each
 ayah of the group (73:2 = 73:3, 20,860 chars; 73:1 empty — see `docs/sources.md`).
