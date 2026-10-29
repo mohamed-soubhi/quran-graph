@@ -17,6 +17,9 @@ Every agent (Claude, agy, GLM scripts) follows these rules. The full plan is in
 4. Every relationship carries `source`, `method` (regex | ngram | glm | embedding | human) and `confidence`.
 5. Files in `data/raw/` are read-only. Never edit or overwrite them.
 6. Code, comments, logs and prints are in English.
+   Arabic text is always read/written as UTF-8 (`encoding="utf-8"`); text matching runs on NFC-normalized,
+   diacritic-stripped copies with an offset map — stored offsets refer to the original text.
+   Span types: QURAN, HADITH, COMMENTARY, FOOTNOTE (`[[…]]` editor notes), OTHER.
 7. A phase starts only after the previous phase passes its gate.
 
 ## How to work a ticket

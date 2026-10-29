@@ -19,6 +19,8 @@ ticket or decision relies on an outside source. Accessed dates are when the link
 | [spa5k/tafsir_api](https://github.com/spa5k/tafsir_api) | Selected Ibn Kathir source, slug `ar-tafsir-ibn-kathir`; repo MIT | 2026-10-29 |
 | [spa5k editions.json](https://github.com/spa5k/tafsir_api/blob/main/tafsir/editions.json) | Edition list; Arabic Ibn Kathir upstream = QUL tafsir 22 | 2026-10-29 |
 | [Sample: Ibn Kathir 1:2](https://cdn.jsdelivr.net/gh/spa5k/tafsir_api@main/tafsir/ar-tafsir-ibn-kathir/1/2.json) | Confirmed format `{surah, ayah, text}`, full diacritics, `﴿…﴾` quote markers | 2026-10-29 |
+| [Sample: Ibn Kathir 2:255](https://raw.githubusercontent.com/spa5k/tafsir_api/main/tafsir/ar-tafsir-ibn-kathir/2/255.json) | T0.5 fixture (paragraph 0); found `[[…]]` editor footnotes (93) and shadda/vowel order issue | 2026-10-29 |
+| [Unicode NFC normalization (UAX #15)](https://unicode.org/reports/tr15/) | Canonical reordering of Arabic marks (shadda vs fatha) before matching | 2026-10-29 |
 | [Sample: Ibn Kathir 73:2](https://raw.githubusercontent.com/spa5k/tafsir_api/main/tafsir/ar-tafsir-ibn-kathir/73/2.json) | Found grouped-ayah duplication (73:2 = 73:3) → segment range decision | 2026-10-29 |
 | [QUL tafsir 22 (Ibn Kathir, Arabic)](https://qul.tarteel.ai/resources/tafsir/22) | Upstream; JSON/SQLite; "one passage often covers several ayahs" | 2026-10-29 |
 | [QUL tafsir 22 — licence](https://qul.tarteel.ai/resources/tafsir/22/licence) | "We don't have copyright information for this resource." | 2026-10-29 |
