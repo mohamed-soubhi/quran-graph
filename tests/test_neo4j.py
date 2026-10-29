@@ -1,17 +1,20 @@
 """Smoke tests for Neo4j driver (T0.3)."""
 
 import pytest
-from neo4j.exceptions import DriverError, Neo4jError, ServiceUnavailable
+from neo4j.exceptions import ServiceUnavailable
 
 from src.graph.client import get_driver
 
 
 @pytest.fixture
 def driver():
-    """Yield a connected Neo4j driver, skipping if unreachable."""
+    """Yield a connected Neo4j driver, skipping only if the server is unreachable.
+
+    Auth and other errors are not caught, so a wrong password fails the test.
+    """
     try:
         drv = get_driver()
-    except (ServiceUnavailable, DriverError, Neo4jError, ValueError, OSError) as exc:
+    except (ServiceUnavailable, OSError) as exc:
         pytest.skip(f"Neo4j is unreachable: {exc}")
     yield drv
     drv.close()

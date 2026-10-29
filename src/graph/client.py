@@ -27,5 +27,9 @@ def get_driver(
 
     auth = (user, password) if user and password is not None else None
     driver = GraphDatabase.driver(uri, auth=auth)
-    driver.verify_connectivity()
+    try:
+        driver.verify_connectivity()
+    except Exception:
+        driver.close()
+        raise
     return driver
