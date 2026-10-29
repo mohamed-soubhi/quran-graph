@@ -37,6 +37,9 @@ Every agent (Claude, agy, GLM scripts) follows these rules. The full plan is in
 - Windows native. Python 3.12 venv in `.venv\` (`.venv\Scripts\python.exe`).
 - Neo4j 5 + GDS in Docker Desktop (`docker compose`).
 - Ollama at `http://localhost:11434`. Model tags are in `.env` and `docs/decisions.md`.
+  Call it only through the HTTP API (`requests` to `/api/chat`, `/api/generate`, `/api/embed`).
+  **Never run `ollama run` from a shell** — it waits for a terminal and hangs the session.
+- Never start an interactive command (anything that waits for keyboard input). Use timeouts on network calls.
 - No `make`: use `python scripts/tasks.py <up|down|test|smoke>`.
 - Secrets live in `.env` (never committed). `.env.example` lists the keys.
 

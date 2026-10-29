@@ -3,6 +3,14 @@
 Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
+## 2026-10-29 — Ollama models (T0.4)
+- Embeddings: `bge-m3:latest` (id `790764642607`, BERT family, 566.70M params, F16, 1.2 GB, local).
+  **Dimension: 1024.** Two Arabic inputs → equal-length vectors (~2 s per call incl. warm-up).
+- GLM: `glm-5.3-flash:cloud` (bulk), `glm-5.3:cloud` (strong). Arabic summary of «الحمد لله رب العالمين»
+  is coherent Arabic; ~3–4.5 s per short prompt via `/api/generate`.
+- **Always call Ollama through the HTTP API** (`/api/generate`, `/api/chat`, `/api/embed`) from Python.
+  `ollama run` from a non-interactive shell hung for 25 min in the T0.4 agy session (waits on a TTY).
+
 ## 2026-10-29 — Neo4j and GDS versions (T0.2)
 - Neo4j: `5.26.32` Community Edition. Image pinned to `neo4j:5.26.32` in review; bump deliberately.
 - Graph Data Science (GDS): `2.13.14` (installed via `NEO4J_PLUGINS=["graph-data-science"]`).
