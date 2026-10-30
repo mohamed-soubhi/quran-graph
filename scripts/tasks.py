@@ -3,6 +3,7 @@
 Targets: up, down, test, smoke
 """
 
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -48,7 +49,8 @@ def run_down() -> None:
 def run_smoke(args=None) -> None:
     """Run Neo4j smoke test followed by extraction smoke test."""
     py = get_venv_python()
-    res = subprocess.run([py, "-m", "pytest", "tests/test_neo4j.py"], cwd=ROOT)
+    env = {**os.environ, "SMOKE_STRICT": "1"}
+    res = subprocess.run([py, "-m", "pytest", "tests/test_neo4j.py"], cwd=ROOT, env=env)
     if res.returncode != 0:
         sys.exit(res.returncode)
 

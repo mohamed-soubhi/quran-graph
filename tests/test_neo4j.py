@@ -1,5 +1,7 @@
 """Smoke tests for Neo4j driver (T0.3)."""
 
+import os
+
 import pytest
 from neo4j.exceptions import ServiceUnavailable
 
@@ -11,10 +13,13 @@ def driver():
     """Yield a connected Neo4j driver, skipping only if the server is unreachable.
 
     Auth and other errors are not caught, so a wrong password fails the test.
+    With SMOKE_STRICT=1 (set by `tasks.py smoke`) an unreachable server fails instead of skipping.
     """
     try:
         drv = get_driver()
     except (ServiceUnavailable, OSError) as exc:
+        if os.getenv("SMOKE_STRICT") == "1":
+            pytest.fail(f"Neo4j is unreachable: {exc}")
         pytest.skip(f"Neo4j is unreachable: {exc}")
     yield drv
     drv.close()

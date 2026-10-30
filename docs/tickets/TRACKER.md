@@ -12,7 +12,7 @@ Single source of truth for ticket status. Update this file in the same commit as
 | T0.3 | Python driver smoke test | 0 | agy | done | T0.2 | 90222b7 | Neo4j client with verify_connectivity(); test passes, skips if unreachable. Review fix: wrong password now fails (was skipped); driver closed on failed connect. |
 | T0.4 | Ollama models (bge-m3, GLM Arabic check) | 0 | agy + Claude | done | T0.1 | (see log) | agy pulled bge-m3 and wrote tests/test_ollama.py, then hung on `ollama run` and hit the 25-min timeout. Claude verified (2 tests pass, dim 1024), wrote decisions + AGENTS.md HTTP-only rule, committed. |
 | T0.5 | Extraction smoke test (GLM → HadithSpan JSON) | 0 | agy + GLM | done | T0.4 | 8989740 | Acceptance met: 5/5 valid JSON, mean 67 s/para. agy timed out after committing (no final report). Claude review: overlap metric was one-sided; an extra run missed the Muslim span → Phase 4b uses regex cues + GLM anchor phrases + IoU (see decisions). |
-| T0.6 | Logging + smoke target | 0 | agy | review | T0.3, T0.5 | | Added src/log.py (get_logger), integrated into client.py and glm_client.py, added --runs to extract_smoke.py, implemented tasks.py smoke (passes in ~39s). |
+| T0.6 | Logging + smoke target | 0 | agy | done | T0.3, T0.5 | 9f297db | src/log.py, logger in both clients, `--runs`, `tasks.py smoke`. First run with report-before-commit + 40 min limit: finished in time. Review fix: smoke sets SMOKE_STRICT=1 so an unreachable Neo4j fails instead of skipping. Report: docs/tickets/reports/T0.6.md |
 | T0.7 | AGENTS.md validation (re-do T0.3 cold) | 0 | agy + Claude | todo | T0.6 | | |
 | G0 | Phase 0 gate | 0 | Claude | todo | T0.1–T0.7 | | |
 | T1.1 | Download framework + Tanzil text | 1 | agy | todo | G0 | | |
