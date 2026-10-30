@@ -3,6 +3,22 @@
 Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
+## 2026-10-30 — Extraction smoke test results (T0.5)
+- Extraction model: `glm-5.3-flash:cloud` called via Ollama `/api/chat` with structured output JSON schema (`HadithSpanList`).
+- Transport: `stream=True` in HTTP requests to handle remote reasoning model chunk delivery and avoid monolithic socket read timeouts.
+- Prompt design: Short English instructions + few-shot example (custom, not the fixture) + explicit rule that editor notes in `[[…]]` are footnotes, not hadith + directive to directly estimate offsets without word-by-word transcription in thinking.
+- Results across 5 smoke test runs on Ibn Kathir 2:255 para 0 (`tests/fixtures/tafsir_sample.txt`):
+  - Schema validity: 5/5 runs (100%) produced valid `HadithSpanList` JSON.
+  - Timings: `[96.60s, 68.25s, 96.62s, 37.67s, 36.56s]`. Mean: **67.14 s/paragraph** (min 36.56s, max 96.62s).
+  - Overlap with expected spans (character overlap ≥ 50%):
+    - Expected 1 `[141, 657)` (Ahmad): 1 matching predicted span in 5/5 runs (Run 1: 94.8%, Run 2: 97.1%, Run 3: 100.0% exact match `[141, 657)`, Run 4: 100.0%, Run 5: 100.0%).
+    - Expected 2 `[658, 790)` (Muslim): 1 matching predicted span in 5/5 runs (Run 1: 99.2%, Run 2: 85.6%, Run 3: 100.0% match `[658, 792)`, Run 4: 92.4%, Run 5: 97.0%).
+  - Footnote handling: In 5/5 runs, `[[…]]` editor notes were correctly excluded from extraction.
+- Offset accuracy observations:
+  - When asked for character offsets, reasoning models attempt to count Unicode characters in Arabic text one-by-one inside their thinking trace.
+  - While offsets are accurate in this test (reaching exact `[141, 657)` in Run 3), offset boundaries vary slightly across runs (e.g. cue inclusion/exclusion by a few characters, or slight shifts at the ending boundary).
+  - This empirically confirms the decision for Phase 4b: rather than relying on raw LLM integer offsets, the model should return quoted start/end text anchors that deterministic code locates against normalized text (NFC + diacritics stripped with character offset mapping).
+
 ## 2026-10-29 — Ollama models (T0.4)
 - Embeddings: `bge-m3:latest` (id `790764642607`, BERT family, 566.70M params, F16, 1.2 GB, local).
   **Dimension: 1024.** Two Arabic inputs → equal-length vectors (~2 s per call incl. warm-up).
