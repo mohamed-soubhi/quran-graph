@@ -11,7 +11,7 @@ Single source of truth for ticket status. Update this file in the same commit as
 | T0.2 | Neo4j + GDS in Docker | 0 | agy | done | T0.1 | 88ffac6 | Neo4j 5.26.32 + GDS 2.13.14; persistence re-verified by Claude. Review fixes: image pinned, GDS test skips without password and no longer hardcodes the version. |
 | T0.3 | Python driver smoke test | 0 | agy | done | T0.2 | 90222b7 | Neo4j client with verify_connectivity(); test passes, skips if unreachable. Review fix: wrong password now fails (was skipped); driver closed on failed connect. |
 | T0.4 | Ollama models (bge-m3, GLM Arabic check) | 0 | agy + Claude | done | T0.1 | (see log) | agy pulled bge-m3 and wrote tests/test_ollama.py, then hung on `ollama run` and hit the 25-min timeout. Claude verified (2 tests pass, dim 1024), wrote decisions + AGENTS.md HTTP-only rule, committed. |
-| T0.5 | Extraction smoke test (GLM → HadithSpan JSON) | 0 | agy + GLM | review | T0.4 | 12d4081 | 5/5 runs valid JSON; mean 67.14s/para; 100% overlap for both expected spans; timings & results in docs/decisions.md |
+| T0.5 | Extraction smoke test (GLM → HadithSpan JSON) | 0 | agy + GLM | done | T0.4 | 8989740 | Acceptance met: 5/5 valid JSON, mean 67 s/para. agy timed out after committing (no final report). Claude review: overlap metric was one-sided; an extra run missed the Muslim span → Phase 4b uses regex cues + GLM anchor phrases + IoU (see decisions). |
 | T0.6 | Logging + smoke target | 0 | agy | todo | T0.3, T0.5 | | |
 | T0.7 | AGENTS.md validation (re-do T0.3 cold) | 0 | agy + Claude | todo | T0.6 | | |
 | G0 | Phase 0 gate | 0 | Claude | todo | T0.1–T0.7 | | |

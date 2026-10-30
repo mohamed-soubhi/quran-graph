@@ -18,6 +18,18 @@ All external sources behind these decisions are listed in `docs/references.md`.
   - When asked for character offsets, reasoning models attempt to count Unicode characters in Arabic text one-by-one inside their thinking trace.
   - While offsets are accurate in this test (reaching exact `[141, 657)` in Run 3), offset boundaries vary slightly across runs (e.g. cue inclusion/exclusion by a few characters, or slight shifts at the ending boundary).
   - This empirically confirms the decision for Phase 4b: rather than relying on raw LLM integer offsets, the model should return quoted start/end text anchors that deterministic code locates against normalized text (NFC + diacritics stripped with character offset mapping).
+- **Claude review (2026-10-30) — results above are optimistic:**
+  - The smoke script's overlap = intersection / *expected* length, so an over-long prediction still scores 100%.
+    Use IoU (intersection / union) plus start/end deltas from Phase 4b on.
+  - An independent 6th run (same code, temperature 0) returned **1 span only**: Ahmad `[141, 631)`
+    (IoU 0.95, end −26 chars, cut mid-word) and **missed the Muslim takhrij entirely**.
+    Cloud GLM output is not deterministic at temperature 0; single-run results are not evidence.
+  - Speed: ~37–97 s per 904-char paragraph (thinking model). Full Ibn Kathir is several million characters
+    (exact size measured in T1.2); at this rate per-paragraph calls are far too slow → Phase 4b sends GLM only short windows around regex cues.
+- **Decisions for Phase 4b** (from T0.5):
+  1. GLM returns quoted start/end phrases (anchors), never integer offsets; code locates them (NFC, diacritic-insensitive).
+  2. Recall comes from regex cues (حدثنا، رواه، أخرجه، قال رسول الله ﷺ) on normalized text; GLM only refines boundaries.
+  3. Evaluation = IoU ≥ 0.9 per span over ≥ 3 runs, on the gold set, not a single paragraph.
 
 ## 2026-10-29 — Ollama models (T0.4)
 - Embeddings: `bge-m3:latest` (id `790764642607`, BERT family, 566.70M params, F16, 1.2 GB, local).
