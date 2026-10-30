@@ -1,10 +1,11 @@
-"""Extraction smoke test (T0.5).
+"""Extraction smoke test (T0.5 / T0.6).
 
-Runs GLM hadith extraction 5 times on the Ibn Kathir 2:255 paragraph 0 fixture,
+Runs GLM hadith extraction on the Ibn Kathir 2:255 paragraph 0 fixture,
 validating JSON against the Pydantic schema and reporting character overlap
 against expected spans.
 """
 
+import argparse
 import json
 import statistics
 import sys
@@ -31,6 +32,16 @@ def compute_overlap(e_start: int, e_end: int, p_start: int, p_end: int) -> float
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Extraction smoke test")
+    parser.add_argument(
+        "--runs",
+        type=int,
+        default=5,
+        help="Number of extraction runs (default: 5)",
+    )
+    args = parser.parse_args()
+    runs = max(1, args.runs)
+
     txt_path = FIXTURES_DIR / "tafsir_sample.txt"
     expected_json_path = FIXTURES_DIR / "tafsir_sample.expected.json"
 
@@ -43,7 +54,7 @@ def main() -> None:
     expected_hadith_spans = expected_data.get("hadith_spans", [])
 
     print("=" * 60)
-    print("T0.5 Extraction Smoke Test (5 runs)")
+    print(f"Extraction Smoke Test ({runs} run{'s' if runs != 1 else ''})")
     print(f"Input text length: {len(text)} characters")
     print(f"Expected hadith spans count: {len(expected_hadith_spans)}")
     for i, exp in enumerate(expected_hadith_spans, 1):
@@ -53,8 +64,8 @@ def main() -> None:
     timings = []
     all_runs_results = []
 
-    for run_idx in range(1, 6):
-        print(f"\n--- Run {run_idx}/5 ---")
+    for run_idx in range(1, runs + 1):
+        print(f"\n--- Run {run_idx}/{runs} ---")
         t0 = time.time()
         try:
             span_list = extract_hadith_spans(text, timeout=180.0)
@@ -100,10 +111,11 @@ def main() -> None:
 
     print("\n" + "=" * 60)
     print("RESULTS SUMMARY")
-    print(f"Successful runs: {len(timings)}/5 (100% schema-valid JSON)")
-    mean_time = statistics.mean(timings)
-    print(f"Timings: {', '.join(f'{t:.2f}s' for t in timings)}")
-    print(f"Mean time per paragraph: {mean_time:.2f}s (min: {min(timings):.2f}s, max: {max(timings):.2f}s)")
+    print(f"Successful runs: {len(timings)}/{runs} (100% schema-valid JSON)")
+    if timings:
+        mean_time = statistics.mean(timings)
+        print(f"Timings: {', '.join(f'{t:.2f}s' for t in timings)}")
+        print(f"Mean time per paragraph: {mean_time:.2f}s (min: {min(timings):.2f}s, max: {max(timings):.2f}s)")
     print("=" * 60)
 
 

@@ -45,8 +45,16 @@ def run_down() -> None:
     sys.exit(res.returncode)
 
 
-def run_smoke() -> None:
-    print("not implemented yet")
+def run_smoke(args=None) -> None:
+    """Run Neo4j smoke test followed by extraction smoke test."""
+    py = get_venv_python()
+    res = subprocess.run([py, "-m", "pytest", "tests/test_neo4j.py"], cwd=ROOT)
+    if res.returncode != 0:
+        sys.exit(res.returncode)
+
+    smoke_args = args if args else ["--runs", "1"]
+    res = subprocess.run([py, "scripts/extract_smoke.py", *smoke_args], cwd=ROOT)
+    sys.exit(res.returncode)
 
 
 TARGETS = {
@@ -64,7 +72,7 @@ def main() -> None:
 
     target = sys.argv[1]
     extra_args = sys.argv[2:]
-    if target == "test":
+    if target in ("test", "smoke"):
         TARGETS[target](extra_args)
     else:
         TARGETS[target]()

@@ -1,7 +1,6 @@
 """GLM client for extracting hadith spans from Arabic tafsir text via Ollama HTTP API (T0.5)."""
 
 import json
-import logging
 import os
 import re
 import time
@@ -9,21 +8,12 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from src.extract.models import HadithSpanList
+from src.log import get_logger
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 load_dotenv(ROOT / ".env")
 
-# Setup logging to logs/extract.log
-LOGS_DIR = ROOT / "logs"
-LOGS_DIR.mkdir(exist_ok=True)
-logger = logging.getLogger("extract.glm_client")
-logger.setLevel(logging.INFO)
-
-if not logger.handlers:
-    fh = logging.FileHandler(LOGS_DIR / "extract.log", encoding="utf-8")
-    formatter = logging.Formatter("[%(asctime)s] %(levelname)s in %(name)s: %(message)s")
-    fh.setFormatter(formatter)
-    logger.addHandler(fh)
+logger = get_logger("glm_client")
 
 # Default few-shot example (custom short example, not the fixture)
 FEWSHOT_INPUT = (

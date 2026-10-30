@@ -5,8 +5,12 @@ from pathlib import Path
 from dotenv import load_dotenv
 from neo4j import Driver, GraphDatabase
 
+from src.log import get_logger
+
 ROOT = Path(__file__).resolve().parent.parent.parent
 load_dotenv(ROOT / ".env")
+
+logger = get_logger("client")
 
 
 def get_driver(
@@ -29,7 +33,9 @@ def get_driver(
     driver = GraphDatabase.driver(uri, auth=auth)
     try:
         driver.verify_connectivity()
-    except Exception:
+        logger.info("Connected to Neo4j at %s", uri)
+    except Exception as exc:
+        logger.error("Failed to connect to Neo4j at %s: %s", uri, exc)
         driver.close()
         raise
     return driver
