@@ -36,6 +36,8 @@ Every agent (Claude, agy, GLM scripts) follows these rules. The full plan is in
 9. Do not start another ticket. Stop and report: what was done, test output, anything unclear.
 
 ## Environment
+- **Work only inside `C:\MSA\QuranGDBExplanation`.** Never create, read or write folders elsewhere
+  (no sibling worktrees, copies or temp dirs). Scratch files go in `.scratch/` (git-ignored).
 - Windows native. Python 3.12 venv in `.venv\` (`.venv\Scripts\python.exe`).
 - Neo4j 5 + GDS in Docker Desktop (`docker compose`).
 - Ollama at `http://localhost:11434`. Model tags are in `.env` and `docs/decisions.md`.
