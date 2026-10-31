@@ -11,6 +11,15 @@ All external sources behind these decisions are listed in `docs/references.md`.
 - Upstream artifacts: 408 hadiths contain `text: ""` (mostly Book 0 / Introduction structural placeholders, e.g. 203 in Muslim, 86 in Nasai, 74 in Tirmidhi); preserved verbatim byte-for-byte (Hard Rule 5). Diacritics verified on Bukhari #1 (249 marks).
 - Integrity: Per-file SHA-256 recorded in `data/raw/hadith/fawazahmed0/MANIFEST.txt` and manifest SHA-256 (`941f350e3abefc58ebd4c8981df876f8143a65c862882fcb911d3b2fa9640e38`) recorded in `data/raw/CHECKSUMS.txt`.
 
+## 2026-10-31 — Hadith raw data measured (T1.3)
+- 10 collections, **36,512 entries**; **21,185 carry ≥1 grade** from 9 named graders (Al-Albani, Shuaib Al Arnaut, …).
+- **Bukhari, Muslim and the three 40-hadith books have no grades** in this source (`grades: []`). The graph stores
+  "no grade in source" — it must never infer "sahih" from the collection name (hard rule 2).
+- **408 entries have empty text** (Muslim 203, Nasai 86, Tirmidhi 74, Malik 29, Bukhari 9, Ibn Majah 5, Abu Dawud 2),
+  e.g. Sahih Muslim introduction entries 1, 2, 5…, `arabicnumber` null. Phase 3/5 skip them; never fill them.
+  Exact per-collection counts are asserted in `tests/test_hadith_raw.py`.
+- Musnad Ahmad is still missing (Ibn Kathir cites it often) — see TRACKER follow-ups.
+
 ## 2026-10-31 — Ibn Kathir raw data measured (T1.2)
 - 6,236 files, 0 empty; **1,911 distinct passages**, every one a run of adjacent ayat inside one surah
   (no text repeats non-adjacently) → Phase 3 builds one `TafsirSegment` per run (range IDs, see below).

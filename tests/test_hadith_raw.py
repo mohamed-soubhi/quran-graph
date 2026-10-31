@@ -55,10 +55,27 @@ def test_extract_arabic_editions():
     )
 
 
+# Exact counts at the pinned commit df57907 (verified by Claude 2026-10-31). Empty texts are upstream
+# placeholders (e.g. Sahih Muslim introduction entries); Phase 5 must skip them, never fill them.
+EXPECTED_COUNTS = {  # edition: (hadith entries, entries with empty text)
+    "ara-abudawud": (5274, 2),
+    "ara-bukhari": (7589, 9),
+    "ara-dehlawi": (40, 0),
+    "ara-ibnmajah": (4343, 5),
+    "ara-malik": (1858, 29),
+    "ara-muslim": (7563, 203),
+    "ara-nasai": (5765, 86),
+    "ara-nawawi": (42, 0),
+    "ara-qudsi": (40, 0),
+    "ara-tirmidhi": (3998, 74),
+}
+
+
 def test_hadith_raw_json_and_fields():
     """Verify each collection file parses as JSON and hadiths have hadithnumber and valid text."""
     _check_files_present()
     editions = extract_arabic_editions(EDITIONS_FILE)
+    assert sorted(editions) == sorted(EXPECTED_COUNTS), f"Unexpected edition list: {editions}"
 
     total_hadiths = 0
     non_empty_texts = 0
@@ -93,17 +110,13 @@ def test_hadith_raw_json_and_fields():
             if h["text"].strip():
                 non_empty_texts += 1
 
-        # Small collections must have 100% non-empty texts
-        if ed_name in ("ara-dehlawi", "ara-nawawi", "ara-qudsi"):
-            empty_in_small = sum(1 for h in hadiths if not h["text"].strip())
-            assert empty_in_small == 0, f"Unexpected empty hadiths in {ed_name}: {empty_in_small}"
+        empty = sum(1 for h in hadiths if not h["text"].strip())
+        assert (len(hadiths), empty) == EXPECTED_COUNTS[ed_name], (
+            f"{ed_name}: got {len(hadiths)} entries / {empty} empty, expected {EXPECTED_COUNTS[ed_name]}"
+        )
 
-    # Across all collections, over 98% of hadith entries have non-empty text
-    # (the remaining ~1.1% are upstream Book 0 / Introduction structural placeholders)
-    non_empty_ratio = non_empty_texts / total_hadiths
-    assert non_empty_ratio > 0.98, (
-        f"Non-empty text ratio unexpectedly low: {non_empty_ratio:.2%} ({non_empty_texts}/{total_hadiths})"
-    )
+    assert total_hadiths == 36512
+    assert non_empty_texts == 36512 - 408
 
 
 def test_hadith_bukhari_diacritics():

@@ -31,6 +31,9 @@ Every agent (Claude, agy, GLM scripts) follows these rules. The full plan is in
 6. Any external URL you used (download, docs, dataset, model page) goes into `docs/references.md`
    with what it was used for and the date. Model tags, versions and counts go into `docs/decisions.md`.
 7. BEFORE committing, write `docs/tickets/reports/<id>.md`: what changed, test output, anything unclear.
+   **If the data or reality contradicts an acceptance criterion, do not loosen the criterion yourself.**
+   Put a "Deviations" section at the TOP of the report: what the ticket said, what you found (with exact counts),
+   and what you did instead. Prefer exact expected counts over percentage thresholds for pinned data.
    Claude later adds a "User test scenarios" section; the ticket is `done` only after Aya & Mohamed approve.
 8. Commit with a message starting with the ticket id, e.g. `T0.3: add Neo4j client and smoke test`.
 9. Do not start another ticket. Stop and report: what was done, test output, anything unclear.
