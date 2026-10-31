@@ -27,8 +27,8 @@ gantt
     T1.1 Downloader + Tanzil        :done, t11, 2026-10-31, 1d
     T1.2 Ibn Kathir (6236 files)    :done, t12, 2026-10-31, 1d
     T1.3 Hadith collections         :done, t13, 2026-10-31, 1d
-    T1.4 Quranic Corpus (downloaded) :crit, active, t14, 2026-10-31, 1d
-    G1 Phase 1 gate                 :milestone, g1, after t14, 0d
+    T1.4 Quranic Corpus            :done, t14, 2026-10-31, 1d
+    G1 Phase 1 gate                 :crit, milestone, g1, after t14, 0d
 
     section Phase 2 · Schema (est.)
     schema.md + constraints         :p2a, after g1, 2d
@@ -70,7 +70,7 @@ gantt
 | Phase | Tickets done | Status | Gate |
 |---|---|---|---|
 | 0 · Setup | 7 / 7 | ✅ done | G0 signed off 2026-10-31 |
-| 1 · Data acquisition | 3 / 4 | 🔴 T1.4 waiting for your test approval | G1 next |
+| 1 · Data acquisition | 4 / 4 | 🔴 G1 gate waiting for your sign-off | Phase 2 next |
 | 2 · Schema | 0 | ⏳ not started | — |
 | 3 · Load L0 + L1 | 0 | ⏳ | — |
 | 4 · Span annotation | 0 | ⏳ | — |
@@ -80,6 +80,8 @@ gantt
 
 ## Waiting on Aya & Mohamed
 - ~~T1.4: download the Quranic Corpus file~~ — done by Claude 2026-10-31.
+- **G1 sign-off** (Phase 1 gate) — scenarios in `docs/tickets/reports/G1.md`.
+- **Buckwalter → Arabic decision** (store Arabic script as primary; Buckwalter secondary).
 - Plan updates (segment range ID, FOOTNOTE, NFC rule); `Citation` vs `HadithSpan`; review the T0.5 fixture.
 - Approval of each ticket after its test scenarios.
 

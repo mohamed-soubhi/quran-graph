@@ -1,8 +1,16 @@
 # Sources
 
-Input to Phase 1. Status: **researched 2026-10-29, nothing downloaded yet.**
+Input to Phase 1. Status: **researched 2026-10-29; all Phase 1 sources downloaded 2026-10-31 (G1).**
 Downloads go to `data/raw/<source>/` with a SHA-256 per file in `data/raw/CHECKSUMS.txt`.
 Full list of every link consulted: `docs/references.md`.
+
+## Downloaded (Phase 1 gate record)
+| Source | Version / pin | Downloaded | Raw location | Checksum | Ayah coverage |
+|---|---|---|---|---|---|
+| Tanzil Uthmani + Simple-Clean | Tanzil v1.1 (2021-02-12) | 2026-10-31 (T1.1) | `data/raw/tanzil/` | 2 lines in `CHECKSUMS.txt` | 114 surahs / 6,236 ayat |
+| Ibn Kathir (spa5k/tafsir_api) | commit `eb82bb6294efe30ad5c135c03b1864afaa70e855` | 2026-10-31 (T1.2) | `data/raw/tafsir/ibn-kathir/` (6,236 files) | `MANIFEST.txt`, listed in `CHECKSUMS.txt` | 114 / 6,236 (same set as Tanzil) |
+| Hadith (fawazahmed0/hadith-api) | commit `df57907be35291c91ad6a6691180e22ca9920784` | 2026-10-31 (T1.3) | `data/raw/hadith/fawazahmed0/` (11 files) | `MANIFEST.txt`, listed in `CHECKSUMS.txt` | n/a (36,512 hadith entries) |
+| Quranic Arabic Corpus morphology | v0.4 | 2026-10-31 (T1.4) | `data/raw/quranic-corpus/` (1 zip) | 1 line in `CHECKSUMS.txt` | 114 / 6,236 (same set as Tanzil) |
 
 ## Selected sources
 
