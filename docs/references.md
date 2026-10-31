@@ -37,6 +37,8 @@ ticket or decision relies on an outside source. Accessed dates are when the link
 | Reference | Used for | Accessed |
 |---|---|---|
 | [fawazahmed0/hadith-api](https://github.com/fawazahmed0/hadith-api) | Selected hadith source; Unlicense; 10 Arabic collections with named grades | 2026-10-29 |
+| [fawazahmed0/hadith-api @ df57907 (pinned)](https://github.com/fawazahmed0/hadith-api/tree/df57907be35291c91ad6a6691180e22ca9920784) | T1.3 pinned version (branch `1`, 2026-06-03); `ara-<c>` = diacritized, `ara-<c>1` = none (checked on Bukhari #1) | 2026-10-31 |
+| [Quranic Corpus download form](https://corpus.quran.com/download/default.jsp) | T1.4: POST form (`txtEmail`, `downloadID`), no captcha; needs an email address | 2026-10-31 |
 | [hadith-api editions.json](https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions.json) | Edition list (`ara-<collection>`, `ara-<collection>1`) | 2026-10-29 |
 | [Sample: ara-bukhari 1](https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/ara-bukhari/1.json) | Confirmed fields: hadithnumber, arabicnumber, text (isnad + matn) | 2026-10-29 |
 | [Sample: ara-abudawud 1](https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/ara-abudawud/1.json) | Confirmed `grades[] = {name, grade}` | 2026-10-29 |
