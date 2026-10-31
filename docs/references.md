@@ -81,3 +81,4 @@ ticket or decision relies on an outside source. Accessed dates are when the link
 | [Neo4j Python Driver](https://neo4j.com/docs/python-manual/current/) | Python driver API reference for client connectivity and Cypher execution (T0.3) | 2026-10-29 |
 | [Quranic Corpus extended Buckwalter table](https://corpus.quran.com/java/buckwalter.jsp) | Official Buckwalter → Arabic mapping for roots/lemmas/forms; lossless round-trip check (Arabic-script decision) | 2026-10-31 |
 | [bge-m3 model card](https://huggingface.co/BAAI/bge-m3) | Max input 8,192 tokens → whole Ibn Kathir passages (up to 72,681 chars) are too long to embed (schema Q2) | 2026-10-31 |
+| [jsonschema on PyPI](https://pypi.org/project/jsonschema/) | T2.3: JSON Schema validation for extraction contract (pinned 4.26.0) | 2026-10-31 |

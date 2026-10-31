@@ -36,6 +36,30 @@ FEWSHOT_OUTPUT = {
 }
 
 
+def ollama_format(schema: dict) -> dict:
+    """Prepare a JSON schema for Ollama structured output (T2.3).
+
+    Recursively removes schema metadata ($id, $schema) and extension keys starting
+    with 'x-' (such as 'x-locator-rules') before the schema is sent as Ollama format.
+    """
+    if not isinstance(schema, dict):
+        return schema
+    clean = {}
+    for k, v in schema.items():
+        if k in ("$id", "$schema") or k.startswith("x-"):
+            continue
+        if isinstance(v, dict):
+            clean[k] = ollama_format(v)
+        elif isinstance(v, list):
+            clean[k] = [
+                ollama_format(item) if isinstance(item, dict) else item
+                for item in v
+            ]
+        else:
+            clean[k] = v
+    return clean
+
+
 def build_system_prompt() -> str:
     """Build the system prompt containing instructions, JSON schema, and rules."""
     schema = HadithSpanList.model_json_schema()
