@@ -3,6 +3,14 @@
 Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
+## 2026-10-31 — Tanzil raw Quran text verified (T1.1)
+- Source: Tanzil v1.1 via `https://tanzil.net/pub/download/index.php?quranType=<uthmani|simple-clean>&outType=txt-2&agree=true`
+- Formats: `data/raw/tanzil/quran-uthmani.txt` (full diacritics) and `data/raw/tanzil/quran-simple-clean.txt` (clean text).
+- Verification: Both variants contain exactly 6,236 ayah lines (`surah|ayah|text`), exactly 114 distinct continuous surahs (1..114), and identical `(surah, ayah)` keys in matching order.
+- Integrity: Verbatim downloads stored in binary mode; SHA-256 recorded in `data/raw/CHECKSUMS.txt`:
+  - `quran-uthmani.txt`: `bf4f57b968d03f4131c070b1e285da9be0e0a108a21c910e872801ca273312c8`
+  - `quran-simple-clean.txt`: `228df2a717671aeb9d2ff573002bd28d6b3f973f4bc7153554e3a81663d67610`
+
 ## 2026-10-30 — Extraction smoke test results (T0.5)
 - Extraction model: `glm-5.3-flash:cloud` called via Ollama `/api/chat` with structured output JSON schema (`HadithSpanList`).
 - Transport: `stream=True` in HTTP requests to handle remote reasoning model chunk delivery and avoid monolithic socket read timeouts.
