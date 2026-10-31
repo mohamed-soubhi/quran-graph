@@ -154,3 +154,13 @@ def test_ollama_format_strips_metadata_and_extensions():
     assert "title" in cleaned
     assert "properties" in cleaned
     assert "spans" in cleaned["properties"]
+
+
+def test_locate_skips_footnote_matches():
+    """Anchor matches inside [[...]] are skipped: a later real match is used; an end only in a footnote fails."""
+    mk = lambda s, e: HadithSpanAnchor(start_anchor=s, end_anchor=e, cue=None, collection_hint=None, number_hint=None)
+    text = "[[رواه مسلم برقم ١]] ثم قال: رواه مسلم عن فلان."
+    start, end = locate(text, mk("رواه مسلم", "عن فلان"))
+    assert text[start:end] == "رواه مسلم عن فلان"
+    text = "قال رسول الله ﷺ: كذا [[انظر صحيح البخاري]] وبعد"
+    assert locate(text, mk("قال رسول الله", "صحيح البخاري")) is None

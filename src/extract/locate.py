@@ -30,7 +30,7 @@ def locate(
     2. start = index[s]; end = index[e + len(norm_end) - 1] + 1.
     3. Extend end over following Mn characters (diacritics), then over following closing marks:
        " ” » ) ] ﴾
-    4. Return None (with a warning) if start falls inside a [[ ... ]] footnote.
+    4. Anchor matches inside [[ ... ]] footnotes are skipped; if no match outside remains -> None.
 
     Args:
         text: Verbatim original Arabic text.
@@ -62,19 +62,35 @@ def locate(
     # Map window_start (original text offset) to the corresponding normalized index
     norm_window_start = bisect.bisect_left(index, window_start) if window_start > 0 else 0
 
-    s = norm.find(norm_start, norm_window_start)
+    # Footnote ranges in original offsets; anchor matches inside them are skipped (x-locator-rules)
+    footnotes = [m.span() for m in FOOTNOTE_RE.finditer(text)]
+
+    def in_footnote(pos: int) -> bool:
+        return any(fn_start <= pos < fn_end for fn_start, fn_end in footnotes)
+
+    def find_outside(needle: str, from_pos: int) -> int:
+        """First normalized match at or after from_pos whose whole range lies outside footnotes."""
+        k = norm.find(needle, from_pos)
+        while k != -1:
+            if not in_footnote(index[k]) and not in_footnote(index[k + len(needle) - 1]):
+                return k
+            logger.warning("Anchor %r match at offset %d is inside a [[...]] footnote; skipped", needle, index[k])
+            k = norm.find(needle, k + 1)
+        return -1
+
+    s = find_outside(norm_start, norm_window_start)
     if s == -1:
         logger.warning(
-            "Start anchor %r not found at or after window_start %d",
+            "Start anchor %r not found outside footnotes at or after window_start %d",
             anchor.start_anchor,
             window_start,
         )
         return None
 
-    e = norm.find(norm_end, s)
+    e = find_outside(norm_end, s)
     if e == -1:
         logger.warning(
-            "End anchor %r not found at or after start match position %d",
+            "End anchor %r not found outside footnotes at or after start match position %d",
             anchor.end_anchor,
             s,
         )
@@ -90,17 +106,5 @@ def locate(
     # Extend end over directly following closing marks
     while end < len(text) and text[end] in CLOSING_MARKS:
         end += 1
-
-    # Return None (with a warning) if start falls inside a [[ ... ]] footnote
-    for match in FOOTNOTE_RE.finditer(text):
-        fn_start, fn_end = match.span()
-        if fn_start <= start < fn_end:
-            logger.warning(
-                "Anchor start offset %d falls inside footnote [[...]] [%d, %d)",
-                start,
-                fn_start,
-                fn_end,
-            )
-            return None
 
     return start, end

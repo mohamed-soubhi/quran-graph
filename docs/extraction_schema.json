@@ -47,7 +47,7 @@
     "start = first match of start_anchor at or after the window start; end = end of the first match of end_anchor at or after start.",
     "end is extended first over the diacritics (Unicode Mn) of the last letter, then over directly following closing marks: \" ” » ) ] ﴾ (no other characters).",
     "Normalization strips Mn per original character (the offset map has one entry per kept character); this makes NFC re-ordering irrelevant. Checked on the T0.5 fixture: anchors give exactly [141, 657) and [658, 790).",
-    "If an anchor is not found, or matches inside a [[...]] footnote, the span is rejected and logged with the run id; it is never guessed.",
+    "Anchor matches inside a [[...]] footnote are skipped (the next match outside is used). If no match outside footnotes exists, the span is rejected and logged with the run id; it is never guessed.",
     "Located spans become Span {type: HADITH} with provenance method='glm', source='run:<id>', confidence from agreement across runs."
   ]
 }
