@@ -32,8 +32,8 @@ gantt
 
     section Phase 2 · Schema
     T2.1 schema.md v1.0            :done, t21, 2026-10-31, 1d
-    T2.2 Constraints + indexes      :crit, active, t22, 2026-10-31, 1d
-    T2.3 Extraction contract        :t23, after t21, 2d
+    T2.2 Constraints + indexes      :done, t22, 2026-10-31, 1d
+    T2.3 Extraction contract        :active, t23, 2026-10-31, 2d
     G2 Phase 2 gate (3 real cases)  :milestone, g2, after t23, 0d
 
     section Phase 3 · Load L0 + L1 (est.)
@@ -72,7 +72,7 @@ gantt
 |---|---|---|---|
 | 0 · Setup | 7 / 7 | ✅ done | G0 signed off 2026-10-31 |
 | 1 · Data acquisition | 4 / 4 | ✅ G1 signed off 2026-10-31 | — |
-| 2 · Schema | 1 / 3 | 🔴 T2.2 waiting for your test approval | T2.3 next |
+| 2 · Schema | 2 / 3 | 🔵 T2.3 with agy | G2 next |
 | 3 · Load L0 + L1 | 0 | ⏳ | — |
 | 4 · Span annotation | 0 | ⏳ | — |
 | 5 · Hadith linking | 0 | ⏳ | — |

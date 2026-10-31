@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "quran-graph/extraction_schema/hadith-spans/1.0",
+  "title": "HadithSpanAnchors",
+  "description": "GLM output contract for Phase 4b. GLM copies short anchor phrases from the input; it never returns offsets, never rewrites text and never assigns grades. Code locates anchors in the ORIGINAL text (NFC + diacritic-insensitive) and computes offsets.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spans"],
+  "properties": {
+    "spans": {
+      "type": "array",
+      "description": "One item per hadith narration or takhrij reference in the input window. Empty if none. Editor notes in [[...]] are never hadith spans.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["start_anchor", "end_anchor", "cue", "collection_hint", "number_hint"],
+        "properties": {
+          "start_anchor": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The first 3-8 words of the hadith span, copied exactly from the input (diacritics may be omitted)."
+          },
+          "end_anchor": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The last 3-8 words of the hadith span, copied exactly from the input (diacritics may be omitted)."
+          },
+          "cue": {
+            "type": ["string", "null"],
+            "description": "The introducing formula as written, e.g. 'قال الإمام أحمد: حدثنا', 'وقد رواه مسلم'."
+          },
+          "collection_hint": {
+            "type": ["string", "null"],
+            "enum": ["bukhari", "muslim", "abudawud", "tirmidhi", "nasai", "ibnmajah", "malik", "ahmad", "darimi", "other", null],
+            "description": "Collection named in the span itself (not guessed). 'other' for a named source outside this list."
+          },
+          "number_hint": {
+            "type": ["string", "null"],
+            "description": "A hadith number written in the span itself, copied as written (Arabic-Indic digits allowed). Never from memory."
+          }
+        }
+      }
+    }
+  },
+  "x-locator-rules": [
+    "Match on normalized copies (NFC, diacritics stripped, alef/ya/ta-marbuta unified) with an offset map back to the original text.",
+    "start = first match of start_anchor at or after the window start; end = end of the first match of end_anchor at or after start.",
+    "end is extended first over the diacritics (Unicode Mn) of the last letter, then over directly following closing marks: \" ” » ) ] ﴾ (no other characters).",
+    "Normalization strips Mn per original character (the offset map has one entry per kept character); this makes NFC re-ordering irrelevant. Checked on the T0.5 fixture: anchors give exactly [141, 657) and [658, 790).",
+    "If an anchor is not found, or matches inside a [[...]] footnote, the span is rejected and logged with the run id; it is never guessed.",
+    "Located spans become Span {type: HADITH} with provenance method='glm', source='run:<id>', confidence from agreement across runs."
+  ]
+}
