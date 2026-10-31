@@ -31,8 +31,8 @@ gantt
     G1 Phase 1 gate ✔               :milestone, done, g1, 2026-10-31, 0d
 
     section Phase 2 · Schema
-    T2.1 schema.md (your review)    :crit, active, t21, 2026-10-31, 1d
-    T2.2 Constraints + indexes      :t22, after t21, 1d
+    T2.1 schema.md v1.0            :done, t21, 2026-10-31, 1d
+    T2.2 Constraints + indexes      :active, t22, 2026-10-31, 1d
     T2.3 Extraction contract        :t23, after t21, 2d
     G2 Phase 2 gate (3 real cases)  :milestone, g2, after t23, 0d
 
@@ -72,7 +72,7 @@ gantt
 |---|---|---|---|
 | 0 · Setup | 7 / 7 | ✅ done | G0 signed off 2026-10-31 |
 | 1 · Data acquisition | 4 / 4 | ✅ G1 signed off 2026-10-31 | — |
-| 2 · Schema | 0 / 3 | 🔴 T2.1 waiting for Q2 + Q4 (docs/notes/schema-explained.md) | T2.2, T2.3 next |
+| 2 · Schema | 1 / 3 | 🔵 T2.2 with agy | T2.3 next |
 | 3 · Load L0 + L1 | 0 | ⏳ | — |
 | 4 · Span annotation | 0 | ⏳ | — |
 | 5 · Hadith linking | 0 | ⏳ | — |
@@ -81,7 +81,6 @@ gantt
 
 ## Waiting on Aya & Mohamed
 - ~~T1.4: download the Quranic Corpus file~~ — done by Claude 2026-10-31.
-- **T2.1 schema review: answer Q2 + Q4** in `docs/notes/schema-explained.md`.
 - Plan updates (segment range ID, FOOTNOTE, NFC rule); `Citation` vs `HadithSpan`; review the T0.5 fixture.
 - Approval of each ticket after its test scenarios.
 

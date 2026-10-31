@@ -1,7 +1,7 @@
 # Graph schema (Phase 2)
 
-**Status:** draft v0.2 (T2.1, 2026-10-31). Q1, Q3, Q5 approved; Q2 (storage) and Q4 (Lemma) explained in
-`docs/notes/schema-explained.md`, waiting for Aya & Mohamed.
+**Status:** v1.0 (T2.1, approved by Aya & Mohamed 2026-10-31). Q1–Q5 answered (end of file).
+Background for Q2 and Q4: `docs/notes/schema-explained.md`. Changes after v1.0 go through `docs/decisions.md`.
 Facts behind each choice: `docs/decisions.md`. Sources: `docs/sources.md`.
 
 ## Conventions
@@ -35,7 +35,7 @@ Tanzil puts the basmala in front of ayah 1; the loader removes it from `Ayah.tex
 | `Lemma` | `lemma_id` = `text` + `#<sense>` if any, e.g. `"ٱسْم"`, `"عَاد#2"` | `text`, `sense` (int or null), `bw` (without the sense digit); 4,832 nodes (4,817 distinct texts, 15 with a sense number) |
 
 `Lemma` is not in the plan's L0 list; it is added because one root has many words with different meanings
-(سمو → اسم، سماء) and 486 words have two lemmas (Q4).
+(سمو → اسم، سماء) and 486 words have two lemmas (Q4, approved).
 
 | Relationship | From → To | Properties (+ provenance) |
 |---|---|---|
@@ -55,8 +55,8 @@ Word morphology beyond `pos` (prefixes, suffixes, case, mood …) stays in the r
 | `TafsirBook` | `book_id` `"ibn-kathir"` | `title` «تفسير القرآن العظيم», `source` `spa5k@eb82bb6` |
 | `TafsirSegment` | `segment_id` `"ibn-kathir:2:255-255:1"` | `book_id`, `surah_id`, `first_ayah`, `last_ayah`, `n`, `text` (the **whole** passage, verbatim), `text_norm`, `char_count` |
 
-A segment is the **whole passage** (Q2, approved: not paragraphs). How a passage shared by several ayat is stored
-(once + `COVERS`, or one copy per ayah) is still open — see `docs/notes/schema-explained.md`.
+A segment is the **whole passage** (Q2, approved: not paragraphs). A passage shared by several ayat is **stored
+once** and linked to every ayah of the group by `COVERS` (Option A, approved; decision of 2026-10-29 confirmed).
 
 | Relationship | From → To | |
 |---|---|---|
@@ -103,7 +103,7 @@ not in our sources) keeps its hints and has no `CITES` edge: "not found", never 
 | `Topic` `topic_id` | fixed taxonomy, `name` (Arabic); `(:Topic)-[:BROADER]->(:Topic)` |
 | `Concept` `concept_id` | named concepts (persons, places, rulings); may link to `Lemma` |
 | `ABOUT` | TafsirSegment / Ayah → Topic, with provenance |
-| `embedding` | 1024-float property on `Ayah` and `TafsirSegment` (bge-m3) + Neo4j vector index |
+| `embedding` | 1024-float property on `Ayah` (bge-m3) + Neo4j vector index; passages longer than the model limit get temporary `Chunk` nodes for the index only (Phase 6) — the segment text stays whole |
 
 ## Constraints and indexes (T2.2)
 Unique: `Surah.surah_id`, `Ayah.ayah_id`, `Word.word_id`, `Root.root_id`, `Lemma.lemma_id`, `Mufassir.mufassir_id`,
@@ -113,13 +113,13 @@ Indexes: `Span.type`, `Hadith.arabic_number`, `Hadith.collection`, full-text on 
 
 ## Expected counts after Phase 3 (from Phase 1 measurements)
 Surah 114 · Ayah 6,236 · Word 77,429 · Root 1,642 · Lemma 4,832 · TafsirBook 1 · Mufassir 1 · Hadith 36,104 (36,512 − 408 empty) ·
-HadithBook 10 · Grader 9. TafsirSegment 1,911 (stored once) or 6,236 (one copy per ayah), depending on Q2.
+HadithBook 10 · Grader 9. TafsirSegment 1,911 · COVERS 6,236 (every ayah exactly one Ibn Kathir segment).
 
 ## Answers (2026-10-31)
 | # | Question | Answer |
 |---|---|---|
 | Q1 | Basmala in ayah 1 | **Approved:** kept only in 1:1 (Al-Fatiha); removed from ayah 1 of the other 112 surahs. |
-| Q2 | Size of a `TafsirSegment` | **Whole passage** (not paragraphs). Open: store once + `COVERS`, or a copy per ayah — `docs/notes/schema-explained.md`. |
+| Q2 | Size of a `TafsirSegment` | **Whole passage** (not paragraphs), **stored once** and linked to each ayah by `COVERS` (Option A). |
 | Q3 | Provenance method `dataset` | **Approved.** |
-| Q4 | `Lemma` nodes | **Open** — explanation with examples in `docs/notes/schema-explained.md`. |
+| Q4 | `Lemma` nodes | **Approved:** 4,832 Lemma nodes from the same corpus file (Word → Lemma → Root). |
 | Q5 | Grades as `GRADED` edges to `Grader` | **Approved.** |
