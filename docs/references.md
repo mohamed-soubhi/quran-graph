@@ -79,3 +79,5 @@ ticket or decision relies on an outside source. Accessed dates are when the link
 | [Neo4j Docker Hub](https://hub.docker.com/_/neo4j) | Official Neo4j Docker image (`neo4j:5`) configuration and plugin documentation | 2026-10-29 |
 | [Neo4j GDS Ninja repository](https://graphdatascience.ninja/versions.json) | Upstream plugin repository used by Neo4j container to install GDS 2.13.14 | 2026-10-29 |
 | [Neo4j Python Driver](https://neo4j.com/docs/python-manual/current/) | Python driver API reference for client connectivity and Cypher execution (T0.3) | 2026-10-29 |
+| [Quranic Corpus extended Buckwalter table](https://corpus.quran.com/java/buckwalter.jsp) | Official Buckwalter → Arabic mapping for roots/lemmas/forms; lossless round-trip check (Arabic-script decision) | 2026-10-31 |
+| [bge-m3 model card](https://huggingface.co/BAAI/bge-m3) | Max input 8,192 tokens → whole Ibn Kathir passages (up to 72,681 chars) are too long to embed (schema Q2) | 2026-10-31 |

@@ -28,12 +28,13 @@ gantt
     T1.2 Ibn Kathir (6236 files)    :done, t12, 2026-10-31, 1d
     T1.3 Hadith collections         :done, t13, 2026-10-31, 1d
     T1.4 Quranic Corpus            :done, t14, 2026-10-31, 1d
-    G1 Phase 1 gate                 :crit, milestone, g1, after t14, 0d
+    G1 Phase 1 gate ✔               :milestone, done, g1, 2026-10-31, 0d
 
-    section Phase 2 · Schema (est.)
-    schema.md + constraints         :p2a, after g1, 2d
-    extraction_schema.json          :p2b, after p2a, 1d
-    G2 Phase 2 gate                 :milestone, g2, after p2b, 0d
+    section Phase 2 · Schema
+    T2.1 schema.md (your review)    :crit, active, t21, 2026-10-31, 1d
+    T2.2 Constraints + indexes      :t22, after t21, 1d
+    T2.3 Extraction contract        :t23, after t21, 2d
+    G2 Phase 2 gate (3 real cases)  :milestone, g2, after t23, 0d
 
     section Phase 3 · Load L0 + L1 (est.)
     Parsers → JSONL                 :p3a, after g2, 2d
@@ -70,8 +71,8 @@ gantt
 | Phase | Tickets done | Status | Gate |
 |---|---|---|---|
 | 0 · Setup | 7 / 7 | ✅ done | G0 signed off 2026-10-31 |
-| 1 · Data acquisition | 4 / 4 | 🔴 G1 gate waiting for your sign-off | Phase 2 next |
-| 2 · Schema | 0 | ⏳ not started | — |
+| 1 · Data acquisition | 4 / 4 | ✅ G1 signed off 2026-10-31 | — |
+| 2 · Schema | 0 / 3 | 🔴 T2.1 schema draft waiting for your answers (Q1–Q5) | T2.2, T2.3 next |
 | 3 · Load L0 + L1 | 0 | ⏳ | — |
 | 4 · Span annotation | 0 | ⏳ | — |
 | 5 · Hadith linking | 0 | ⏳ | — |
@@ -80,8 +81,7 @@ gantt
 
 ## Waiting on Aya & Mohamed
 - ~~T1.4: download the Quranic Corpus file~~ — done by Claude 2026-10-31.
-- **G1 sign-off** (Phase 1 gate) — scenarios in `docs/tickets/reports/G1.md`.
-- **Buckwalter → Arabic decision** (store Arabic script as primary; Buckwalter secondary).
+- **T2.1 schema review: answer Q1–Q5** at the end of `docs/schema.md`.
 - Plan updates (segment range ID, FOOTNOTE, NFC rule); `Citation` vs `HadithSpan`; review the T0.5 fixture.
 - Approval of each ticket after its test scenarios.
 

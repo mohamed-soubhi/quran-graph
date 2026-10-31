@@ -3,6 +3,30 @@
 Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
+## 2026-10-31 — Facts found while drafting the schema (T2.1)
+- **Muslim footnote numbers are `arabicnumber`, not `hadithnumber`.** Ibn Kathir footnote «صحيح مسلم برقم (٢٨٦٥)»
+  = fawazahmed0 `arabicnumber` `2865.01` (entry `hadithnumber` 7207, text contains «خلقت عبادي حنفاء»).
+  `hadithnumber` 2865 is a different hadith. → `hadith_id` uses `hadithnumber` (unique per collection in the source),
+  and `arabic_number` is stored for Phase 5 footnote linking. Some entries have no `arabicnumber` key.
+- 77 `hadithnumber` values are not integers (e.g. `bukhari` 402.2) → the number part of `hadith_id` is a string
+  (`bukhari:402.2`); 0 duplicates per collection.
+- **Tanzil prepends the basmala to ayah 1 of 112 surahs** (all except 1 and 9), in both Uthmani and Simple-Clean.
+  It is not part of the ayah in the Hafs count (1:1 is the only basmala ayah) → see `docs/schema.md` open question Q1.
+- Quranic Corpus words vs Tanzil Uthmani words (after removing that basmala): identical count in 6,232 ayat; 4 exceptions
+  where the corpus joins two Tanzil words: «بَعْدَ مَا» in 2:181, 8:6, 13:37 and «إِلْ يَاسِينَ» in 37:130.
+- 486 corpus words have 2 stems (e.g. «مِمَّا» = min + maA), so a word can have 2 lemmas; 1 word has 2 roots.
+- Muslim 2865 is cited in 13 distinct Ibn Kathir passages (G2 test case "one hadith cited in several places").
+
+## 2026-10-31 — Arabic script is the main value for roots, lemmas and words (approved by Aya & Mohamed)
+The Quranic Corpus is written in extended Buckwalter transliteration (one Latin character = one Arabic letter/mark).
+- The graph stores **Arabic script as the main value**: `Root.text = "سمو"`, `Lemma.text`, `Word.text`.
+  Queries, search and display use Arabic.
+- Buckwalter is kept only as a secondary property (`bw`) for traceability to the corpus; nothing is keyed on it.
+- Lemma homonym numbers (e.g. `EaAd2`, 15 lemmas) are stripped into `Lemma.sense` (int or null).
+- The raw zip stays verbatim (licence); conversion happens in the Phase 3 loader with the official table
+  (https://corpus.quran.com/java/buckwalter.jsp). Round-trip Arabic ↔ Buckwalter checked lossless on all
+  1,642 roots, 4,817 lemmas and 12,205 forms (0 unmapped characters); the loader test must assert these exact counts.
+
 ## 2026-10-31 — Quranic Corpus morphology verified (T1.4)
 - Source: Quranic Arabic Corpus v0.4 via `https://corpus.quran.com/download/` (GNU GPL; verbatim copies only, credit + link to corpus.quran.com).
 - File: `data/raw/quranic-corpus/quranic-corpus-morphology-0.4.zip` (1,028,754 bytes, SHA-256 `fda26f87cc58b42fc992a3ad666a562805b636f34bcecb46326d048337ca7999`).
