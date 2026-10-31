@@ -111,9 +111,9 @@ def test_ayah_unique_constraint(driver):
     with driver.session() as session:
         try:
             session.run("MATCH (a:Ayah {ayah_id: '0:0'}) DELETE a")
-            session.run("CREATE (:Ayah {ayah_id: '0:0'})")
+            session.run("CREATE (:Ayah {ayah_id: '0:0'})").consume()
 
             with pytest.raises(ConstraintError):
-                session.run("CREATE (:Ayah {ayah_id: '0:0'})")
+                session.run("CREATE (:Ayah {ayah_id: '0:0'})").consume()
         finally:
             session.run("MATCH (a:Ayah {ayah_id: '0:0'}) DELETE a")
