@@ -71,7 +71,7 @@ The tafsir stores shadda before the vowel (U+0651 U+064E) while normally typed A
 
 ## 2026-10-29 — Tafsir segments cover an ayah range (approved by Aya & Mohamed)
 Ibn Kathir often explains several ayat in one passage; the source data copies the same text into each
-ayah of the group (73:2 = 73:3, 20,860 chars; 73:1 empty — see `docs/sources.md`).
+ayah of the group (73:2 = 73:3, 20,860 chars — see `docs/sources.md`; an earlier "73:1 empty" note was a failed request, corrected 2026-10-31).
 - `segment_id` = `<book>:<surah>:<first_ayah>-<last_ayah>:<n>`, e.g. `ibn-kathir:73:1-9:1`.
   A single-ayah passage still uses a range: `ibn-kathir:2:255-255:1`.
 - `(:TafsirSegment)-[:COVERS]->(:Ayah)` for every ayah in the range.
