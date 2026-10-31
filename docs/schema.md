@@ -1,6 +1,7 @@
 # Graph schema (Phase 2)
 
-**Status:** draft v0.1 (T2.1, 2026-10-31) — waiting for Aya & Mohamed. Open questions are at the end (Q1–Q5).
+**Status:** draft v0.2 (T2.1, 2026-10-31). Q1, Q3, Q5 approved; Q2 (storage) and Q4 (Lemma) explained in
+`docs/notes/schema-explained.md`, waiting for Aya & Mohamed.
 Facts behind each choice: `docs/decisions.md`. Sources: `docs/sources.md`.
 
 ## Conventions
@@ -18,13 +19,17 @@ Facts behind each choice: `docs/decisions.md`. Sources: `docs/sources.md`.
 | `method` | enum | `dataset` (given by the source, deterministic load) · `regex` · `ngram` · `glm` · `embedding` · `human` |
 | `confidence` | float 0–1 | 1.0 for `dataset` and `human` |
 
-`dataset` is a new method value (Q3). Structural edges (`HAS_AYAH`, `NEXT`, …) also carry the three properties.
+`dataset` is a new method value (Q3, approved). Structural edges (`HAS_AYAH`, `NEXT`, …) also carry the three properties.
 
 ## L0 — Text
 | Label | Key | Properties |
 |---|---|---|
 | `Surah` | `surah_id` int 1–114 | `name` (Arabic, from Tanzil metadata, Phase 3), `ayah_count`, `has_basmala` bool (false for 9) |
 | `Ayah` | `ayah_id` `"2:255"` | `surah_id`, `number`, `text` (Tanzil Uthmani), `text_simple` (Tanzil Simple-Clean), `text_norm`, `word_count` |
+
+**Basmala (Q1, approved):** only 1:1 keeps the basmala — it is an ayah of Al-Fatiha. For the 112 other surahs
+Tanzil puts the basmala in front of ayah 1; the loader removes it from `Ayah.text` / `text_simple` and sets
+`Surah.has_basmala = true` (false for surah 9). The raw Tanzil files stay unchanged. Test: 112 ayat stripped, 1:1 unchanged.
 | `Word` | `word_id` `"2:255:3"` | `ayah_id`, `position` (1-based, corpus order), `text` (Arabic, all segments joined), `bw`, `pos` (part of speech of the stem) |
 | `Root` | `root_id` = `text` `"سمو"` | `text` (letters, no spaces), `bw` `"smw"`; 1,642 nodes |
 | `Lemma` | `lemma_id` = `text` + `#<sense>` if any, e.g. `"ٱسْم"`, `"عَاد#2"` | `text`, `sense` (int or null), `bw` (without the sense digit); 4,832 nodes (4,817 distinct texts, 15 with a sense number) |
@@ -48,7 +53,10 @@ Word morphology beyond `pos` (prefixes, suffixes, case, mood …) stays in the r
 |---|---|---|
 | `Mufassir` | `mufassir_id` `"ibn-kathir"` | `name` «إسماعيل بن عمر بن كثير», `death_hijri` 774 |
 | `TafsirBook` | `book_id` `"ibn-kathir"` | `title` «تفسير القرآن العظيم», `source` `spa5k@eb82bb6` |
-| `TafsirSegment` | `segment_id` `"ibn-kathir:2:255-255:3"` | `book_id`, `surah_id`, `first_ayah`, `last_ayah`, `n`, `text` (verbatim), `text_norm`, `char_count`, `start_in_passage`, `sep_after` (see Q2) |
+| `TafsirSegment` | `segment_id` `"ibn-kathir:2:255-255:1"` | `book_id`, `surah_id`, `first_ayah`, `last_ayah`, `n`, `text` (the **whole** passage, verbatim), `text_norm`, `char_count` |
+
+A segment is the **whole passage** (Q2, approved: not paragraphs). How a passage shared by several ayat is stored
+(once + `COVERS`, or one copy per ayah) is still open — see `docs/notes/schema-explained.md`.
 
 | Relationship | From → To | |
 |---|---|---|
@@ -76,7 +84,7 @@ The span `text` is not stored twice: it is `substring(segment.text, start, end -
 | `CITES` | Span(QURAN) → Ayah | the quote is another ayah (tafsir of Quran by Quran) |
 | `CITES` | Span(HADITH) → Hadith | linked hadith; `evidence` = span_id of the footnote that gave the number, if any |
 | `IN_BOOK` | Hadith → HadithBook | |
-| `GRADED` | Hadith → Grader | `grade` exactly as in the source (e.g. `"Sahih"`); no edge = no grade in source |
+| `GRADED` | Hadith → Grader | `grade` exactly as in the source (e.g. `"Sahih"`); no edge = no grade in source (Q5, approved) |
 | `IN_CHAIN` | Hadith → Narrator | `position` (1 = narrator nearest the collector) |
 | `HEARD_FROM` | Narrator → Narrator | `hadith_id` (one edge per hadith chain link; used by GDS) |
 
@@ -105,13 +113,13 @@ Indexes: `Span.type`, `Hadith.arabic_number`, `Hadith.collection`, full-text on 
 
 ## Expected counts after Phase 3 (from Phase 1 measurements)
 Surah 114 · Ayah 6,236 · Word 77,429 · Root 1,642 · Lemma 4,832 · TafsirBook 1 · Mufassir 1 · Hadith 36,104 (36,512 − 408 empty) ·
-HadithBook 10 · Grader 9. TafsirSegment depends on Q2 (1,911 passages, or ~32,800 paragraphs).
+HadithBook 10 · Grader 9. TafsirSegment 1,911 (stored once) or 6,236 (one copy per ayah), depending on Q2.
 
-## Open questions for Aya & Mohamed
-| # | Question | Recommendation |
+## Answers (2026-10-31)
+| # | Question | Answer |
 |---|---|---|
-| Q1 | Tanzil puts «بسم الله الرحمن الرحيم» before ayah 1 of 112 surahs. Keep it in `Ayah.text`? | **Remove it from `Ayah.text`** (it is not part of the ayah in the Hafs count; the corpus also excludes it) and set `Surah.has_basmala`. The raw file stays verbatim. |
-| Q2 | Size of a `TafsirSegment`: whole passage (1,911; up to 72,681 chars) or paragraph (~32,800; median 295 chars)? | **Paragraph.** Passages are too long for embeddings (bge-m3: 8,192 tokens) and GLM windows. Paragraphs split only at newlines; `start_in_passage` + `sep_after` rebuild the passage byte-exact (test required) — the text is not edited. `n` = paragraph number. |
-| Q3 | New provenance method `dataset` for edges given by the source (not regex/glm/…)? | **Yes**; otherwise structural edges would have to claim `regex`. |
-| Q4 | Add `Lemma` nodes (not in the plan)? | **Yes** — needed to tell apart words of the same root, and for "all occurrences of this word" queries. |
-| Q5 | Grades as `GRADED` edges to `Grader` nodes (vs. a property list on `Hadith`)? | **Edges** — Neo4j cannot store a list of {grader, grade} pairs in one property, and edges allow "all hadith Al-Albani graded Daif". |
+| Q1 | Basmala in ayah 1 | **Approved:** kept only in 1:1 (Al-Fatiha); removed from ayah 1 of the other 112 surahs. |
+| Q2 | Size of a `TafsirSegment` | **Whole passage** (not paragraphs). Open: store once + `COVERS`, or a copy per ayah — `docs/notes/schema-explained.md`. |
+| Q3 | Provenance method `dataset` | **Approved.** |
+| Q4 | `Lemma` nodes | **Open** — explanation with examples in `docs/notes/schema-explained.md`. |
+| Q5 | Grades as `GRADED` edges to `Grader` | **Approved.** |

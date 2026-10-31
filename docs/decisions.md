@@ -3,6 +3,16 @@
 Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
+## 2026-10-31 — Schema answers Q1, Q2 (part), Q3, Q5 (approved by Aya & Mohamed)
+- Q1: the basmala is an ayah only in Al-Fatiha (1:1). The loader removes the Tanzil basmala prefix from ayah 1 of the
+  other 112 surahs and sets `Surah.has_basmala`; raw files unchanged.
+- Q2: a `TafsirSegment` is the **whole** passage, not paragraphs. Still open: stored once + `COVERS` (decision of
+  2026-10-29) vs one copy per ayah (Aya & Mohamed's first answer) — trade-offs in `docs/notes/schema-explained.md`.
+  Embedding chunks (Phase 6) are temporary index data; the stored text stays whole.
+- Q3: provenance `method` gains `dataset` (edge given directly by a source dataset, confidence 1.0).
+- Q5: hadith grades are `(:Hadith)-[:GRADED {grade}]->(:Grader)` edges, values exactly as in the source.
+- Q4 (Lemma) waits for the explanation in `docs/notes/schema-explained.md`.
+
 ## 2026-10-31 — Facts found while drafting the schema (T2.1)
 - **Muslim footnote numbers are `arabicnumber`, not `hadithnumber`.** Ibn Kathir footnote «صحيح مسلم برقم (٢٨٦٥)»
   = fawazahmed0 `arabicnumber` `2865.01` (entry `hadithnumber` 7207, text contains «خلقت عبادي حنفاء»).

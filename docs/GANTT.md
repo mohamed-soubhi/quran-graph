@@ -72,7 +72,7 @@ gantt
 |---|---|---|---|
 | 0 · Setup | 7 / 7 | ✅ done | G0 signed off 2026-10-31 |
 | 1 · Data acquisition | 4 / 4 | ✅ G1 signed off 2026-10-31 | — |
-| 2 · Schema | 0 / 3 | 🔴 T2.1 schema draft waiting for your answers (Q1–Q5) | T2.2, T2.3 next |
+| 2 · Schema | 0 / 3 | 🔴 T2.1 waiting for Q2 + Q4 (docs/notes/schema-explained.md) | T2.2, T2.3 next |
 | 3 · Load L0 + L1 | 0 | ⏳ | — |
 | 4 · Span annotation | 0 | ⏳ | — |
 | 5 · Hadith linking | 0 | ⏳ | — |
@@ -81,7 +81,7 @@ gantt
 
 ## Waiting on Aya & Mohamed
 - ~~T1.4: download the Quranic Corpus file~~ — done by Claude 2026-10-31.
-- **T2.1 schema review: answer Q1–Q5** at the end of `docs/schema.md`.
+- **T2.1 schema review: answer Q2 + Q4** in `docs/notes/schema-explained.md`.
 - Plan updates (segment range ID, FOOTNOTE, NFC rule); `Citation` vs `HadithSpan`; review the T0.5 fixture.
 - Approval of each ticket after its test scenarios.
 
