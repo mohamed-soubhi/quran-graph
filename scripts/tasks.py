@@ -1,6 +1,6 @@
 """Task runner replacing Makefile for the project.
 
-Targets: up, down, test, smoke
+Targets: up, down, test, smoke, schema
 """
 
 import os
@@ -59,11 +59,19 @@ def run_smoke(args=None) -> None:
     sys.exit(res.returncode)
 
 
+def run_schema() -> None:
+    """Apply Neo4j constraints and indexes from src/graph/schema.cypher."""
+    py = get_venv_python()
+    res = subprocess.run([py, "src/graph/apply_schema.py"], cwd=ROOT)
+    sys.exit(res.returncode)
+
+
 TARGETS = {
     "test": run_test,
     "up": run_up,
     "down": run_down,
     "smoke": run_smoke,
+    "schema": run_schema,
 }
 
 

@@ -1,0 +1,18 @@
+CREATE CONSTRAINT surah_surah_id_unique IF NOT EXISTS FOR (n:Surah) REQUIRE n.surah_id IS UNIQUE;
+CREATE CONSTRAINT ayah_ayah_id_unique IF NOT EXISTS FOR (n:Ayah) REQUIRE n.ayah_id IS UNIQUE;
+CREATE CONSTRAINT word_word_id_unique IF NOT EXISTS FOR (n:Word) REQUIRE n.word_id IS UNIQUE;
+CREATE CONSTRAINT root_root_id_unique IF NOT EXISTS FOR (n:Root) REQUIRE n.root_id IS UNIQUE;
+CREATE CONSTRAINT lemma_lemma_id_unique IF NOT EXISTS FOR (n:Lemma) REQUIRE n.lemma_id IS UNIQUE;
+CREATE CONSTRAINT mufassir_mufassir_id_unique IF NOT EXISTS FOR (n:Mufassir) REQUIRE n.mufassir_id IS UNIQUE;
+CREATE CONSTRAINT tafsir_book_book_id_unique IF NOT EXISTS FOR (n:TafsirBook) REQUIRE n.book_id IS UNIQUE;
+CREATE CONSTRAINT tafsir_segment_segment_id_unique IF NOT EXISTS FOR (n:TafsirSegment) REQUIRE n.segment_id IS UNIQUE;
+CREATE CONSTRAINT span_span_id_unique IF NOT EXISTS FOR (n:Span) REQUIRE n.span_id IS UNIQUE;
+CREATE CONSTRAINT hadith_book_collection_unique IF NOT EXISTS FOR (n:HadithBook) REQUIRE n.collection IS UNIQUE;
+CREATE CONSTRAINT hadith_hadith_id_unique IF NOT EXISTS FOR (n:Hadith) REQUIRE n.hadith_id IS UNIQUE;
+CREATE CONSTRAINT grader_name_unique IF NOT EXISTS FOR (n:Grader) REQUIRE n.name IS UNIQUE;
+CREATE CONSTRAINT narrator_narrator_id_unique IF NOT EXISTS FOR (n:Narrator) REQUIRE n.narrator_id IS UNIQUE;
+CREATE INDEX span_type_idx IF NOT EXISTS FOR (n:Span) ON (n.type);
+CREATE INDEX hadith_arabic_number_idx IF NOT EXISTS FOR (n:Hadith) ON (n.arabic_number);
+CREATE INDEX hadith_collection_idx IF NOT EXISTS FOR (n:Hadith) ON (n.collection);
+CREATE FULLTEXT INDEX ayah_text_norm_ft IF NOT EXISTS FOR (n:Ayah) ON EACH [n.text_norm];
+CREATE FULLTEXT INDEX segment_text_norm_ft IF NOT EXISTS FOR (n:TafsirSegment) ON EACH [n.text_norm];
