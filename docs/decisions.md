@@ -3,6 +3,13 @@
 Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
+## 2026-10-31 — Ibn Kathir raw data measured (T1.2)
+- 6,236 files, 0 empty; **1,911 distinct passages**, every one a run of adjacent ayat inside one surah
+  (no text repeats non-adjacently) → Phase 3 builds one `TafsirSegment` per run (range IDs, see below).
+- Real text size: **13,401,179 characters** of distinct text (48.2 M including duplicates). Use 13.4 M for all
+  Phase 4/5 GLM time and cost estimates.
+- Largest passages: 74:11 (20 ayat), 74:38 (19), 17-ayah runs at 44:17, 55:62, 68:17, 70:19.
+
 ## 2026-10-31 — Tanzil raw Quran text verified (T1.1)
 - Source: Tanzil v1.1 via `https://tanzil.net/pub/download/index.php?quranType=<uthmani|simple-clean>&outType=txt-2&agree=true`
 - Formats: `data/raw/tanzil/quran-uthmani.txt` (full diacritics) and `data/raw/tanzil/quran-simple-clean.txt` (clean text).

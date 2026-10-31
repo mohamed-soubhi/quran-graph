@@ -25,7 +25,7 @@ gantt
 
     section Phase 1 · Data acquisition
     T1.1 Downloader + Tanzil        :done, t11, 2026-10-31, 1d
-    T1.2 Ibn Kathir (6236 files)    :active, t12, 2026-10-31, 1d
+    T1.2 Ibn Kathir (6236 files)    :crit, active, t12, 2026-10-31, 1d
     T1.3 Hadith collections         :t13, after t12, 1d
     T1.4 Quranic Corpus (manual)    :crit, t14, after t12, 2d
     G1 Phase 1 gate                 :milestone, g1, after t14, 0d
@@ -70,7 +70,7 @@ gantt
 | Phase | Tickets done | Status | Gate |
 |---|---|---|---|
 | 0 · Setup | 7 / 7 | ✅ done | G0 signed off 2026-10-31 |
-| 1 · Data acquisition | 1 / 4 | 🔵 in progress (T1.2) | — |
+| 1 · Data acquisition | 1 / 4 | 🔴 T1.2 waiting for your test approval | — |
 | 2 · Schema | 0 | ⏳ not started | — |
 | 3 · Load L0 + L1 | 0 | ⏳ | — |
 | 4 · Span annotation | 0 | ⏳ | — |
