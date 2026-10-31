@@ -64,7 +64,7 @@ ticket or decision relies on an outside source. Accessed dates are when the link
 ## Morphology / roots
 | Reference | Used for | Accessed |
 |---|---|---|
-| [Quranic Arabic Corpus — download](https://corpus.quran.com/download/) | Selected; v0.4; GNU licence, verbatim, credit required; email form | 2026-10-29 |
+| [Quranic Arabic Corpus — download](https://corpus.quran.com/download/) | Selected; v0.4 downloaded and verified in T1.4 (SHA-256 `fda26f87…`); GNU licence, verbatim, credit required | 2026-10-31 |
 | [Quranic Arabic Corpus — release notes](https://corpus.quran.com/releasenotes.jsp) | Version history, root/lemma consistency | 2026-10-29 |
 | [QAMAR paper (AbjadNLP 2026)](https://preview.aclanthology.org/credits/2026.abjadnlp-1.38) | Alternative verified morphology resource; to watch | 2026-10-29 |
 | [mustafa0x/quran-morphology](https://github.com/mustafa0x/quran-morphology) | Corpus-derived; no licence; not selected | 2026-10-29 |

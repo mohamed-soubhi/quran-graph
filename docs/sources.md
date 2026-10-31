@@ -12,7 +12,7 @@ Full list of every link consulted: `docs/references.md`.
 | Tafsir | Ibn Kathir (Arabic), via spa5k/tafsir_api, slug `ar-tafsir-ibn-kathir` | https://github.com/spa5k/tafsir_api | JSON per ayah: `{surah, ayah, text}` | Repo MIT; upstream QUL tafsir/22 says "no copyright information"; the work itself is pre-modern (public domain) | surah/ayah | Full | Quran quotes wrapped in `﴿…﴾`. Downloaded in T1.2 via raw.githubusercontent.com pinned to commit `eb82bb6294efe30ad5c135c03b1864afaa70e855` (2026-09-30). Measured stats (T1.2): 6,236 ayat, 48,211,904 total characters (incl. duplicates; **13,401,179 characters of distinct text** — the real tafsir size, Claude review), 0 empty texts, 4,325 texts identical to previous ayah, 1,911 distinct texts, 1,421 grouped passages (runs > 1). Top 5 largest groups: 74:11 (size 20), 74:38 (size 19), 44:17 (size 17), 55:62 (size 17), 68:17 (size 17). |
 | Tafsir (alt / cross-check) | QUL (Tarteel) tafsir 22 | https://qul.tarteel.ai/resources/tafsir/22 | JSON / SQLite | No copyright information | ayah ranges | Full | Original upstream; may give explicit ayah ranges per passage → prefer for grouping. Check in T1.x. |
 | Hadith | fawazahmed0/hadith-api, Arabic editions `ara-<collection>` | https://github.com/fawazahmed0/hadith-api | JSON per collection; `hadithnumber`, `arabicnumber`, `text`, `grades[]` | Unlicense (public domain) | collection + number | Full | Pinned to commit `df57907be35291c91ad6a6691180e22ca9920784` (branch `1`, 2026-06-03). Downloaded in T1.3: `editions.json` + 10 diacritized Arabic editions (36,512 total hadiths, 21,185 with ≥1 grade, 9 distinct graders). `text` = isnad + matn in one string. `grades[]` = list of `{name, grade}` — used as-is. **Missing: Musnad Ahmad** (heavily cited by Ibn Kathir). |
-| Morphology / roots | Quranic Arabic Corpus v0.4 | https://corpus.quran.com/download/ | Plain text, one morpheme per line | GNU licence; verbatim, no changes; credit the source; email needed to download | surah:ayah:word:segment | Buckwalter | For L0 `Word` and `Root`. Manual download (email form). |
+| Morphology / roots | Quranic Arabic Corpus v0.4 | https://corpus.quran.com/download/ | Plain text, one morpheme per line | GNU licence; verbatim, no changes; credit the source; email needed to download | surah:ayah:word:segment | Buckwalter | Downloaded in T1.4 (version 0.4 zip, verbatim in `data/raw/quranic-corpus/quranic-corpus-morphology-0.4.zip`, SHA-256 `fda26f87…`). Measured stats: 128,219 morpheme rows, 77,429 words, 6,236 ayat (identical to Tanzil simple-clean), 1,642 distinct roots. For L0 `Word` and `Root`. |
 | Narrators / isnad | Sanadset 650K (Mendeley, DOI) | https://data.mendeley.com/datasets/5xth87zwb5 | Text/CSV | CC BY 4.0 | to check | to check | 650k records from 926 books; narrator chains extracted. Needed from Phase 5 on, not for Phase 3. |
 
 ## Candidates not selected (yet)
@@ -50,6 +50,49 @@ Stored in `data/raw/hadith/fawazahmed0/` with per-file SHA-256 in `MANIFEST.txt`
 | qudsi | `ara-qudsi` | 40 | 0 | — | — |
 | tirmidhi | `ara-tirmidhi` | 3,998 | 3,954 | Ahmad Muhammad Shakir, Al-Albani, Bashar Awad Maarouf, Zubair Ali Zai | Sahih (5,661), Daif (2,162), Hasan Sahih (2,016), Hasan (1,289), Sahih - Agreed Upon (679) |
 | **Total** | **10 collections** | **36,512** | **21,185** | **9 distinct graders** | — |
+
+## Quranic Corpus morphology measured (T1.4)
+Archive `data/raw/quranic-corpus/quranic-corpus-morphology-0.4.zip` (SHA-256 `fda26f87cc58b42fc992a3ad666a562805b636f34bcecb46326d048337ca7999`, 1,028,754 bytes).
+Contains exactly one member `quranic-corpus-morphology-0.4.txt` (6,309,503 bytes uncompressed). Read in-place via Python `zipfile` (Hard Rule 5).
+
+| Metric | Value |
+|---|---|
+| Archive members | 1 (`quranic-corpus-morphology-0.4.txt`) |
+| Uncompressed text size | 6,309,503 bytes |
+| License/comment lines | 54 (`#`) |
+| Header line | 1 (`LOCATION\tFORM\tTAG\tFEATURES`) |
+| Morpheme rows | 128,219 |
+| Distinct words `(surah, ayah, word)` | 77,429 |
+| Distinct ayat `(surah, ayah)` | 6,236 (100% 1:1 match with Tanzil 6,236 ayat) |
+| Distinct roots (`ROOT:...`) | 1,642 |
+
+### Top 10 Most Frequent Roots (Buckwalter)
+| Root | Occurrences |
+|---|---|
+| `Alh` | 2,851 |
+| `qwl` | 1,722 |
+| `kwn` | 1,390 |
+| `rbb` | 980 |
+| `Amn` | 879 |
+| `Elm` | 854 |
+| `qwm` | 660 |
+| `Aty` | 549 |
+| `kfr` | 525 |
+| `byn` | 523 |
+
+### Top 10 Morpheme Tags
+| Tag | Description / Count |
+|---|---|
+| `N` | Noun (25,136) |
+| `PRON` | Personal pronoun (24,685) |
+| `V` | Verb (19,356) |
+| `P` | Preposition (13,006) |
+| `CONJ` | Conjunction (9,450) |
+| `DET` | Determiner (8,377) |
+| `PN` | Proper noun (3,911) |
+| `REL` | Relative pronoun (3,575) |
+| `REM` | Resumption particle (2,925) |
+| `NEG` | Negative particle (2,688) |
 
 ## Risks / decisions for Phase 2
 1. **Grouped tafsir passages** → one `TafsirSegment` links to an ayah *range*. **Decided 2026-10-29** (see `docs/decisions.md`): segment_id = `ibn-kathir:<surah>:<first_ayah>-<last_ayah>:<n>`, with `(:TafsirSegment)-[:COVERS]->(:Ayah)` for every ayah in the range. Phase 3 gate "no ayah without tafsir" is checked via COVERS.

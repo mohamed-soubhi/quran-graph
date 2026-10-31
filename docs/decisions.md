@@ -3,6 +3,13 @@
 Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
+## 2026-10-31 — Quranic Corpus morphology verified (T1.4)
+- Source: Quranic Arabic Corpus v0.4 via `https://corpus.quran.com/download/` (GNU GPL; verbatim copies only, credit + link to corpus.quran.com).
+- File: `data/raw/quranic-corpus/quranic-corpus-morphology-0.4.zip` (1,028,754 bytes, SHA-256 `fda26f87cc58b42fc992a3ad666a562805b636f34bcecb46326d048337ca7999`).
+- Verification: Archive contains exactly one file `quranic-corpus-morphology-0.4.txt` (6,309,503 bytes, UTF-8, 54 comment lines).
+- Measured counts: **128,219** morpheme rows, **77,429** distinct words `(surah, ayah, word)`, **6,236** distinct ayat `(surah, ayah)` (identical 1:1 match with Tanzil 6,236 ayat), and **1,642** distinct `ROOT:` values.
+- Zip file is read directly in-place via Python `zipfile` without unzipping into `data/raw/` (Hard Rule 5). Checksum recorded in `data/raw/CHECKSUMS.txt`.
+
 ## 2026-10-31 — Hadith raw data measured (T1.3)
 - Source: `fawazahmed0/hadith-api` on branch `1`, pinned commit `df57907be35291c91ad6a6691180e22ca9920784` (2026-06-03).
 - Files: `editions.json` + 10 diacritized Arabic editions (`ara-<collection>.json`) in `data/raw/hadith/fawazahmed0/`.
