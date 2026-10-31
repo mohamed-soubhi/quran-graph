@@ -3,6 +3,14 @@
 Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
+## 2026-10-31 — Hadith raw data measured (T1.3)
+- Source: `fawazahmed0/hadith-api` on branch `1`, pinned commit `df57907be35291c91ad6a6691180e22ca9920784` (2026-06-03).
+- Files: `editions.json` + 10 diacritized Arabic editions (`ara-<collection>.json`) in `data/raw/hadith/fawazahmed0/`.
+- Total hadiths: **36,512**; **21,185** have ≥ 1 grade (58.0%); **9 distinct graders** named.
+- Grade distribution: Sahihayn (Bukhari, Muslim) along with Dehlawi, Nawawi, Qudsi have empty `grades: []`. Abu Dawud, Ibn Majah, Malik, Nasai, Tirmidhi have named graders. Hard Rule 2 applies: grades are stored and used as-is.
+- Upstream artifacts: 408 hadiths contain `text: ""` (mostly Book 0 / Introduction structural placeholders, e.g. 203 in Muslim, 86 in Nasai, 74 in Tirmidhi); preserved verbatim byte-for-byte (Hard Rule 5). Diacritics verified on Bukhari #1 (249 marks).
+- Integrity: Per-file SHA-256 recorded in `data/raw/hadith/fawazahmed0/MANIFEST.txt` and manifest SHA-256 (`941f350e3abefc58ebd4c8981df876f8143a65c862882fcb911d3b2fa9640e38`) recorded in `data/raw/CHECKSUMS.txt`.
+
 ## 2026-10-31 — Ibn Kathir raw data measured (T1.2)
 - 6,236 files, 0 empty; **1,911 distinct passages**, every one a run of adjacent ayat inside one surah
   (no text repeats non-adjacently) → Phase 3 builds one `TafsirSegment` per run (range IDs, see below).

@@ -1,3 +1,4 @@
 bf4f57b968d03f4131c070b1e285da9be0e0a108a21c910e872801ca273312c8  data/raw/tanzil/quran-uthmani.txt  https://tanzil.net/pub/download/index.php?quranType=uthmani&outType=txt-2&agree=true  2026-10-31
 228df2a717671aeb9d2ff573002bd28d6b3f973f4bc7153554e3a81663d67610  data/raw/tanzil/quran-simple-clean.txt  https://tanzil.net/pub/download/index.php?quranType=simple-clean&outType=txt-2&agree=true  2026-10-31
 dde3583e095487f69d7d7e5e41170e378a6c792c330421cae9a8a16928a13874  data/raw/tafsir/ibn-kathir/MANIFEST.txt  https://github.com/spa5k/tafsir_api/tree/eb82bb6294efe30ad5c135c03b1864afaa70e855  2026-10-31
+941f350e3abefc58ebd4c8981df876f8143a65c862882fcb911d3b2fa9640e38  data/raw/hadith/fawazahmed0/MANIFEST.txt  https://github.com/fawazahmed0/hadith-api/tree/df57907be35291c91ad6a6691180e22ca9920784  2026-10-31
