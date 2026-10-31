@@ -21,6 +21,7 @@ ticket or decision relies on an outside source. Accessed dates are when the link
 | [spa5k editions.json](https://github.com/spa5k/tafsir_api/blob/main/tafsir/editions.json) | Edition list; Arabic Ibn Kathir upstream = QUL tafsir 22 | 2026-10-29 |
 | [Sample: Ibn Kathir 1:2](https://cdn.jsdelivr.net/gh/spa5k/tafsir_api@main/tafsir/ar-tafsir-ibn-kathir/1/2.json) | Confirmed format `{surah, ayah, text}`, full diacritics, `﴿…﴾` quote markers | 2026-10-29 |
 | [spa5k/tafsir_api @ eb82bb6 (pinned)](https://github.com/spa5k/tafsir_api/tree/eb82bb6294efe30ad5c135c03b1864afaa70e855) | T1.2 pinned source version (2026-09-30); raw URLs verified 200 | 2026-10-31 |
+| [spa5k raw endpoint template](https://raw.githubusercontent.com/spa5k/tafsir_api/eb82bb6294efe30ad5c135c03b1864afaa70e855/tafsir/ar-tafsir-ibn-kathir/) | T1.2 raw JSON download for all 6236 per-ayah tafsir files | 2026-10-31 |
 | [Sample: Ibn Kathir 2:255](https://raw.githubusercontent.com/spa5k/tafsir_api/main/tafsir/ar-tafsir-ibn-kathir/2/255.json) | T0.5 fixture (paragraph 0); found `[[…]]` editor footnotes (93) and shadda/vowel order issue | 2026-10-29 |
 | [Unicode NFC normalization (UAX #15)](https://unicode.org/reports/tr15/) | Canonical reordering of Arabic marks (shadda vs fatha) before matching | 2026-10-29 |
 | [Sample: Ibn Kathir 73:2](https://raw.githubusercontent.com/spa5k/tafsir_api/main/tafsir/ar-tafsir-ibn-kathir/73/2.json) | Found grouped-ayah duplication (73:2 = 73:3) → segment range decision | 2026-10-29 |

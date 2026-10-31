@@ -100,3 +100,49 @@ def test_fetch_downloads_and_records(temp_scratch):
     assert len(entries) == 1
     assert entries[0]["sha256"] == expected_sha
     assert entries[0]["url"] == "https://example.com/file.txt"
+
+
+def test_fetch_retry_success(temp_scratch):
+    dest = temp_scratch / "retry_success.txt"
+    checksums_file = temp_scratch / "chk_retry.txt"
+    content = b"content after retry"
+
+    mock_resp = MagicMock()
+    mock_resp.iter_content.return_value = [content]
+    mock_resp.raise_for_status.return_value = None
+    mock_resp.__enter__.return_value = mock_resp
+    mock_resp.__exit__.return_value = None
+
+    # Fail on first call, succeed on second
+    with patch("requests.get", side_effect=[IOError("Network blip"), mock_resp]) as mock_get:
+        res = fetch(
+            "https://example.com/retry.txt",
+            dest,
+            checksums_path=checksums_file,
+            retries=2,
+            backoff_factor=0.01,
+        )
+        assert res == dest
+        assert mock_get.call_count == 2
+
+    assert dest.exists()
+    assert dest.read_bytes() == content
+
+
+def test_fetch_retry_exhausted(temp_scratch):
+    dest = temp_scratch / "retry_fail.txt"
+    checksums_file = temp_scratch / "chk_fail.txt"
+
+    with patch("requests.get", side_effect=IOError("Permanent failure")) as mock_get:
+        with pytest.raises(IOError, match="Permanent failure"):
+            fetch(
+                "https://example.com/fail.txt",
+                dest,
+                checksums_path=checksums_file,
+                retries=2,
+                backoff_factor=0.01,
+            )
+        assert mock_get.call_count == 3
+
+    assert not dest.exists()
+    assert not checksums_file.exists()

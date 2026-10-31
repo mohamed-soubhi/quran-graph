@@ -5,9 +5,12 @@ __pycache__/
 .env
 logs/*
 !logs/.gitkeep
-data/raw/*
+data/raw/**
+!data/raw/
+!data/raw/**/
 !data/raw/.gitkeep
 !data/raw/CHECKSUMS.txt
+!data/raw/**/MANIFEST.txt
 
 .scratch/
 .sandbox/

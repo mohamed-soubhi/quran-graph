@@ -1,7 +1,10 @@
 """Reusable downloader and checksum recorder for raw data sources (T1.1)."""
 
 import hashlib
+import os
 import sys
+import threading
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -13,6 +16,8 @@ from src.log import get_logger
 ROOT = Path(__file__).resolve().parent.parent.parent
 RAW_DIR = ROOT / "data" / "raw"
 CHECKSUMS_FILE = RAW_DIR / "CHECKSUMS.txt"
+
+_checksum_lock = threading.Lock()
 
 TANZIL_URLS = {
     "uthmani": "https://tanzil.net/pub/download/index.php?quranType=uthmani&outType=txt-2&agree=true",
@@ -39,7 +44,7 @@ def append_checksum(
     date_str: str | None = None,
     checksums_path: Path | str = CHECKSUMS_FILE,
 ) -> None:
-    """Append a checksum record to CHECKSUMS.txt."""
+    """Append a checksum record to CHECKSUMS.txt (or custom manifest)."""
     if date_str is None:
         date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
@@ -47,8 +52,9 @@ def append_checksum(
     target_path.parent.mkdir(parents=True, exist_ok=True)
 
     entry = f"{sha256_hex}  {rel_path}  {url}  {date_str}\n"
-    with open(target_path, "a", encoding="utf-8") as f:
-        f.write(entry)
+    with _checksum_lock:
+        with open(target_path, "a", encoding="utf-8") as f:
+            f.write(entry)
 
 
 def read_checksums(checksums_path: Path | str = CHECKSUMS_FILE) -> list[dict[str, str]]:
@@ -82,12 +88,16 @@ def fetch(
     timeout: float = 60.0,
     chunk_size: int = 65536,
     checksums_path: Path | str = CHECKSUMS_FILE,
+    retries: int = 0,
+    backoff_factor: float = 0.5,
+    session: requests.Session | None = None,
 ) -> Path:
     """Download a file from url to dest_path if not already present.
 
     - If dest_path exists, skips download (data/raw is read-only once written).
     - Streams download in binary mode without alteration.
-    - Appends sha256, relative_path, url, and date to CHECKSUMS.txt.
+    - Retries up to retries times with exponential backoff on failure.
+    - Appends sha256, relative_path, url, and date to CHECKSUMS.txt or manifest.
     """
     dest = Path(dest_path)
     if not dest.is_absolute():
@@ -98,24 +108,42 @@ def fetch(
         return dest
 
     dest.parent.mkdir(parents=True, exist_ok=True)
-    temp_file = dest.with_suffix(dest.suffix + ".tmp")
+    temp_file = dest.with_suffix(dest.suffix + f".tmp.{os.getpid()}.{threading.get_ident()}")
     hasher = hashlib.sha256()
 
+    getter = session.get if session is not None else requests.get
+
     logger.info("Fetching %s -> %s", url, dest)
-    try:
-        with requests.get(url, stream=True, timeout=timeout) as response:
-            response.raise_for_status()
-            with open(temp_file, "wb") as f:
-                for chunk in response.iter_content(chunk_size=chunk_size):
-                    if chunk:
-                        hasher.update(chunk)
-                        f.write(chunk)
-        temp_file.replace(dest)
-    except Exception as exc:
-        if temp_file.exists():
-            temp_file.unlink(missing_ok=True)
-        logger.error("Download failed from %s: %s", url, exc)
-        raise
+    last_exc = None
+    for attempt in range(retries + 1):
+        try:
+            with getter(url, stream=True, timeout=timeout) as response:
+                response.raise_for_status()
+                with open(temp_file, "wb") as f:
+                    for chunk in response.iter_content(chunk_size=chunk_size):
+                        if chunk:
+                            hasher.update(chunk)
+                            f.write(chunk)
+            temp_file.replace(dest)
+            break
+        except Exception as exc:
+            last_exc = exc
+            if temp_file.exists():
+                temp_file.unlink(missing_ok=True)
+            hasher = hashlib.sha256()
+            if attempt < retries:
+                sleep_s = backoff_factor * (2 ** attempt)
+                logger.warning(
+                    "Attempt %d failed for %s (%s). Retrying in %.1fs...",
+                    attempt + 1,
+                    url,
+                    exc,
+                    sleep_s,
+                )
+                time.sleep(sleep_s)
+            else:
+                logger.error("Download failed from %s after %d retries: %s", url, retries, exc)
+                raise last_exc
 
     sha256_hex = hasher.hexdigest()
     try:
