@@ -80,7 +80,7 @@ gantt
 | 1 · Data acquisition | 4 / 4 | ✅ G1 signed off 2026-10-31 | — |
 | 2 · Schema | 3 / 3 | ✅ G2 signed off 2026-11-03; schema v1.1 (C1–C4) approved | — |
 | 3 · Load L0 + L1 | 5 / 5 | ✅ G3 signed off 2026-11-03 | — |
-| 4 · Span annotation | 5 / 7 | 🔵 T4.5 hadith spans: agy working | whole-book hadith run after T4.5 |
+| 4 · Span annotation | 5 / 7 | 🟡 T4.5 waiting for your test | whole-book hadith run after T4.5 |
 | 5 · Hadith linking | 0 | ⏳ | — |
 | 6 · Semantics | 0 | ⏳ | — |
 | 7 · GraphRAG | 0 | ⏳ | — |
