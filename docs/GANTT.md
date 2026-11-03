@@ -41,8 +41,8 @@ gantt
     T3.2 Quran → JSONL              :done, t32, 2026-11-03, 1d
     T3.3 Corpus → JSONL (Arabic)    :done, t33, 2026-11-03, 1d
     T3.4 Tafsir segments → JSONL    :done, t34, 2026-11-03, 1d
-    T3.5 Neo4j writers (MERGE)      :crit, active, p3b, 2026-11-03, 1d
-    G3 Phase 3 gate                 :milestone, g3, after p3b, 0d
+    T3.5 Neo4j writers (MERGE)      :done, p3b, 2026-11-03, 1d
+    G3 Phase 3 gate                 :crit, milestone, g3, 2026-11-03, 0d
 
     section Phase 4 · Span annotation (est.)
     Gold set (~50 segments)         :crit, p4g, after g3, 4d
@@ -76,7 +76,7 @@ gantt
 | 0 · Setup | 7 / 7 | ✅ done | G0 signed off 2026-10-31 |
 | 1 · Data acquisition | 4 / 4 | ✅ G1 signed off 2026-10-31 | — |
 | 2 · Schema | 3 / 3 | ✅ G2 signed off 2026-11-03; schema v1.1 (C1–C4) approved | — |
-| 3 · Load L0 + L1 | 4 / 5 | 🔴 T3.5 waiting for your test approval | G3 next |
+| 3 · Load L0 + L1 | 5 / 5 | 🔴 G3 gate waiting for your sign-off | Phase 4 next |
 | 4 · Span annotation | 0 | ⏳ | — |
 | 5 · Hadith linking | 0 | ⏳ | — |
 | 6 · Semantics | 0 | ⏳ | — |
