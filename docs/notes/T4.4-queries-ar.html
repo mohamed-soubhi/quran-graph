@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>شرح استعلامات T4.4</title>
+<style>
+  :root {
+    --bg: #fbfaf7; --fg: #1f2328; --muted: #5f6670; --card: #ffffff; --line: #e4e1da;
+    --code-bg: #f3f1ec; --accent: #0f6e5c; --quran: #8a5a00; --quran-bg: #fff6e0;
+    --kw: #8250df; --lbl: #0a5fbf; --str: #a3401c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #15171a; --fg: #e6e6e6; --muted: #a0a6ad; --card: #1d2024; --line: #30343a;
+      --code-bg: #24282d; --accent: #4fc3a8; --quran: #f2c26b; --quran-bg: #2b2516;
+      --kw: #c39bff; --lbl: #7ab8ff; --str: #ff9d7a; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+    font-family: "Segoe UI", Tahoma, "Noto Naskh Arabic", sans-serif; line-height: 1.9; font-size: 17px; }
+  main { max-width: 860px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 1.6rem; margin: 0 0 4px; }
+  h2 { font-size: 1.25rem; margin: 40px 0 8px; color: var(--accent); }
+  h3 { font-size: 1.02rem; margin: 20px 0 6px; }
+  p.lead { color: var(--muted); margin-top: 0; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin: 14px 0; }
+  pre { direction: ltr; text-align: left; background: var(--code-bg); border-radius: 8px; padding: 12px 14px;
+    overflow-x: auto; font-family: Consolas, "Cascadia Code", monospace; font-size: 14px; line-height: 1.6; margin: 10px 0; }
+  code { font-family: Consolas, "Cascadia Code", monospace; font-size: .9em; direction: ltr; unicode-bidi: isolate;
+    background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+  pre code { background: none; padding: 0; }
+  .kw { color: var(--kw); font-weight: 600; } .lbl { color: var(--lbl); } .str { color: var(--str); }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: .95rem; }
+  th, td { border-bottom: 1px solid var(--line); padding: 7px 8px; text-align: right; vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  td:first-child { white-space: nowrap; }
+  .ayah { font-family: "Amiri", "Traditional Arabic", "Noto Naskh Arabic", serif; font-size: 1.2rem;
+    background: var(--quran-bg); color: var(--fg); border-right: 3px solid var(--quran); padding: 8px 12px; border-radius: 6px; margin: 6px 0; }
+  .ayah b { color: var(--quran); }
+  .expect { border-right: 3px solid var(--accent); padding: 6px 12px; margin: 10px 0; }
+  .muted { color: var(--muted); }
+  .glossary td:first-child { font-family: Consolas, monospace; direction: ltr; text-align: left; }
+</style>
+</head>
+<body>
+<main>
+<h1>شرح استعلامات اختبار T4.4</h1>
+<p class="lead">تُكتب في Neo4j Browser (<code>http://localhost:7474</code>). اللغة اسمها Cypher: نرسم «نمطًا» من العُقد والعلاقات، وقاعدة البيانات تبحث عن كل ما يطابقه.</p>
+
+<div class="card">
+<h3>المفردات قبل البدء</h3>
+<table class="glossary">
+<tr><th>في الاستعلام</th><th>المعنى</th></tr>
+<tr><td>(g:TafsirSegment)</td><td>مقطع تفسير: نص ابن كثير لآية أو مجموعة آيات. <code>g</code> اسم مؤقت نسميه به.</td></tr>
+<tr><td>(s:Span)</td><td>«قطعة» محددة داخل نص المقطع ببدايتها ونهايتها: اقتباس قرآني، حديث، حاشية…</td></tr>
+<tr><td>(a:Ayah)</td><td>آية من المصحف، رقمها مثل <code>2:255</code>.</td></tr>
+<tr><td>-[:HAS_SPAN]-&gt;</td><td>المقطع «يحتوي» هذه القطعة.</td></tr>
+<tr><td>-[:COVERS]-&gt;</td><td>المقطع «يفسّر» هذه الآية (هي من آياته).</td></tr>
+<tr><td>-[:EXPLAINS]-&gt;</td><td>اقتباس قرآني لآية <b>يفسرها المقطع نفسه</b>.</td></tr>
+<tr><td>-[:CITES]-&gt;</td><td>اقتباس قرآني لآية <b>أخرى</b> يستشهد بها ابن كثير (تفسير القرآن بالقرآن).</td></tr>
+<tr><td>MATCH … RETURN</td><td>«ابحث عن هذا النمط … وأعِد هذه الأعمدة».</td></tr>
+</table>
+</div>
+
+<!-- ============ Query 3 ============ -->
+<h2>الاستعلام ٣ — أكثر الآيات اقتباسًا في تفسير آية الكرسي</h2>
+<pre><code><span class="kw">MATCH</span> (g:<span class="lbl">TafsirSegment</span> {segment_id:<span class="str">'ibn-kathir:2:255-255:1'</span>})
+      -[:<span class="lbl">HAS_SPAN</span>]-&gt;(s:<span class="lbl">Span</span> {type:<span class="str">'QURAN'</span>})
+      -[r:<span class="lbl">EXPLAINS</span>]-&gt;(a:<span class="lbl">Ayah</span>)
+<span class="kw">RETURN</span> a.ayah_id, count(*) <span class="kw">ORDER BY</span> count(*) <span class="kw">DESC LIMIT</span> 5</code></pre>
+
+<h3>قراءته جزءًا جزءًا</h3>
+<table>
+<tr><th>الجزء</th><th>المعنى</th></tr>
+<tr><td><code>(g:TafsirSegment {segment_id:'ibn-kathir:2:255-255:1'})</code></td><td>خذ مقطع تفسير ابن كثير لآية الكرسي (البقرة ٢٥٥) وحده.</td></tr>
+<tr><td><code>-[:HAS_SPAN]-&gt;(s:Span {type:'QURAN'})</code></td><td>ثم كل قطعة فيه من نوع «اقتباس قرآني» — أي كل نص بين ﴿ ﴾.</td></tr>
+<tr><td><code>-[r:EXPLAINS]-&gt;(a:Ayah)</code></td><td>ثم الآية التي يشير إليها كل اقتباس، بشرط أن تكون من الآيات التي يفسرها المقطع.</td></tr>
+<tr><td><code>RETURN a.ayah_id, count(*)</code></td><td>أعِد رقم الآية وعدد مرات اقتباسها.</td></tr>
+<tr><td><code>ORDER BY count(*) DESC LIMIT 5</code></td><td>رتّب من الأكثر إلى الأقل، واعرض أول ٥ فقط.</td></tr>
+</table>
+
+<div class="expect"><b>النتيجة المتوقعة:</b> صف واحد: <code>2:255</code> وعددها <b>25</b>.</div>
+<p><b>لماذا صف واحد؟</b> هذا المقطع يفسر آية واحدة فقط، و<code>EXPLAINS</code> لا تُستعمل إلا لآيات المقطع نفسه. فكل ما يظهر هنا هو آية الكرسي، اقتبس ابن كثير أجزاءً منها ٢٥ مرة وهو يشرحها جملةً جملة:</p>
+<div class="ayah">ٱللَّهُ لَآ إِلَٰهَ إِلَّا هُوَ ٱلْحَىُّ ٱلْقَيُّومُ لَا تَأْخُذُهُۥ سِنَةٌ وَلَا نَوْمٌ … وَهُوَ ٱلْعَلِىُّ ٱلْعَظِيمُ</div>
+<p class="muted">ما يثبته: الاقتباسات تُربط بالآية الصحيحة، ونوع العلاقة (يفسِّر/يستشهد) صحيح.</p>
+
+<!-- ============ Query 4 ============ -->
+<h2>الاستعلام ٤ — تصحيح خطأ مطبعي في الإحالة</h2>
+<pre><code><span class="kw">MATCH</span> (s:<span class="lbl">Span</span> {span_id:<span class="str">'ibn-kathir:2:49-50:1#4135-4182'</span>})
+      -[r:<span class="lbl">CITES</span>]-&gt;(a:<span class="lbl">Ayah</span>)
+<span class="kw">RETURN</span> a.ayah_id, r.ref_text, r.method, r.confidence</code></pre>
+
+<h3>قراءته جزءًا جزءًا</h3>
+<table>
+<tr><th>الجزء</th><th>المعنى</th></tr>
+<tr><td><code>span_id:'ibn-kathir:2:49-50:1#4135-4182'</code></td><td>قطعة واحدة بعينها: في تفسير البقرة ٤٩–٥٠، من الحرف ٤١٣٥ إلى ٤١٨٢.</td></tr>
+<tr><td><code>-[r:CITES]-&gt;(a:Ayah)</code></td><td>الآية «الأخرى» التي يستشهد بها هذا الاقتباس.</td></tr>
+<tr><td><code>a.ayah_id</code></td><td>رقم الآية التي رُبط بها.</td></tr>
+<tr><td><code>r.ref_text</code></td><td>الإحالة كما كُتبت في الطبعة بعد الاقتباس.</td></tr>
+<tr><td><code>r.method</code></td><td>طريقة الربط: <code>regex</code> = من الإحالة المكتوبة، <code>ngram</code> = بمطابقة الكلمات مع نص المصحف.</td></tr>
+<tr><td><code>r.confidence</code></td><td>درجة الثقة من ٠ إلى ١.</td></tr>
+</table>
+
+<h3>النص في الطبعة</h3>
+<div class="ayah">وَأَصْلُ الْبَلَاءِ: الِاخْتِبَارُ، وَقَدْ يَكُونُ بِالْخَيْرِ وَالشَّرِّ، كَمَا قَالَ تَعَالَى: <b>﴿وَنَبْلُوكُمْ بِالشَّرِّ وَالْخَيْرِ فِتْنَةً﴾</b> [الْأَنْبِيَاءِ: ٢٥]</div>
+<p>الإحالة تقول <b>الأنبياء ٢٥</b>، لكن الآية ٢٥ ليس فيها هذه الكلمات:</p>
+<div class="ayah">٢١:٢٥ — وَمَآ أَرْسَلْنَا مِن قَبْلِكَ مِن رَّسُولٍ إِلَّا نُوحِىٓ إِلَيْهِ أَنَّهُۥ لَآ إِلَٰهَ إِلَّآ أَنَا۠ فَٱعْبُدُونِ</div>
+<p>والكلمات موجودة فعلًا في <b>الأنبياء ٣٥</b> — خطأ مطبعي (٢٥ بدل ٣٥):</p>
+<div class="ayah">٢١:٣٥ — كُلُّ نَفْسٍ ذَآئِقَةُ ٱلْمَوْتِ <b>وَنَبْلُوكُم بِٱلشَّرِّ وَٱلْخَيْرِ فِتْنَةً</b> وَإِلَيْنَا تُرْجَعُونَ</div>
+
+<div class="expect"><b>النتيجة المتوقعة:</b> <code>21:35</code> ، <code>[الْأَنْبِيَاءِ: ٢٥]</code> ، <code>ngram</code> ، <code>0.9</code></div>
+<p class="muted">ما يثبته: البرنامج لا يثق في الإحالة المكتوبة ثقة عمياء. إذا لم توجد الكلمات في الآية المُحال إليها، يربط بالآية التي فيها الكلمات فعلًا (الطريقة <code>ngram</code>)، ويحتفظ بنص الإحالة الأصلي كما هو للأمانة، ويخفض الثقة إلى ٠٫٩ لأنه خالف الإحالة. وُجد ٤٠ حالة من هذا النوع في الكتاب كله.</p>
+
+<!-- ============ Query 5 ============ -->
+<h2>الاستعلام ٥ — الآيات التي يستشهد بها ابن كثير في تفسير آية الكرسي</h2>
+<pre><code><span class="kw">MATCH</span> (g:<span class="lbl">TafsirSegment</span>)-[:<span class="lbl">COVERS</span>]-&gt;(:<span class="lbl">Ayah</span> {ayah_id:<span class="str">'2:255'</span>})
+<span class="kw">MATCH</span> (g)-[:<span class="lbl">HAS_SPAN</span>]-&gt;(:<span class="lbl">Span</span>)-[:<span class="lbl">CITES</span>]-&gt;(a:<span class="lbl">Ayah</span>)
+<span class="kw">RETURN</span> a.ayah_id, count(*) <span class="kw">AS</span> n <span class="kw">ORDER BY</span> n <span class="kw">DESC LIMIT</span> 10</code></pre>
+
+<h3>قراءته جزءًا جزءًا</h3>
+<table>
+<tr><th>الجزء</th><th>المعنى</th></tr>
+<tr><td><code>MATCH (g)-[:COVERS]-&gt;(:Ayah {ayah_id:'2:255'})</code></td><td>أولًا: كل مقطع تفسير يغطي آية الكرسي. هنا نبدأ من <b>الآية</b> لا من رقم المقطع، فيعمل حتى لو تغيّر تقسيم المقاطع.</td></tr>
+<tr><td><code>MATCH (g)-[:HAS_SPAN]-&gt;(:Span)-[:CITES]-&gt;(a:Ayah)</code></td><td>ثانيًا: في هذه المقاطع، كل اقتباس يستشهد بآية <b>أخرى</b> من القرآن.</td></tr>
+<tr><td><code>count(*) AS n … LIMIT 10</code></td><td>عدّ الاستشهادات لكل آية، ورتّبها، واعرض أعلى ١٠.</td></tr>
+</table>
+
+<div class="expect"><b>النتيجة المتوقعة:</b> ٣:١ و٣:٢ أولًا (مرتين لكل منهما)، ثم ٣٠:٢٥، ٢١:٢٨، ٣٤:٢٣ وغيرها (مرة لكل منها).</div>
+
+<h3>اقرأ بعضها واحكم: هل تناسب؟ (السبب منقول من نص ابن كثير نفسه)</h3>
+<table>
+<tr><th>الآية</th><th>النص</th><th>علاقتها بآية الكرسي</th></tr>
+<tr><td>٣:٢</td><td class="ayah">ٱللَّهُ لَآ إِلَٰهَ إِلَّا هُوَ ٱلْحَىُّ ٱلْقَيُّومُ</td><td>نفس مطلع آية الكرسي. يذكرها ابن كثير في حديث اسم الله الأعظم: «سمعت رسول الله ﷺ يقول في هاتين الآيتين…»، وفي قول هشام بن عمار: «أما البقرة فـ﴿الله لا إله إلا هو الحي القيوم﴾ وفي آل عمران ﴿الم * الله لا إله إلا هو الحي القيوم﴾».</td></tr>
+<tr><td>٣:١</td><td class="ayah">الٓمٓ</td><td>تأتي مع ٣:٢ لأن الاقتباس ﴿الم * اللَّهُ لَا إِلَهَ إِلا هُوَ…﴾ يشمل الآيتين، فيُربط بكل آية على حدة.</td></tr>
+<tr><td>٢١:٢٨</td><td class="ayah">يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ وَلَا يَشْفَعُونَ إِلَّا لِمَنِ ٱرْتَضَىٰ …</td><td>عند ﴿مَن ذَا ٱلَّذِى يَشْفَعُ عِندَهُۥٓ إِلَّا بِإِذْنِهِۦ﴾ يستشهد بآية النجم ٢٦ ثم «وَكَقَوْلِهِ: ﴿وَلا يَشْفَعُونَ إِلا لِمَنِ ارْتَضَى﴾» — الشفاعة لا تكون إلا بإذنه ورضاه.</td></tr>
+<tr><td>٣٤:٢٣</td><td class="ayah">وَلَا تَنفَعُ ٱلشَّفَٰعَةُ عِندَهُۥٓ إِلَّا لِمَنْ أَذِنَ لَهُۥ …</td><td>عند خاتمة آية الكرسي: «فَقَوْلُهُ: ﴿وَهُوَ الْعَلِيُّ الْعَظِيمُ﴾ كَقَوْلِهِ: ﴿وَهُوَ الْعَلِيُّ الْكَبِيرُ﴾». الاقتباس جزء قصير، لكنه لا يوجد بهذا اللفظ (بالواو) إلا في ٣٤:٢٣، فالربط مؤكد.</td></tr>
+<tr><td>٣٠:٢٥</td><td class="ayah">وَمِنْ ءَايَٰتِهِۦٓ أَن تَقُومَ ٱلسَّمَآءُ وَٱلْأَرْضُ بِأَمْرِهِۦ …</td><td>عند ﴿ٱلْقَيُّومُ﴾: «فجميع الموجودات مفتقرة إليه… ولا قوام لها بدون أمره، كقوله: ﴿وَمِنْ آيَاتِهِ أَنْ تَقُومَ السَّمَاءُ وَالأرْضُ بِأَمْرِهِ﴾».</td></tr>
+</table>
+<p class="muted">ما يثبته: الرسم البياني يجيب الآن عن سؤال حقيقي في «تفسير القرآن بالقرآن»، وهذا أول استعلام من نوعه في المشروع. إذا وجدتم آية في القائمة لا علاقة لها، أخبرونا برقمها لنفحص الاقتباس.</p>
+</main>
+</body>
+</html>
