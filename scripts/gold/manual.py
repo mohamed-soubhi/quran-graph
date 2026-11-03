@@ -62,7 +62,7 @@ M = {
     "W41": [],
     "W42": [],
     "W43": [],
-    "W44": [dict(type="HADITH", kind="athar", s="وروي الحافظ ابن عساكر", e="ثم انتبهت", cue="وروى الحافظ ابن عساكر", hint="ibn-asakir", note="REVIEW: a dream report, not a narration from the Prophet or a Companion; HADITH or COMMENTARY?")],
+    "W44": [],  # dream report via Ibn Asakir: plain COMMENTARY (Aya & Mohamed, 2026-11-03)
     "W45": [],
     "W46": [],
     "W47": [],

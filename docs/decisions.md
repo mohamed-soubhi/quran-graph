@@ -3,6 +3,12 @@
 Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
+## 2026-11-03 — Phase 4 hadith annotation rules (approved by Aya & Mohamed)
+- Athar (narrations stopping at a Companion or Successor) are HADITH spans with `kind: athar` and count toward the
+  4b targets (precision, recall, IoU) together with `marfu`.
+- A dream or story report is COMMENTARY even when it carries an isnad (gold window W44, Ibn Asakir).
+- Full rules: `docs/notes/phase4-annotation-rules.md`.
+
 ## 2026-11-03 — Normalizer v2: tatweel, hamza, and small waw/yeh skipped (T4.1)
 - `src/extract/normalize.py`: `normalize_with_map` skips tatweel `ـ` (U+0640), hamza `ء` (U+0621), small waw `ۥ` (U+06E5), and small yeh `ۦ` (U+06E6).
 - Preserves 1-to-1 offset mapping (`len(norm) == len(index)`, strictly increasing index pointing to non-skipped characters).
