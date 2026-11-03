@@ -15,3 +15,7 @@ data/raw/**
 .scratch/
 .sandbox/
 .vscode/
+
+# Parsed JSONL is rebuilt from data/raw by `tasks.py parse` (deterministic); not committed.
+data/interim/**
+!data/interim/.gitkeep
