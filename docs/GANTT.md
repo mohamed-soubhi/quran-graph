@@ -50,8 +50,9 @@ gantt
     T4.3 Gold set (your review)     :done, t43, 2026-11-03, 4d
     T4.4 4a Quran spans             :done, t44, 2026-11-03, 3d
     T4.4b Reference clitic fix      :done, t44b, 2026-11-03, 1d
-    T4.5 4b Hadith spans (GLM)      :t45, after t44, 6d
-    T4.6 4c Nesting + coverage      :p4c, after t45, 2d
+    T4.5 4b Hadith pipeline + gate  :done, t45, 2026-11-03, 1d
+    T4.5b Whole-book hadith run     :t45b, after t45, 3d
+    T4.6 4c Nesting + coverage      :p4c, after t45b, 2d
     G4 Phase 4 gate                 :milestone, g4, after p4c, 0d
 
     section Phase 5 · Hadith linking (est.)
@@ -80,7 +81,7 @@ gantt
 | 1 · Data acquisition | 4 / 4 | ✅ G1 signed off 2026-10-31 | — |
 | 2 · Schema | 3 / 3 | ✅ G2 signed off 2026-11-03; schema v1.1 (C1–C4) approved | — |
 | 3 · Load L0 + L1 | 5 / 5 | ✅ G3 signed off 2026-11-03 | — |
-| 4 · Span annotation | 5 / 7 | 🟡 T4.5 waiting for your test | whole-book hadith run after T4.5 |
+| 4 · Span annotation | 6 / 8 | 🔵 T4.5b: reliable GLM answers + runner, then whole-book run | ~36–45 h at 4 parallel |
 | 5 · Hadith linking | 0 | ⏳ | — |
 | 6 · Semantics | 0 | ⏳ | — |
 | 7 · GraphRAG | 0 | ⏳ | — |
