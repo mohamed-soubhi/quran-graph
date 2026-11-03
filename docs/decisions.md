@@ -3,6 +3,13 @@
 Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
+## 2026-11-03 — Quran parser to interim JSONL verified (T3.2)
+- Parser: `src/ingest/parse_quran.py`, `scripts/tasks.py parse`.
+- Output: `data/interim/quran/surahs.jsonl` (114 lines) and `ayat.jsonl` (6,236 lines), deterministic, UTF-8, keys sorted.
+- Basmala rule (schema Q1): dropped the first 4 words of ayah 1 for 112 surahs (all except 1 and 9); 1:1 and 9:1 verbatim unchanged.
+- Word counts: raw Uthmani total = 77,881 words; stripped basmala words = 448 (112 × 4); total word count after rule = 77,433.
+- Verification: 112:1 normalized = «قل هو الله احد»; rerun produces byte-identical files.
+
 ## 2026-11-03 — Tanzil Quran metadata verified (T3.1)
 - Source: Tanzil metadata XML v1.0 via `https://tanzil.net/res/text/metadata/quran-data.xml` (licence: `cc-by`, copyright (C) 2008-2009 Tanzil.info).
 - File: `data/raw/tanzil/quran-data.xml` (77,234 bytes, SHA-256 `8867c1d88191472adec9db694b3cd9f135b1a2ef580574d32cf888dcb22c5c7a`).

@@ -66,12 +66,28 @@ def run_schema() -> None:
     sys.exit(res.returncode)
 
 
+def run_parse() -> None:
+    """Run all Phase 3 parsers that exist."""
+    py = get_venv_python()
+    parsers = [
+        "src/ingest/parse_quran.py",
+    ]
+    for p in parsers:
+        parser_path = ROOT / p
+        if parser_path.exists():
+            print(f"Running parser: {p}")
+            res = subprocess.run([py, str(parser_path)], cwd=ROOT)
+            if res.returncode != 0:
+                sys.exit(res.returncode)
+
+
 TARGETS = {
     "test": run_test,
     "up": run_up,
     "down": run_down,
     "smoke": run_smoke,
     "schema": run_schema,
+    "parse": run_parse,
 }
 
 
