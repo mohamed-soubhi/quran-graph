@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quran graph findings</title>
+<link rel="stylesheet" href="findings.css">
+</head>
+<body>
+<main>
+<h1>Findings — Quran Tafsir Graph</h1>
+<p class="lead">What we found in the sources and in our own method while building the graph, kept for a later report.
+Each finding gives the evidence (exact counts, ids) and what the project did about it. Last updated 2026-11-03.</p>
+
+<div class="card">
+<b>Sources:</b> Tafsir Ibn Kathir (<code>spa5k/tafsir_api</code>, commit eb82bb6) · Tanzil Quran text v1.1 (Uthmani +
+Simple-Clean) · Quranic Arabic Corpus morphology v0.4 · hadith collections from <code>fawazahmed0/hadith-api</code>
+(commit df57907).<br>
+<b>More detail:</b> <code>docs/decisions.md</code>, ticket reports in <code>docs/tickets/reports/</code>.
+</div>
+
+<div class="stats">
+<div class="stat typo"><b>34</b><span>printing errors in Quran references</span></div>
+<div class="stat"><b>31,203</b><span>editor footnotes, nested up to 3 levels</span></div>
+<div class="stat"><b>122</b><span>quotes in a different rasm than Tanzil</span></div>
+<div class="stat ours"><b>2</b><span>errors of our own, found by checking</span></div>
+</div>
+
+<!-- ===================================================== A -->
+<h2>A. Tafsir Ibn Kathir — the edition</h2>
+
+<div class="finding" id="A1">
+<h3>A1. Written Quran references that point to the wrong ayah <span class="tag typo">edition</span></h3>
+<p>The editors print a reference after many Quran quotes, e.g. ﴿…﴾ <span class="ar" dir="rtl">«[الْأَنْبِيَاءِ: ٣٥]»</span>.
+We checked all <b>5,164</b> printed references against the quoted words. In <b>40</b> the words are not in the referenced
+ayah. After reading each one:</p>
+<ul>
+<li><b>34 printing errors</b>: one wrong digit (<span class="ar" dir="rtl">«[الْأَنْبِيَاءِ: ٢٥]»</span> for 21:35), a missing
+digit (<span class="ar" dir="rtl">«[النِّسَاءِ: ١١]»</span> for 4:110), or a wrong surah name
+(<span class="ar" dir="rtl">«[الزُّمَرِ: ١٨]»</span> for المزمل 73:18, <span class="ar" dir="rtl">«[النَّمْلِ: ١٠]»</span> for النحل 16:10);</li>
+<li>3 near-identical ayat where the reference may be what Ibn Kathir meant (2:126 <span class="ar" dir="rtl">بلدا</span> /
+14:35 <span class="ar" dir="rtl">البلد</span>);</li>
+<li>2 references to the start of a passage rather than the exact ayah;</li>
+<li><b>1 our own error</b> — see <a href="#E1">E1</a>.</li>
+</ul>
+<p>→ <a href="reference-typos.html"><b>Full list of the 40 cases</b></a> with texts and suggested corrections
+(also <code>reference-typos.csv</code>).</p>
+<p class="action">Action: the graph links the quote to the ayah that holds the words, keeps the printed reference on the
+link (<code>ref_text</code>) and lowers <code>confidence</code> to 0.9. The tafsir text is never changed.</p>
+</div>
+
+<div class="finding" id="A2">
+<h3>A2. Quotes follow the "simple" spelling, not the mushaf spelling <span class="tag typo">edition</span></h3>
+<p>Ibn Kathir quotes <span class="ar" dir="rtl">«الْعَالَمِينَ»</span>, not the Uthmani
+<span class="ar" dir="rtl">«ٱلْعَٰلَمِينَ»</span>. Even without diacritics, Tanzil's Uthmani and Simple texts differ in
+3,777 ayat, so quotes are matched against the Simple text. Beyond that, <b>122 quotes</b> differ from Tanzil Simple in
+the rasm of a word:</p>
+<table>
+<tr><th>Ibn Kathir</th><th>Tanzil Simple</th><th>Ayat</th></tr>
+<tr><td class="ar" dir="rtl">نعمة</td><td class="ar" dir="rtl">نعمت</td><td>5:11, 14:28</td></tr>
+<tr><td class="ar" dir="rtl">غيابة</td><td class="ar" dir="rtl">غيابت</td><td>12:15</td></tr>
+<tr><td class="ar" dir="rtl">مرضاة</td><td class="ar" dir="rtl">مرضات</td><td>66:1</td></tr>
+<tr><td class="ar" dir="rtl">داود</td><td class="ar" dir="rtl">داوود</td><td>2:251, 27:15, 38:24</td></tr>
+<tr><td class="ar" dir="rtl">المسيطرون / بمسيطر</td><td class="ar" dir="rtl">المصيطرون / بمصيطر</td><td>52:37, 88:22</td></tr>
+<tr><td class="ar" dir="rtl">الجوار</td><td class="ar" dir="rtl">الجواري</td><td>81:16</td></tr>
+<tr><td class="ar" dir="rtl">يحيا</td><td class="ar" dir="rtl">يحيى</td><td>20:74</td></tr>
+</table>
+<p class="action">Action: a spelling-tolerant key for quotes of 3+ words, <code>confidence: 0.8</code>.</p>
+</div>
+
+<div class="finding" id="A3">
+<h3>A3. Hamza seats differ between the tafsir and Tanzil <span class="tag typo">edition</span></h3>
+<p>Ibn Kathir <span class="ar" dir="rtl">«أَئِنَّا»</span> vs Tanzil Simple <span class="ar" dir="rtl">«أإنا»</span> (56:47).
+After Normalizer v2, about 200 links still needed a key that ignores <span class="ar" dir="rtl">ا ئ ؤ</span>.</p>
+<p class="action">Action: loose key, <code>confidence: 0.9</code>.</p>
+</div>
+
+<div class="finding" id="A4">
+<h3>A4. Edition quirks inside the quote brackets <span class="tag typo">edition</span></h3>
+<p>126 of 26,686 quotes (0.5 %) stay unlinked. Besides one-word glosses of ayat the passage does not cover (left
+unlinked on purpose — one word is too ambiguous), the edition has:</p>
+<ul>
+<li>ayah numbers inside the brackets: <span class="ar" dir="rtl">«…يُنفِقُونَ ٣﴾»</span>, <span class="ar" dir="rtl">«فَيُوَفِّيهِمْ (١) أُجُورَهُمْ»</span>;</li>
+<li>a written reference inside the closing bracket: <span class="ar" dir="rtl">«…[الْوَاقِعَةِ: ٣٨، ٣٩] ﴾»</span>;</li>
+<li>two words joined: <span class="ar" dir="rtl">«فَأَمَّاالَّذِينَ»</span> (3:7); a doubled letter: <span class="ar" dir="rtl">«مممن»</span> (2:282);</li>
+<li>a stray digit inside a surah name: <span class="ar" dir="rtl">«[٠الْفُرْقَانِ: ٧٢]»</span>.</li>
+</ul>
+</div>
+
+<div class="finding" id="A5">
+<h3>A5. Editor footnotes <code>[[…]]</code> <span class="tag typo">edition</span></h3>
+<p><b>31,203</b> footnotes in 1,857 of the 1,911 passages; 110 run over several lines; the longest has 7,075 characters
+(<code>ibn-kathir:33:41-44:1</code>). <b>635</b> footnotes sit inside a Quran quote, and quotes sit inside hadith — up to
+three levels (2:255: a footnote inside a quote inside Anas's hadith).</p>
+<p class="action">Action: schema v1.1 C1 — nested spans with <code>INSIDE</code>.</p>
+</div>
+
+<div class="finding" id="A6">
+<h3>A6. The raw files repeat each passage once per ayah <span class="tag typo">edition</span></h3>
+<p>One file per ayah (6,236), but a passage covering several ayat is copied into each: <b>48.2 M</b> characters in
+total, <b>13.4 M</b> distinct, in <b>1,911</b> passages. The largest covers 74:11–30 (20 ayat).</p>
+<p class="action">Action: one <code>TafsirSegment</code> per passage, linked to each ayah with <code>COVERS</code>.</p>
+</div>
+
+<!-- ===================================================== B -->
+<h2>B. Quran text and morphology</h2>
+
+<div class="finding" id="B1">
+<h3>B1. Tanzil puts the basmala at the start of ayah 1 in 112 surahs</h3>
+<p>In both Uthmani and Simple-Clean, except surahs 1 and 9. In the Hafs count the basmala is an ayah only in 1:1.</p>
+<p class="action">Action: the loader removes it and sets <code>Surah.has_basmala</code> (schema Q1).</p>
+</div>
+
+<div class="finding" id="B2">
+<h3>B2. The Quranic Corpus joins two words in 4 ayat</h3>
+<p><span class="ar" dir="rtl">«بَعْدَ مَا»</span> in 2:181, 8:6, 13:37 and <span class="ar" dir="rtl">«إِلْ يَاسِينَ»</span> in 37:130
+are one word in the corpus, two in Tanzil.</p>
+</div>
+
+<div class="finding" id="B3">
+<h3>B3. Hamza / tatweel spelling between the corpus and Tanzil</h3>
+<p>319 of 77,383 aligned words differed only in hamza seat or tatweel (corpus <span class="ar" dir="rtl">«ٱلْءَاخِرَةِ»</span>
+vs Tanzil <span class="ar" dir="rtl">«ٱلْـَٔاخِرَةِ»</span>, 2:4). After Normalizer v2: <b>2</b> (12:39 and 12:41,
+<span class="ar" dir="rtl">«يَٰصَىٰحِبَىِ»</span> vs <span class="ar" dir="rtl">«يَٰصَٰحِبَىِ»</span>, a genuine variant).</p>
+</div>
+
+<div class="finding" id="B4">
+<h3>B4. Words with two stems or two roots</h3>
+<p>486 corpus words have two stems (e.g. <span class="ar" dir="rtl">«مِمَّا»</span> = مِن + ما) and so two lemmas; one word
+has two roots (20:94, <span class="ar" dir="rtl">«يَبْنَؤُمَّ»</span>); 175 lemmas have no root.</p>
+</div>
+
+<!-- ===================================================== C -->
+<h2>C. Hadith collections (fawazahmed0)</h2>
+
+<div class="finding" id="C1">
+<h3>C1. Ibn Kathir's Muslim numbers are the source's <code>arabicnumber</code>, not <code>hadithnumber</code></h3>
+<p>Footnote <span class="ar" dir="rtl">«صحيح مسلم برقم (٢٨٦٥)»</span> = the entry with <code>arabicnumber</code> 2865.01
+(<code>hadithnumber</code> 7207). <code>hadithnumber</code> 2865 is a different hadith.</p>
+<p class="action">Action: Phase 5 links footnote numbers through <code>arabic_number</code>.</p>
+</div>
+
+<div class="finding" id="C2">
+<h3>C2. No grades for Bukhari and Muslim in this source</h3>
+<p>21,185 of 36,512 entries carry a grade from 9 named graders; Bukhari, Muslim and the 40-hadith books have none.</p>
+<p class="action">Action: the graph stores "no grade in source"; it never infers a grade from the collection name (hard rule 2).</p>
+</div>
+
+<div class="finding" id="C3">
+<h3>C3. 408 entries with empty text</h3>
+<p>Muslim 203, Nasai 86, Tirmidhi 74, Malik 29, Bukhari 9, Ibn Majah 5, Abu Dawud 2 — mostly introduction
+placeholders. Kept as they are, never filled.</p>
+</div>
+
+<div class="finding" id="C4">
+<h3>C4. Musnad Ahmad is missing</h3>
+<p>Ibn Kathir cites <span class="ar" dir="rtl">«قال الإمام أحمد»</span> constantly (3 of the 24 gold hadith spans). Its
+isnads are still kept (schema C2: narrators attach to the HADITH span) but there is no <code>Hadith</code> node to link to.</p>
+</div>
+
+<!-- ===================================================== D -->
+<h2>D. Annotation (gold set, Phase 4)</h2>
+
+<div class="finding" id="D1">
+<h3>D1. What counts as a hadith span <span class="tag done">decided by Aya &amp; Mohamed</span></h3>
+<ul>
+<li>Athar (stopping at a Companion or Successor) are HADITH spans (<code>kind: athar</code>) and count toward the 4b targets.</li>
+<li>A dream or story report with an isnad is commentary, not hadith (gold W44, Ibn Asakir).</li>
+<li>A takhrij line without its own chain (<span class="ar" dir="rtl">«وكذلك رواه ابن جرير من حديث حمزة الزيات»</span>)
+belongs to the hadith before it; one with its own chain (<span class="ar" dir="rtl">«وقد رواه مسلم عن أبي بكر … عن الجريري به»</span>) is a separate span.</li>
+<li><code>kind</code> follows what the quoted route says (<span class="ar" dir="rtl">«عن علي مرفوعا»</span> → marfu), even when Ibn
+Kathir then prefers the mawquf version (<span class="ar" dir="rtl">«وهو أشبه»</span>) — weighing versions is grading.</li>
+</ul>
+</div>
+
+<div class="finding" id="D2">
+<h3>D2. Human review of the draft</h3>
+<p>50 windows, 177 draft spans: Mohamed marked 172 correct and 5 wrong (all resolved); one window had to be widened
+because it started in the middle of a hadith.</p>
+</div>
+
+<div class="finding" id="D3">
+<h3>D3. Language models and character offsets</h3>
+<p>GLM returns valid structured output (5/5 runs) and finds both hadith in 2:255, but its character offsets move by a
+few characters between runs, and it spends ~67 s per paragraph counting characters.</p>
+<p class="action">Action: Phase 4b asks the model for short text anchors and locates them in code.</p>
+</div>
+
+<!-- ===================================================== E -->
+<h2>E. Our own errors found by checking</h2>
+
+<div class="finding" id="E1">
+<h3>E1. The reference check misses a dropped «ف» <span class="tag open">open — follow-up T4.4b</span></h3>
+<div class="quote" dir="rtl">﴿وَيْلٌ يَوْمَئِذٍ لِلْمُكَذِّبِينَ﴾ [الطُّورِ: ١١]</div>
+<p>In the tafsir of 14:47–48 the reference is right (52:11 <span class="ar" dir="rtl">«فَوَيْلٌ يَوْمَئِذٍ لِلْمُكَذِّبِينَ»</span>), but
+the check did not allow the missing <span class="ar" dir="rtl">«ف»</span> and moved the link to 77:15.</p>
+<p class="action">Fix: the reference check must accept a dropped or added <span class="ar" dir="rtl">و ف ب ل</span> at the start of
+the quote, as the matcher already does elsewhere.</p>
+</div>
+
+<div class="finding" id="E2">
+<h3>E2. The gold set alone could not prove the Quran matcher <span class="tag done">changed how we check</span></h3>
+<p>The gold Quran links were drafted by a matcher similar to the one being tested, so 79/79 on the gold set proved
+less than it seemed. A whole-book check found A1–A4.</p>
+<p class="action">Action: every extractor is also checked on the whole book, not only on the gold set.</p>
+</div>
+</main>
+</body>
+</html>
