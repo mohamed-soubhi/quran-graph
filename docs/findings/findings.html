@@ -33,18 +33,17 @@ Simple-Clean) · Quranic Arabic Corpus morphology v0.4 · hadith collections fro
 <div class="finding" id="A1">
 <h3>A1. Written Quran references that point to the wrong ayah <span class="tag typo">edition</span></h3>
 <p>The editors print a reference after many Quran quotes, e.g. ﴿…﴾ <span class="ar" dir="rtl">«[الْأَنْبِيَاءِ: ٣٥]»</span>.
-We checked all <b>5,164</b> printed references against the quoted words. In <b>40</b> the words are not in the referenced
-ayah. After reading each one:</p>
+We checked all <b>5,164</b> printed references against the quoted words. In <b>40</b> the words were not found in the
+referenced ayah. One of them was our own error, since fixed (<a href="#E1">E1</a>); the other <b>39</b>, after reading each one:</p>
 <ul>
 <li><b>34 printing errors</b>: one wrong digit (<span class="ar" dir="rtl">«[الْأَنْبِيَاءِ: ٢٥]»</span> for 21:35), a missing
 digit (<span class="ar" dir="rtl">«[النِّسَاءِ: ١١]»</span> for 4:110), or a wrong surah name
 (<span class="ar" dir="rtl">«[الزُّمَرِ: ١٨]»</span> for المزمل 73:18, <span class="ar" dir="rtl">«[النَّمْلِ: ١٠]»</span> for النحل 16:10);</li>
 <li>3 near-identical ayat where the reference may be what Ibn Kathir meant (2:126 <span class="ar" dir="rtl">بلدا</span> /
 14:35 <span class="ar" dir="rtl">البلد</span>);</li>
-<li>2 references to the start of a passage rather than the exact ayah;</li>
-<li><b>1 our own error</b> — see <a href="#E1">E1</a>.</li>
+<li>2 references to the start of a passage rather than the exact ayah.</li>
 </ul>
-<p>→ <a href="reference-typos.html"><b>Full list of the 40 cases</b></a> with texts and suggested corrections
+<p>→ <a href="reference-typos.html"><b>Full list of the 39 cases</b></a> with texts and suggested corrections
 (also <code>reference-typos.csv</code>).</p>
 <p class="action">Action: the graph links the quote to the ayah that holds the words, keeps the printed reference on the
 link (<code>ref_text</code>) and lowers <code>confidence</code> to 0.9. The tafsir text is never changed.</p>
@@ -191,12 +190,12 @@ few characters between runs, and it spends ~67 s per paragraph counting characte
 <h2>E. Our own errors found by checking</h2>
 
 <div class="finding" id="E1">
-<h3>E1. The reference check misses a dropped «ف» <span class="tag open">open — follow-up T4.4b</span></h3>
+<h3>E1. The reference check misses a dropped «ف» <span class="tag done">fixed in T4.4b</span></h3>
 <div class="quote" dir="rtl">﴿وَيْلٌ يَوْمَئِذٍ لِلْمُكَذِّبِينَ﴾ [الطُّورِ: ١١]</div>
 <p>In the tafsir of 14:47–48 the reference is right (52:11 <span class="ar" dir="rtl">«فَوَيْلٌ يَوْمَئِذٍ لِلْمُكَذِّبِينَ»</span>), but
 the check did not allow the missing <span class="ar" dir="rtl">«ف»</span> and moved the link to 77:15.</p>
 <p class="action">Fix: the reference check must accept a dropped or added <span class="ar" dir="rtl">و ف ب ل</span> at the start of
-the quote, as the matcher already does elsewhere.</p>
+the quote, as the matcher already does elsewhere. Done in T4.4b: the quote links to 52:11 again (<code>regex</code>, 1.0).</p>
 </div>
 
 <div class="finding" id="E2">
