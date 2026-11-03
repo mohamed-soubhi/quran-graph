@@ -9,7 +9,7 @@ Facts behind each choice: `docs/decisions.md`. Sources: `docs/sources.md`.
 - **Arabic script is the main value** of every Arabic property (`text`, `name`). Buckwalter only in `bw`.
 - Original text (Quran, tafsir, hadith) is stored **verbatim** from `data/raw/`. Derived forms (`text_norm`) are
   extra properties, never a replacement.
-- `text_norm` = NFC → strip diacritics (Unicode Mn) → unify alef forms (أ إ آ ٱ → ا), ى → ي, ة → ه.
+- `text_norm` = NFC → strip diacritics (Unicode Mn) → skip tatweel (`ـ` U+0640), hamza (`ء` U+0621), small waw (`ۥ` U+06E5), small yeh (`ۦ` U+06E6) → unify alef forms (أ إ آ ٱ → ا), ى → ي, ة → ه (v2, T4.1).
   Used only for matching and search; offsets always refer to the original `text`.
 - IDs are strings except `surah_id` (int). Each ID is unique (see Constraints).
 

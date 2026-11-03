@@ -3,6 +3,14 @@
 Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
+## 2026-11-03 — Normalizer v2: tatweel, hamza, and small waw/yeh skipped (T4.1)
+- `src/extract/normalize.py`: `normalize_with_map` skips tatweel `ـ` (U+0640), hamza `ء` (U+0621), small waw `ۥ` (U+06E5), and small yeh `ۦ` (U+06E6).
+- Preserves 1-to-1 offset mapping (`len(norm) == len(index)`, strictly increasing index pointing to non-skipped characters).
+- Measured on the 77,383 words where corpus and Tanzil Uthmani align 1:1:
+  - Previous normalizer: 319 words differed (hamza seat / tatweel spelling variations).
+  - Normalizer v2: **exactly 2** words differ (`12:39:1` and `12:41:1`: «يَٰصَىٰحِبَىِ» vs «يَٰصَٰحِبَىِ», a genuine corpus spelling variant).
+- Reload: `Ayah.text_norm` and `TafsirSegment.text_norm` re-parsed and reloaded into Neo4j via `tasks.py parse` and `tasks.py load`. Node and relationship counts unchanged.
+
 ## 2026-11-03 — Ibn Kathir parser to interim JSONL verified (T3.4)
 - Parsers: `src/ingest/parse_tafsir.py`, `scripts/tasks.py parse`.
 - Output: `data/interim/tafsir/ibn-kathir/segments.jsonl` (1,911 lines), `mufassir.jsonl` (1 line), `book.jsonl` (1 line); deterministic, UTF-8, keys sorted.

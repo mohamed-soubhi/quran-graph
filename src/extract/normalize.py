@@ -1,4 +1,4 @@
-"""Arabic text normalization with character offset mapping (T2.3)."""
+"""Arabic text normalization with character offset mapping (T2.3, T4.1)."""
 
 import unicodedata
 
@@ -15,6 +15,15 @@ NORM_MAP: dict[str, str] = {
     "ة": "ه",
 }
 
+# Characters skipped without output or index entry (T4.1):
+# tatweel ـ U+0640, hamza ء U+0621, small waw ۥ U+06E5, small yeh ۦ U+06E6
+SKIP_CHARS: frozenset[str] = frozenset({
+    "\u0640",  # tatweel ـ
+    "\u0621",  # hamza ء
+    "\u06e5",  # small waw ۥ
+    "\u06e6",  # small yeh ۦ
+})
+
 
 def normalize_with_map(text: str) -> tuple[str, list[int]]:
     """Normalize Arabic text by stripping diacritics and unifying letter variants.
@@ -27,7 +36,7 @@ def normalize_with_map(text: str) -> tuple[str, list[int]]:
 
     Returns:
         A tuple of (norm, index) where:
-          - norm: The normalized string (diacritics stripped, letter variants mapped).
+          - norm: The normalized string (diacritics stripped, letter variants mapped, skipped chars removed).
           - index: List of original character offsets such that len(norm) == len(index)
             and norm[k] originates from text[index[k]].
     """
@@ -36,6 +45,8 @@ def normalize_with_map(text: str) -> tuple[str, list[int]]:
 
     for i, c in enumerate(text):
         if unicodedata.category(c) == "Mn":
+            continue
+        if c in SKIP_CHARS:
             continue
         c_mapped = NORM_MAP.get(c, c)
         norm_chars.append(c_mapped)
