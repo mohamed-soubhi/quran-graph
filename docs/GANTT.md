@@ -47,8 +47,8 @@ gantt
     section Phase 4 · Span annotation
     T4.1 Normalizer v2              :done, t41, 2026-11-03, 1d
     T4.2 Footnote spans + writer    :done, t42, 2026-11-03, 1d
-    T4.3 Gold set (your review)     :crit, active, t43, 2026-11-03, 4d
-    T4.4 4a Quran spans             :t44, after t43, 3d
+    T4.3 Gold set (your review)     :done, t43, 2026-11-03, 4d
+    T4.4 4a Quran spans             :active, t44, 2026-11-03, 3d
     T4.5 4b Hadith spans (GLM)      :t45, after t44, 6d
     T4.6 4c Nesting + coverage      :p4c, after t45, 2d
     G4 Phase 4 gate                 :milestone, g4, after p4c, 0d
@@ -79,7 +79,7 @@ gantt
 | 1 · Data acquisition | 4 / 4 | ✅ G1 signed off 2026-10-31 | — |
 | 2 · Schema | 3 / 3 | ✅ G2 signed off 2026-11-03; schema v1.1 (C1–C4) approved | — |
 | 3 · Load L0 + L1 | 5 / 5 | ✅ G3 signed off 2026-11-03 | — |
-| 4 · Span annotation | 2 / 6 | 🟡 T4.3 gold set waiting for your test (W13, W15 re-check) | T4.4 after T4.3 |
+| 4 · Span annotation | 3 / 6 | 🟡 T4.4 agy working (Quran spans) | T4.5 after T4.4 |
 | 5 · Hadith linking | 0 | ⏳ | — |
 | 6 · Semantics | 0 | ⏳ | — |
 | 7 · GraphRAG | 0 | ⏳ | — |
