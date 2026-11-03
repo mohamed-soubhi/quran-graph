@@ -39,7 +39,7 @@ gantt
     section Phase 3 · Load L0 + L1
     T3.1 Tanzil metadata            :done, t31, 2026-11-03, 1d
     T3.2 Quran → JSONL              :done, t32, 2026-11-03, 1d
-    T3.3 Corpus → JSONL (Arabic)    :active, t33, 2026-11-03, 2d
+    T3.3 Corpus → JSONL (Arabic)    :crit, active, t33, 2026-11-03, 1d
     T3.4 Tafsir segments → JSONL    :t34, after t33, 1d
     T3.5 Neo4j writers (MERGE)      :p3b, after t34, 2d
     G3 Phase 3 gate                 :milestone, g3, after p3b, 0d
@@ -75,15 +75,14 @@ gantt
 |---|---|---|---|
 | 0 · Setup | 7 / 7 | ✅ done | G0 signed off 2026-10-31 |
 | 1 · Data acquisition | 4 / 4 | ✅ G1 signed off 2026-10-31 | — |
-| 2 · Schema | 3 / 3 | ✅ G2 signed off 2026-11-03 (C1–C4 approval open) | — |
-| 3 · Load L0 + L1 | 2 / 5 | 🔵 T3.3 with agy | T3.4 next |
+| 2 · Schema | 3 / 3 | ✅ G2 signed off 2026-11-03; schema v1.1 (C1–C4) approved | — |
+| 3 · Load L0 + L1 | 2 / 5 | 🔴 T3.3 waiting for your test approval | T3.4 next |
 | 4 · Span annotation | 0 | ⏳ | — |
 | 5 · Hadith linking | 0 | ⏳ | — |
 | 6 · Semantics | 0 | ⏳ | — |
 | 7 · GraphRAG | 0 | ⏳ | — |
 
 ## Waiting on Aya & Mohamed
-- **Schema changes C1–C4** from G2 (`docs/tickets/reports/G2.md`) — needed before Phase 4.
 - ~~T1.4: download the Quranic Corpus file~~ — done by Claude 2026-10-31.
 - Plan updates (segment range ID, FOOTNOTE, NFC rule); `Citation` vs `HadithSpan`; review the T0.5 fixture.
 - Approval of each ticket after its test scenarios.

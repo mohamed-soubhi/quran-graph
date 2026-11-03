@@ -201,10 +201,6 @@ def parse_corpus(
       - word_lemmas.jsonl (74,608 links)
       - word_roots.jsonl (49,968 links)
       - lemma_roots.jsonl (4,657 links)
-    Also writes singular aliases:
-      - word_lemma.jsonl
-      - word_root.jsonl
-      - lemma_root.jsonl
     """
     path = Path(zip_path)
     if not path.exists():
@@ -378,10 +374,6 @@ def parse_corpus(
         "word_lemmas": out_dir / "word_lemmas.jsonl",
         "word_roots": out_dir / "word_roots.jsonl",
         "lemma_roots": out_dir / "lemma_roots.jsonl",
-        # Aliases
-        "word_lemma": out_dir / "word_lemma.jsonl",
-        "word_root": out_dir / "word_root.jsonl",
-        "lemma_root": out_dir / "lemma_root.jsonl",
     }
 
     _write_jsonl(files["words"], words_records)
@@ -390,11 +382,6 @@ def parse_corpus(
     _write_jsonl(files["word_lemmas"], word_lemma_links)
     _write_jsonl(files["word_roots"], word_root_links)
     _write_jsonl(files["lemma_roots"], lemma_root_records)
-
-    # Aliases
-    _write_jsonl(files["word_lemma"], word_lemma_links)
-    _write_jsonl(files["word_root"], word_root_links)
-    _write_jsonl(files["lemma_root"], lemma_root_records)
 
     logger.info(
         "Parsed corpus: %d words, %d lemmas, %d roots, %d word_lemma links, %d word_root links, %d lemma_root links",

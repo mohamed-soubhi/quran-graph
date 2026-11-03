@@ -3,9 +3,22 @@
 Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
+## 2026-11-03 — Schema v1.1: changes C1–C4 (approved by Aya & Mohamed)
+Found by the G2 gate on real Ibn Kathir text (`docs/tickets/reports/G2.md`); written into `docs/schema.md` v1.1.
+- C1 nested spans via `(:Span)-[:INSIDE]->(:Span)`; the no-overlap/100 %-coverage rule is for top-level spans; footnotes do not split spans.
+- C2 `IN_CHAIN` also from a HADITH Span (isnads of collections we do not have); `HEARD_FROM.chain_id` = hadith_id or span_id.
+- C3 QURAN spans include both ornate brackets ﴿ ﴾ (U+FD3F, U+FD3E).
+- C4 written references «[سورة: آية]» after a quote are linked by regex first (`ref_text` on the edge).
+
+## 2026-11-03 — Corpus word text vs Tanzil Uthmani (T3.3 review)
+- In ayat with equal word counts, corpus `Word.text` equals the Tanzil Uthmani word in **77,064** of 77,383 words.
+  The other **319** differ only in hamza seat / tatweel spelling (corpus «ٱلْءَاخِرَةِ» vs Tanzil «ٱلْـَٔاخِرَةِ», 2:4).
+- `normalize_with_map` does not merge them yet (keeps tatweel U+0640; ء vs hamza above U+0654). Phase 4a ticket:
+  extend the normalizer (drop tatweel; unify hamza forms) and re-measure; `Word.text` stays the corpus form.
+
 ## 2026-11-03 — Quranic Corpus parser to interim JSONL verified (T3.3)
 - Parsers: `src/ingest/buckwalter.py`, `src/ingest/quranic_corpus.py`, `scripts/tasks.py parse`.
-- Output: `data/interim/corpus/words.jsonl` (77,429 lines), `lemmas.jsonl` (4,832 lines), `roots.jsonl` (1,642 lines), `word_lemmas.jsonl` (74,608 lines), `word_roots.jsonl` (49,968 lines), `lemma_roots.jsonl` (4,657 lines), plus singular alias files (`word_lemma.jsonl`, `word_root.jsonl`, `lemma_root.jsonl`); deterministic, UTF-8, keys sorted.
+- Output: `data/interim/corpus/words.jsonl` (77,429 lines), `lemmas.jsonl` (4,832 lines), `roots.jsonl` (1,642 lines), `word_lemmas.jsonl` (74,608 lines), `word_roots.jsonl` (49,968 lines), `lemma_roots.jsonl` (4,657 lines); deterministic, UTF-8, keys sorted.
 - Exact counts:
   - Words: 77,429 words. First word 1:1:1 text is «بِسْمِ» (joined segments), POS = "N".
   - Lemmas: 4,832 lemmas, 4,817 distinct texts, 15 with homonym sense (all sense 2, e.g. `عَاد#2`).
