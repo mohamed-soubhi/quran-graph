@@ -1,10 +1,10 @@
-"""Hadith span extractor: regex cues + GLM anchors + deterministic locator (T4.5)."""
+"""Hadith span extractor: regex cues + GLM anchors + deterministic locator (T4.5, T4.5b)."""
 
 import re
 from typing import Sequence
 
 from src.extract.footnotes import FOOTNOTE_RE, find_footnotes
-from src.extract.glm_client import extract_hadith_anchors
+from src.extract.glm_client import GlmExtractionError, extract_hadith_anchors
 from src.extract.locate import locate
 from src.extract.models import HadithSpanAnchor
 from src.extract.normalize import normalize_with_map
@@ -140,32 +140,40 @@ def locate_and_check_anchors(
     text: str,
     anchors: Sequence[HadithSpanAnchor],
     window_start: int = 0,
+    window_end: int | None = None,
     segment_id: str = "",
     run_id: str = "run0",
     model: str = "",
+    rejected: list[dict] | None = None,
 ) -> list[dict]:
-    """Locate anchors in the segment text and apply rejection checks (Step 4).
+    """Locate anchors in the segment text and apply rejection checks (T4.5, T4.5b).
 
-    Rejection criteria:
-    - Anchor not found by locate();
-    - start or end falls strictly inside a [[...]] footnote;
-    - start or end falls strictly inside a ﴿...﴾ quote;
-    - span length > 6,000 characters;
-    - duplicates (same start and end) are merged.
+    Rejection criteria (every rejection records a reason):
+    - Anchor not found by locate() -> reason 'not_found';
+    - Not window_start <= start < end <= window_end -> reason 'outside_window';
+    - start or end falls strictly inside a [[...]] footnote -> reason 'inside_footnote';
+    - start or end falls strictly inside a ﴿...﴾ quote -> reason 'inside_quote';
+    - span length > 6,000 characters -> reason 'too_long';
+    - duplicates (same start and end) are merged -> reason 'duplicate'.
 
     Args:
         text: Full verbatim text of the TafsirSegment.
         anchors: List of HadithSpanAnchor returned by GLM.
         window_start: Offset where the window starts in segment text.
+        window_end: Offset where the window ends in segment text (defaults to len(text)).
         segment_id: ID of the segment (e.g. 'ibn-kathir:2:255-255:1').
         run_id: Identifier for the extraction run.
         model: Model name/tag used.
+        rejected: Optional list to append rejection records to.
 
     Returns:
         List of span dicts with keys matching gold set and schema:
         span_id, segment_id, start, end, type ('HADITH'), kind, cue,
         collection_hint, number_hint, method ('glm'), source ('run:<run_id>'), model.
     """
+    if window_end is None:
+        window_end = len(text)
+
     fn_spans = find_footnotes(text)
     q_spans = find_quotes(text)
 
@@ -174,6 +182,22 @@ def locate_and_check_anchors(
 
     def strictly_inside_q(pos: int) -> bool:
         return any(s < pos < e for s, e in q_spans)
+
+    def record_rejection(reason: str, s: int | None, e: int | None, anchor: HadithSpanAnchor):
+        if rejected is not None:
+            rejected.append({
+                "segment_id": segment_id,
+                "span_id": f"{segment_id}#{s}-{e}" if s is not None and e is not None else None,
+                "window_start": window_start,
+                "window_end": window_end,
+                "start": s,
+                "end": e,
+                "reason": reason,
+                "kind": getattr(anchor, "kind", None),
+                "cue": getattr(anchor, "cue", None),
+                "start_anchor": anchor.start_anchor,
+                "end_anchor": anchor.end_anchor,
+            })
 
     results: list[dict] = []
     seen: set[tuple[int, int]] = set()
@@ -187,9 +211,23 @@ def locate_and_check_anchors(
                 anchor.start_anchor,
                 anchor.end_anchor,
             )
+            record_rejection("not_found", None, None, anchor)
             continue
 
         start, end = offsets
+
+        # Check stay inside window
+        if not (window_start <= start < end <= window_end):
+            logger.warning(
+                "Run %s: Anchor rejected (outside_window): [%d, %d) not in [%d, %d)",
+                run_id,
+                start,
+                end,
+                window_start,
+                window_end,
+            )
+            record_rejection("outside_window", start, end, anchor)
+            continue
 
         # Check strictly inside footnote
         if strictly_inside_fn(start) or strictly_inside_fn(end):
@@ -199,6 +237,7 @@ def locate_and_check_anchors(
                 start,
                 end,
             )
+            record_rejection("inside_footnote", start, end, anchor)
             continue
 
         # Check strictly inside quote
@@ -209,6 +248,7 @@ def locate_and_check_anchors(
                 start,
                 end,
             )
+            record_rejection("inside_quote", start, end, anchor)
             continue
 
         # Check max length
@@ -220,11 +260,13 @@ def locate_and_check_anchors(
                 start,
                 end,
             )
+            record_rejection("too_long", start, end, anchor)
             continue
 
         # De-duplicate
         if (start, end) in seen:
             logger.debug("Run %s: Duplicate span [%d, %d) merged", run_id, start, end)
+            record_rejection("duplicate", start, end, anchor)
             continue
         seen.add((start, end))
 
@@ -259,17 +301,32 @@ def extract_hadith_spans_for_segment(
     cue_paras = find_cue_paragraphs(text)
     spans: list[dict] = []
     seen_spans: set[tuple[int, int]] = set()
+    failed_windows_count = 0
 
     for p_start, p_end in cue_paras:
         para_text = text[p_start:p_end]
         windows = split_long_paragraph(para_text, p_start, max_len=3000)
         for w_start, w_end in windows:
             w_text = text[w_start:w_end]
-            anchor_list = extract_hadith_anchors(w_text, model=model)
+            try:
+                anchor_list = extract_hadith_anchors(w_text, model=model)
+            except GlmExtractionError as exc:
+                failed_windows_count += 1
+                logger.error(
+                    "Window [%d, %d) in segment %s failed after retries: %s",
+                    w_start,
+                    w_end,
+                    segment_id,
+                    exc,
+                )
+                print(f"FAILED window {segment_id}#[{w_start}-{w_end}]: {exc}")
+                continue
+
             located = locate_and_check_anchors(
                 text,
                 anchor_list.spans,
                 window_start=w_start,
+                window_end=w_end,
                 segment_id=segment_id,
                 run_id=run_id,
                 model=model or "glm-5.3-flash:cloud",
@@ -279,6 +336,13 @@ def extract_hadith_spans_for_segment(
                 if key not in seen_spans:
                     seen_spans.add(key)
                     spans.append(sp)
+
+    if failed_windows_count > 0:
+        logger.warning(
+            "Segment %s had %d failed windows",
+            segment_id,
+            failed_windows_count,
+        )
 
     # Sort spans by start offset
     spans.sort(key=lambda s: (s["start"], s["end"]))

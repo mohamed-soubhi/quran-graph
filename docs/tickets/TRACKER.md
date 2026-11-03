@@ -40,7 +40,7 @@ Aya & Mohamed after running its test scenarios. T0.0–T0.5 were accepted before
 | T4.4 | 4a Quran spans (no LLM) | 4 | agy | done | T4.3 | 83f506d | Approved by Aya & Mohamed 2026-11-03. 26,686 QURAN spans; 26,560 linked (20,941 EXPLAINS, 8,870 CITES); gate 4a 79/79; 40 references redirected (34 printing errors, see docs/findings/reference-typos.html); 1 our error → T4.4b. Report: docs/tickets/reports/T4.4.md |
 | T4.4b | Reference check: allow dropped clitic (finding E1) | 4 | agy | done | T4.4 | bce928d | Approved by Aya & Mohamed 2026-11-03. Finding E1 fixed: 14:47-48 span links to 52:11 (regex, 1.0, ref_text); redirected typos 40->39; gate 4a 79/79; 91 passed. Report: docs/tickets/reports/T4.4b.md |
 | T4.5 | 4b Hadith spans: pipeline + gate on gold + throughput | 4 | agy + GLM | done | T4.4b | 1da8f42 | Approved by Aya & Mohamed 2026-11-03 (whole book at 4 parallel calls). Contract v1.1; pipeline (cues + GLM anchors + locator with 3-word fallback); Gate 4b PASS in 3 runs (P: 100%, 96%, 100%; R: 95.8%, 100%, 95.8%; IoU: 0.995, 0.977, 0.995); throughput measured (c=4 optimal: ~36-40h whole book, 0% errors); 97 passed; report docs/tickets/reports/T4.5.md |
-| T4.5b | Reliable GLM answers + whole-book hadith runner + pilot | 4 | agy, then Claude runs it | in-progress | T4.5 | | Parser keeps valid spans; failures never look like "no hadith"; resumable; ~36–45 h at 4 parallel. Files first, Neo4j after review |
+| T4.5b | Reliable GLM answers + whole-book hadith runner + pilot | 4 | agy, then Claude runs it | review | T4.5 | | Parser keeps valid spans; failures visible (no silent empties); outside_window check; gate 4b re-check PASS in 3 runs; runner with resume & flat memory (42.8 MB); pilot 200/200 ok; 105 tests pass; report docs/tickets/reports/T4.5b.md |
 | T4.6 | 4c Nesting + COMMENTARY + coverage | 4 | agy | todo | T4.5 | | INSIDE parents; 100 % coverage, no overlap |
 | G4 | Phase 4 gate | 4 | Claude + Aya & Mohamed | todo | T4.1–T4.6 | | 4a/4b/4c targets on the gold set |
 
@@ -48,10 +48,3 @@ Aya & Mohamed after running its test scenarios. T0.0–T0.5 were accepted before
 | Item | Owner | Status |
 |---|---|---|
 | Update Arabic plan (then English) with the segment range ID | Aya & Mohamed | todo |
-| Resolve T0.5 model name: `Citation` (AR) vs `HadithSpan` (EN) | Aya & Mohamed | todo |
-| Update plans: FOOTNOTE span type + NFC normalization rule | Aya & Mohamed | todo |
-| Review `tests/fixtures/tafsir_sample.expected.json` (then it can seed `data/gold/`) | Aya & Mohamed | todo |
-| Phase 5: parse `[[…برقم (n)]]` footnotes as first linking candidate | Claude (ticket) | todo |
-| Find a licensed Musnad Ahmad source | Claude | todo (Phase 5) |
-| Phase 4a: normalizer drops tatweel + unifies hamza forms (319 corpus/Tanzil word spellings) | Claude (ticket) | todo (Phase 4a) |
-| Discuss interfaces: MCP server, web interface, LLM chat (`docs/plan/advanced-ideas.md` §1) | Aya & Mohamed + Claude | later (after Phase 3) |

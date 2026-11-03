@@ -1,6 +1,6 @@
 """Task runner replacing Makefile for the project.
 
-Targets: up, down, test, smoke, schema, parse, load
+Targets: up, down, test, smoke, schema, parse, load, spans, hadith-spans
 """
 
 import os
@@ -111,6 +111,18 @@ def run_spans(args=None) -> None:
             sys.exit(res2.returncode)
 
 
+def run_hadith_spans(args=None) -> None:
+    """Write hadith spans to Neo4j (T4.5b)."""
+    py = get_venv_python()
+    if args and ("--write" in args or "--load" in args):
+        cmd = [py, "src/graph/spans.py", "--hadith-spans"]
+        res = subprocess.run(cmd, cwd=ROOT)
+        if res.returncode != 0:
+            sys.exit(res.returncode)
+    else:
+        print("Usage: python scripts/tasks.py hadith-spans --write")
+
+
 TARGETS = {
     "test": run_test,
     "up": run_up,
@@ -120,6 +132,7 @@ TARGETS = {
     "parse": run_parse,
     "load": run_load,
     "spans": run_spans,
+    "hadith-spans": run_hadith_spans,
 }
 
 
@@ -130,7 +143,7 @@ def main() -> None:
 
     target = sys.argv[1]
     extra_args = sys.argv[2:]
-    if target in ("test", "smoke", "load", "spans"):
+    if target in ("test", "smoke", "load", "spans", "hadith-spans"):
         TARGETS[target](extra_args)
     else:
         TARGETS[target]()

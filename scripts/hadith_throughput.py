@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Hadith extraction throughput measurement on sample cue paragraphs (T4.5)."""
+"""Hadith extraction throughput measurement on sample cue paragraphs (T4.5, T4.5b)."""
 
 import argparse
 import json
@@ -19,7 +19,7 @@ from src.extract.hadith_spans import (
     split_long_paragraph,
     locate_and_check_anchors,
 )
-from src.extract.glm_client import extract_hadith_anchors
+from src.extract.glm_client import GlmExtractionError, extract_hadith_anchors
 from src.log import get_logger
 
 logger = get_logger("hadith_throughput")
@@ -75,6 +75,7 @@ def process_sample_paragraph(
                 seg_text,
                 anchor_list.spans,
                 window_start=sw_s,
+                window_end=sw_e,
                 segment_id=seg_id,
                 run_id="throughput",
                 model=model,
@@ -85,6 +86,7 @@ def process_sample_paragraph(
             call_times.append(elapsed)
             errors += 1
             logger.error("Throughput call error: %s", exc)
+            print(f"FAILED window {seg_id}#[{sw_s}-{sw_e}]: {exc}")
 
     return {
         "calls": len(sub_wins),
@@ -189,8 +191,6 @@ def main():
                 segments[d["segment_id"]] = d["text"]
 
     # Partition sample across concurrency levels:
-    # E.g. for sample 100: 10 at c=1, 30 at c=4, 60 at c=8
-    # Or test slices so total = sample_size
     n = len(sampled_paras)
     c1_n = max(5, int(n * 0.10))
     c4_n = max(10, int(n * 0.30))

@@ -1,13 +1,14 @@
-"""GLM client for extracting hadith spans from Arabic tafsir text via Ollama HTTP API (T0.5)."""
+"""GLM client for extracting hadith spans from Arabic tafsir text via Ollama HTTP API (T0.5, T4.5, T4.5b)."""
 
 import json
 import os
 import re
 import time
+from dataclasses import dataclass, field
 from pathlib import Path
 from dotenv import load_dotenv
 
-from src.extract.models import HadithSpanAnchorList, HadithSpanList
+from src.extract.models import HadithSpanAnchor, HadithSpanAnchorList, HadithSpanList
 from src.log import get_logger
 
 ROOT = Path(__file__).resolve().parent.parent.parent
@@ -16,6 +17,8 @@ load_dotenv(ROOT / ".env")
 logger = get_logger("glm_client")
 
 SCHEMA_PATH = ROOT / "docs" / "extraction_schema.json"
+
+PROMPT_VERSION = "1.2"
 
 # Few-shot examples for HadithSpanAnchorList (T4.5 - not from the gold set)
 FEWSHOT_ANCHOR_1_INPUT = (
@@ -55,16 +58,17 @@ FEWSHOT_ANCHOR_2_OUTPUT = {
 ANCHOR_SYSTEM_PROMPT = (
     "You are an expert Arabic hadith extraction assistant.\n"
     "Extract all HADITH spans (narrations, quotations, and chained takhrij lines) from the input Arabic tafsir window.\n"
-    "Return ONLY a JSON object strictly conforming to the schema.\n\n"
+    "Your response must be EXACTLY ONE JSON object and nothing else, with NO explanation, NO surrounding commentary, and NO markdown code fences.\n"
+    "Any quote character \" inside an Arabic string MUST be written as an escaped quote \\\" (never a bare \").\n\n"
     "Extraction rules:\n"
     "1. WHAT IS A HADITH: A narration with an isnad (حدثنا / أخبرنا / سمعت), an explicit takhrij (رواه / أخرجه / أخرجاه + collector), or the Prophet's ﷺ direct words or acts («قال رسول الله ﷺ», «وفي الحديث»).\n"
     "2. START ANCHOR: The first 3-8 words of the span, copied EXACTLY from the input text, starting at the introducing formula (e.g. «قال الإمام أحمد: حدثنا», «وقد رواه مسلم»). Leading connectives like «ولهذا» stay outside.\n"
     "3. END ANCHOR: The last 3-8 words of the span, copied EXACTLY from the input text, ending after the last word of the matn or takhrij (including closing quotes). Sentence-final full stops stay outside.\n"
     "4. TAKHRIJ: A takhrij line with its own isnad/chain (e.g. «وقد رواه مسلم عن أبي بكر ... عن الجريري به») is its own separate HADITH span. A chainless takhrij line (e.g. «وكذلك رواه ابن جرير», «وعلقه البخاري مجزوما») joins the hadith before it.\n"
-    "5. KIND: 'marfu' if the quoted route reaches the Prophet ﷺ; 'athar' if it stops at a Companion or Successor (e.g. Ibn Abbas, Ibn Umar). Base this on the quoted route as written.\n"
+    "5. KIND: 'marfu' if the quoted route reaches the Prophet ﷺ; 'athar' if it stops at a Companion or Successor (e.g. Ibn Abbas, Ibn Umar). Base this on the quoted route as written. Must be exactly 'marfu' or 'athar'.\n"
     "6. NOT HADITH: Tafsir opinions with short routes or no transmission verbs (e.g. «قال علي بن أبي طلحة عن ابن عباس», «قال مجاهد: ...») are commentary, NOT hadith. Dream or story reports (even with isnad) are commentary, NOT hadith.\n"
     "7. FOOTNOTES: Text inside [[...]] is an editor footnote. NEVER extract from [[...]], and anchors must never be inside [[...]].\n"
-    "8. COLLECTION HINT: Must be one of 'bukhari', 'muslim', 'abudawud', 'tirmidhi', 'nasai', 'ibnmajah', 'malik', 'ahmad', 'darimi', or 'other' (for any other source like Tabari, Tabarani, Bazzar, Ibn Abi Hatim), or null."
+    "8. COLLECTION HINT: Must be one of 'bukhari', 'muslim', 'abudawud', 'tirmidhi', 'nasai', 'ibnmajah', 'malik', 'ahmad', 'darimi', or 'other' (for any other source like Tabari, Tabarani, Bazzar, Ibn Abi Hatim, Ibn Jarir), or null. Anything else MUST be written as \"other\"."
 )
 
 # Default few-shot example (custom short example, not the fixture)
@@ -86,6 +90,148 @@ FEWSHOT_OUTPUT = {
         }
     ]
 }
+
+
+class GlmResponseError(Exception):
+    """Raised when GLM response does not contain a valid JSON object."""
+
+
+class GlmExtractionError(Exception):
+    """Raised when hadith extraction fails after all retry attempts."""
+
+
+@dataclass
+class ParsedAnchors:
+    """Parsed anchors from GLM response with error counters (T4.5b)."""
+
+    spans: list[HadithSpanAnchor] = field(default_factory=list)
+    unknown_collections: int = 0
+    dropped_spans: int = 0
+
+    def __iter__(self):
+        return iter(self.spans)
+
+    def __len__(self):
+        return len(self.spans)
+
+    def __getitem__(self, idx):
+        return self.spans[idx]
+
+
+VALID_COLLECTIONS = {
+    "bukhari",
+    "muslim",
+    "abudawud",
+    "tirmidhi",
+    "nasai",
+    "ibnmajah",
+    "malik",
+    "ahmad",
+    "darimi",
+    "other",
+}
+
+
+def parse_anchor_response(raw: str) -> ParsedAnchors:
+    """Parse raw GLM answer into ParsedAnchors without network calls (T4.5b).
+
+    Rules:
+    - take the first JSON object, ignore markdown fences and trailing text;
+    - validate span by span: an unknown collection_hint becomes 'other' (keep the span, count it);
+      an invalid span is dropped and counted, the others are kept; an unknown kind drops the span;
+    - no JSON object at all -> raise GlmResponseError.
+    """
+    if not raw or not raw.strip():
+        raise GlmResponseError("Empty GLM response")
+
+    cleaned = raw.strip()
+    if cleaned.startswith("```"):
+        cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
+        cleaned = re.sub(r"\s*```$", "", cleaned)
+
+    brace_pos = cleaned.find("{")
+    if brace_pos == -1:
+        raise GlmResponseError(f"No JSON object found in response: {raw[:100]!r}")
+
+    try:
+        obj, _ = json.JSONDecoder().raw_decode(cleaned[brace_pos:])
+    except Exception as exc:
+        raise GlmResponseError(f"Failed to decode JSON object: {exc}") from exc
+
+    if not isinstance(obj, dict) or "spans" not in obj:
+        raise GlmResponseError(f"Response JSON is not an object with 'spans': {type(obj)}")
+
+    raw_spans = obj["spans"]
+    if not isinstance(raw_spans, list):
+        raise GlmResponseError(f"'spans' must be a list, got {type(raw_spans)}")
+
+    valid_spans: list[HadithSpanAnchor] = []
+    unknown_collections = 0
+    dropped_spans = 0
+
+    for item in raw_spans:
+        if not isinstance(item, dict):
+            dropped_spans += 1
+            continue
+
+        start_anchor = item.get("start_anchor")
+        end_anchor = item.get("end_anchor")
+        if not isinstance(start_anchor, str) or not start_anchor.strip():
+            dropped_spans += 1
+            continue
+        if not isinstance(end_anchor, str) or not end_anchor.strip():
+            dropped_spans += 1
+            continue
+
+        raw_kind = item.get("kind")
+        if not isinstance(raw_kind, str):
+            dropped_spans += 1
+            continue
+        kind = raw_kind.strip().lower()
+        if kind not in ("marfu", "athar"):
+            dropped_spans += 1
+            continue
+
+        col = item.get("collection_hint")
+        if col is None:
+            col_hint = None
+        elif isinstance(col, str):
+            col_clean = col.strip().lower()
+            if col_clean in VALID_COLLECTIONS:
+                col_hint = col_clean
+            else:
+                col_hint = "other"
+                unknown_collections += 1
+        else:
+            col_hint = "other"
+            unknown_collections += 1
+
+        cue = item.get("cue")
+        if cue is not None and not isinstance(cue, str):
+            cue = str(cue)
+
+        num_hint = item.get("number_hint")
+        if num_hint is not None and not isinstance(num_hint, str):
+            num_hint = str(num_hint)
+
+        try:
+            anchor = HadithSpanAnchor(
+                start_anchor=start_anchor.strip(),
+                end_anchor=end_anchor.strip(),
+                cue=cue.strip() if cue else None,
+                collection_hint=col_hint,
+                number_hint=num_hint.strip() if num_hint else None,
+                kind=kind,
+            )
+            valid_spans.append(anchor)
+        except Exception:
+            dropped_spans += 1
+
+    return ParsedAnchors(
+        spans=valid_spans,
+        unknown_collections=unknown_collections,
+        dropped_spans=dropped_spans,
+    )
 
 
 def ollama_format(schema: dict) -> dict:
@@ -149,11 +295,6 @@ def extract_hadith_spans(
 
     Returns:
         Validated HadithSpanList instance.
-
-    Raises:
-        ValueError: If offsets are invalid (not 0 <= start < end <= len(text)).
-        requests.RequestException: If the HTTP request fails.
-        pydantic.ValidationError: If response does not match HadithSpanList schema.
     """
     import requests
 
@@ -193,7 +334,6 @@ def extract_hadith_spans(
     elapsed = time.time() - t0
     raw_content = "".join(content_parts).strip()
 
-    # Log duration per paragraph
     logger.info(
         "Extracted hadith spans in %.2fs for text of length %d chars (model: %s)",
         elapsed,
@@ -201,7 +341,6 @@ def extract_hadith_spans(
         model,
     )
 
-    # Strip markdown code blocks if the model wrapped the JSON
     cleaned = raw_content
     if cleaned.startswith("```"):
         cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
@@ -209,7 +348,6 @@ def extract_hadith_spans(
 
     span_list = HadithSpanList.model_validate_json(cleaned)
 
-    # Validate offsets: 0 <= start < end <= len(text)
     for span in span_list.spans:
         if not (0 <= span.start < span.end <= len(text)):
             raise ValueError(
@@ -224,8 +362,11 @@ def extract_hadith_anchors(
     model: str | None = None,
     host: str | None = None,
     timeout: float = 120.0,
-) -> HadithSpanAnchorList:
-    """Call Ollama /api/chat to extract hadith anchor phrases from Arabic tafsir text.
+) -> ParsedAnchors:
+    """Call Ollama /api/chat to extract hadith anchor phrases from Arabic tafsir text (T4.5, T4.5b).
+
+    Performs up to 3 attempts. Raises GlmExtractionError on failure.
+    An empty list now always means GLM really answered 'no spans'.
 
     Args:
         window_text: Raw verbatim Arabic tafsir window text (UTF-8).
@@ -234,7 +375,10 @@ def extract_hadith_anchors(
         timeout: HTTP request timeout in seconds.
 
     Returns:
-        Validated HadithSpanAnchorList instance.
+        Validated ParsedAnchors instance.
+
+    Raises:
+        GlmExtractionError: If extraction fails after 3 attempts.
     """
     import requests
 
@@ -263,7 +407,7 @@ def extract_hadith_anchors(
     }
 
     last_error: Exception | None = None
-    for attempt in range(2):
+    for attempt in range(1, 4):
         t0 = time.time()
         try:
             response = requests.post(f"{host}/api/chat", json=payload, stream=True, timeout=timeout)
@@ -280,36 +424,23 @@ def extract_hadith_anchors(
             elapsed = time.time() - t0
             raw_content = "".join(content_parts).strip()
 
-            cleaned = raw_content
-            if cleaned.startswith("```"):
-                cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
-                cleaned = re.sub(r"\s*```$", "", cleaned)
-
-            # Extract first JSON object from '{' using raw_decode to handle any trailing commentary
-            brace_pos = cleaned.find("{")
-            if brace_pos != -1:
-                try:
-                    obj, _ = json.JSONDecoder().raw_decode(cleaned[brace_pos:])
-                    anchor_list = HadithSpanAnchorList.model_validate(obj)
-                except Exception:
-                    anchor_list = HadithSpanAnchorList.model_validate_json(cleaned)
-            else:
-                anchor_list = HadithSpanAnchorList.model_validate_json(cleaned)
+            parsed = parse_anchor_response(raw_content)
             logger.info(
-                "Extracted %d hadith anchors in %.2fs for window of length %d chars (model: %s)",
-                len(anchor_list.spans),
+                "Extracted %d hadith anchors in %.2fs (attempt %d, model: %s)",
+                len(parsed.spans),
                 elapsed,
-                len(window_text),
+                attempt,
                 model,
             )
-            return anchor_list
+            return parsed
         except Exception as exc:
             last_error = exc
-            if attempt == 0:
-                logger.warning("Attempt 1 failed for extract_hadith_anchors, retrying: %s", exc)
+            if attempt < 3:
+                logger.warning("Attempt %d failed for extract_hadith_anchors, retrying: %s", attempt, exc)
                 time.sleep(1)
             else:
-                logger.error("Attempt 2 failed for extract_hadith_anchors: %s", exc)
+                logger.error("Attempt 3 failed for extract_hadith_anchors: %s", exc)
 
-    logger.warning("Returning empty HadithSpanAnchorList after error: %s", last_error)
-    return HadithSpanAnchorList(spans=[])
+    raise GlmExtractionError(
+        f"Failed to extract hadith anchors after 3 attempts: {last_error}"
+    ) from last_error

@@ -1,4 +1,4 @@
-"""Neo4j span writer: write Span nodes, HAS_SPAN, INSIDE, and ayah links (T4.2, T4.4).
+"""Neo4j span writer: write Span nodes, HAS_SPAN, INSIDE, and ayah links (T4.2, T4.4, T4.5b).
 
 Reusable for all Phase 4 spans (4a Quran, 4b Hadith, 4c Commentary & Footnotes).
 Idempotent UNWIND batches using MERGE on span_id and relationships:
@@ -28,6 +28,7 @@ logger = get_logger("spans")
 DEFAULT_BATCH_SIZE = 5000
 DEFAULT_SPANS_PATH = ROOT / "data" / "interim" / "spans" / "footnotes.jsonl"
 DEFAULT_QURAN_SPANS_PATH = ROOT / "data" / "interim" / "spans" / "quran.jsonl"
+DEFAULT_HADITH_SPANS_PATH = ROOT / "data" / "interim" / "spans" / "hadith.jsonl"
 
 
 def chunked(items: list[Any], size: int = DEFAULT_BATCH_SIZE) -> Iterable[list[Any]]:
@@ -129,11 +130,11 @@ def write_spans(
     driver: Driver | None = None,
     batch_size: int = DEFAULT_BATCH_SIZE,
 ) -> dict[str, int]:
-    """Write span records into Neo4j using idempotent UNWIND batches.
+    """Write span records into Neo4j using idempotent UNWIND batches (T4.2, T4.4, T4.5b).
 
     For each span record:
     1. MERGE (s:Span {span_id: row.span_id})
-       SET s.segment_id, s.start, s.end, s.type, and optional hints (cue, collection_hint, number_hint)
+       SET s.segment_id, s.start, s.end, s.type, and optional properties (kind, cue, collection_hint, number_hint)
     2. MATCH (seg:TafsirSegment {segment_id: row.segment_id})
        MATCH (s:Span {span_id: row.span_id})
        MERGE (seg)-[r:HAS_SPAN]->(s)
@@ -163,6 +164,7 @@ def write_spans(
         s.start = row.start,
         s.end = row.end,
         s.type = row.type
+    FOREACH (_ IN CASE WHEN row.kind IS NOT NULL THEN [1] ELSE [] END | SET s.kind = row.kind)
     FOREACH (_ IN CASE WHEN row.cue IS NOT NULL THEN [1] ELSE [] END | SET s.cue = row.cue)
     FOREACH (_ IN CASE WHEN row.collection_hint IS NOT NULL THEN [1] ELSE [] END | SET s.collection_hint = row.collection_hint)
     FOREACH (_ IN CASE WHEN row.number_hint IS NOT NULL THEN [1] ELSE [] END | SET s.number_hint = row.number_hint)
@@ -248,7 +250,7 @@ def write_spans(
                 )
 
             # 5. Query actual counts verified in DB
-            span_count = session.run(
+            actual_span_count = session.run(
                 "MATCH (s:Span) WHERE s.span_id IN $ids RETURN count(s) AS cnt",
                 ids=span_ids,
             ).single()["cnt"]
@@ -261,17 +263,50 @@ def write_spans(
             inside_count = 0
             if parent_rows:
                 inside_count = session.run(
-                    "MATCH (c:Span)-[r:INSIDE]->(:Span) WHERE c.span_id IN $ids RETURN count(r) AS cnt",
+                    "MATCH (c:Span)-[r:INSIDE]->(p:Span) WHERE c.span_id IN $ids RETURN count(r) AS cnt",
                     ids=[r["span_id"] for r in parent_rows],
                 ).single()["cnt"]
 
         return {
-            "spans": span_count,
+            "spans": actual_span_count,
             "has_span": has_span_count,
             "inside": inside_count,
             "explains": link_counts["explains"],
             "cites": link_counts["cites"],
         }
+    finally:
+        if close_driver:
+            driver.close()
+
+
+def delete_spans_by_type(
+    span_type: str,
+    driver: Driver | None = None,
+    session: Session | None = None,
+) -> int:
+    """Delete all spans and their relationships of a specific type (e.g. 'HADITH')."""
+    query = """
+    MATCH (s:Span {type: $span_type})
+    DETACH DELETE s
+    """
+    def _execute(sess: Session) -> int:
+        res = sess.run(query, span_type=span_type)
+        summary = res.consume()
+        deleted = summary.counters.nodes_deleted
+        logger.info("Deleted %d spans of type %r", deleted, span_type)
+        return deleted
+
+    if session is not None:
+        return _execute(session)
+
+    close_driver = False
+    if driver is None:
+        driver = get_driver()
+        close_driver = True
+
+    try:
+        with driver.session() as sess:
+            return _execute(sess)
     finally:
         if close_driver:
             driver.close()
@@ -297,6 +332,40 @@ def load_spans_file(
     return write_spans(rows, driver=driver, batch_size=batch_size)
 
 
+def write_hadith_spans(
+    path: Path | str = DEFAULT_HADITH_SPANS_PATH,
+    driver: Driver | None = None,
+    batch_size: int = DEFAULT_BATCH_SIZE,
+) -> dict[str, int]:
+    """Read hadith.jsonl, remove old HADITH spans first, write new HADITH spans through write_spans (T4.5b)."""
+    p = Path(path)
+    if not p.exists():
+        raise FileNotFoundError(f"Hadith spans JSONL file not found: {p}")
+
+    close_driver = False
+    if driver is None:
+        driver = get_driver()
+        close_driver = True
+
+    try:
+        # 1. Remove old HADITH spans first (only type: 'HADITH')
+        delete_spans_by_type("HADITH", driver=driver)
+
+        # 2. Read hadith.jsonl
+        rows: list[dict[str, Any]] = []
+        with p.open("r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    rows.append(json.loads(line))
+
+        # 3. Write through write_spans (stores kind)
+        return write_spans(rows, driver=driver, batch_size=batch_size)
+    finally:
+        if close_driver:
+            driver.close()
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Load spans JSONL into Neo4j.")
     parser.add_argument(
@@ -307,12 +376,29 @@ def main() -> None:
         help="Path to spans JSONL file (default: footnotes.jsonl and quran.jsonl)",
     )
     parser.add_argument(
+        "--hadith-spans",
+        action="store_true",
+        help="Write hadith spans from hadith.jsonl (removing old HADITH spans first)",
+    )
+    parser.add_argument(
+        "--write",
+        action="store_true",
+        help="Execute write operation",
+    )
+    parser.add_argument(
         "--batch-size",
         type=int,
         default=DEFAULT_BATCH_SIZE,
         help="Batch size for UNWIND",
     )
     args = parser.parse_args()
+
+    if args.hadith_spans:
+        target_path = args.file or DEFAULT_HADITH_SPANS_PATH
+        logger.info("Writing hadith spans from %s...", target_path)
+        counts = write_hadith_spans(target_path, batch_size=args.batch_size)
+        print(f"Loaded {counts['spans']} HADITH spans, {counts['has_span']} HAS_SPAN into Neo4j.")
+        return
 
     files_to_load = [args.file] if args.file else [DEFAULT_SPANS_PATH, DEFAULT_QURAN_SPANS_PATH]
     total_spans = 0

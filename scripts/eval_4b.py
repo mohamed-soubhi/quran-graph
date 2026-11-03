@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Gate 4b evaluation script: evaluate hadith span extraction against gold set (T4.5)."""
+"""Gate 4b evaluation script: evaluate hadith span extraction against gold set (T4.5, T4.5b)."""
 
 import argparse
 import datetime
@@ -22,7 +22,7 @@ from src.extract.hadith_spans import (
     compute_iou,
     match_spans_one_to_one,
 )
-from src.extract.glm_client import extract_hadith_anchors
+from src.extract.glm_client import GlmExtractionError, extract_hadith_anchors
 from src.log import get_logger
 
 logger = get_logger("eval_4b")
@@ -68,7 +68,7 @@ def evaluate_window(
     segments: dict[str, str],
     run_id: str,
     model: str,
-) -> tuple[str, list[dict], int, list[float]]:
+) -> tuple[str, list[dict], int, list[float], list[dict]]:
     seg_id = w["segment_id"]
     w_start, w_end = w["window_start"], w["window_end"]
     seg_text = segments[seg_id]
@@ -80,6 +80,7 @@ def evaluate_window(
 
     predicted_spans: list[dict] = []
     call_times: list[float] = []
+    failed_windows: list[dict] = []
     calls = 0
 
     for p_start, p_end in intersecting_paras:
@@ -88,7 +89,22 @@ def evaluate_window(
         for sw_s, sw_e in sub_wins:
             sw_text = seg_text[sw_s:sw_e]
             t0 = time.time()
-            anchors = extract_hadith_anchors(sw_text, model=model)
+            try:
+                anchors = extract_hadith_anchors(sw_text, model=model)
+            except GlmExtractionError as exc:
+                elapsed = time.time() - t0
+                calls += 1
+                call_times.append(elapsed)
+                fail_rec = {
+                    "window_id": w["window_id"],
+                    "segment_id": seg_id,
+                    "subwindow": f"{sw_s}-{sw_e}",
+                    "error": str(exc),
+                }
+                failed_windows.append(fail_rec)
+                print(f"FAILED window {w['window_id']} ({seg_id}#[{sw_s}-{sw_e}]): {exc}")
+                continue
+
             elapsed = time.time() - t0
             calls += 1
             call_times.append(elapsed)
@@ -97,6 +113,7 @@ def evaluate_window(
                 seg_text,
                 anchors.spans,
                 window_start=sw_s,
+                window_end=sw_e,
                 segment_id=seg_id,
                 run_id=run_id,
                 model=model,
@@ -107,7 +124,7 @@ def evaluate_window(
                     sp["window_id"] = w["window_id"]
                     predicted_spans.append(sp)
 
-    return w["window_id"], predicted_spans, calls, call_times
+    return w["window_id"], predicted_spans, calls, call_times, failed_windows
 
 
 def run_single_evaluation(
@@ -127,6 +144,7 @@ def run_single_evaluation(
     total_calls = 0
     all_call_times: list[float] = []
     all_predicted: list[dict] = []
+    all_failed_windows: list[dict] = []
 
     def task(w):
         return evaluate_window(w, segments, run_id, model)
@@ -134,9 +152,10 @@ def run_single_evaluation(
     with ThreadPoolExecutor(max_workers=concurrency) as executor:
         window_results = list(executor.map(task, gold_windows))
 
-    for wid, preds, n_calls, c_times in window_results:
+    for wid, preds, n_calls, c_times, fails in window_results:
         total_calls += n_calls
         all_call_times.extend(c_times)
+        all_failed_windows.extend(fails)
         seen = set()
         for sp in preds:
             key = (sp["start"], sp["end"])
@@ -175,8 +194,8 @@ def run_single_evaluation(
     mean_sec_call = sum(all_call_times) / total_calls if total_calls > 0 else 0.0
     n_fallback = sum(1 for sp in all_predicted if sp.get("fallback_used"))
 
-    # Gate 4b checks
-    gate_pass = precision >= 0.90 and recall >= 0.80 and mean_iou >= 0.90
+    # Gate 4b checks: fails if any window failed
+    gate_pass = precision >= 0.90 and recall >= 0.80 and mean_iou >= 0.90 and len(all_failed_windows) == 0
 
     # Print summary block
     print(f"\n--- Run {run_index} Summary ---")
@@ -190,9 +209,15 @@ def run_single_evaluation(
     print(f"Kind accuracy:   {kind_acc * 100:.2f}%")
     print(f"Fallback spans:  {n_fallback}/{n_pred}")
     print(f"GLM calls:       {total_calls}")
+    print(f"Failed windows:  {len(all_failed_windows)}")
     print(f"Wall time:       {wall_time:.2f}s")
     print(f"Mean call time:  {mean_sec_call:.2f}s")
     print(f"Saved run spans: {out_file}")
+
+    if all_failed_windows:
+        print(f"\nFailed windows ({len(all_failed_windows)}):")
+        for fw in all_failed_windows:
+            print(f"  [{fw['window_id']}] {fw['segment_id']}#{fw['subwindow']}: {fw['error']}")
 
     if false_positives:
         print(f"\nFalse positives ({len(false_positives)}):")
@@ -214,6 +239,7 @@ def run_single_evaluation(
         "model": model,
         "wall_time_seconds": round(wall_time, 2),
         "total_glm_calls": total_calls,
+        "failed_windows_count": len(all_failed_windows),
         "mean_seconds_per_call": round(mean_sec_call, 2),
         "predicted_count": n_pred,
         "gold_count": n_gold,
@@ -225,6 +251,7 @@ def run_single_evaluation(
         "kind_accuracy": round(kind_acc, 4),
         "fallback_count": n_fallback,
         "gate_pass": gate_pass,
+        "failed_windows": all_failed_windows,
         "false_positives": [
             {
                 "window_id": fp.get("window_id"),

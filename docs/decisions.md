@@ -3,6 +3,30 @@
 Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
+## 2026-11-04 — Reliable GLM answers, whole-book runner, and locator confidence (T4.5b)
+- Schema locator rules (`x-locator-rules` confidence adaptation for single-pass whole-book run):
+  - In gold set evaluation, agreement across runs measured consistency. For the whole-book run (~36–45 hours), running 3 passes is computationally prohibitive.
+  - Therefore, single-pass extraction assigns `confidence: 0.9` for exact anchor matches and `confidence: 0.8` when shorter-anchor fallback is used.
+- GLM resilience & prompt version:
+  - System prompt `PROMPT_VERSION = "1.2"`: strict one-object constraint, no markdown fences, escaped quotes `\"` explicitly documented and shown in few-shot, `collection_hint` strictly constrained to the 10 canonical values with fallback to `"other"`.
+  - Pure function `parse_anchor_response(raw) -> ParsedAnchors`: extracts first JSON object ignoring trailing commentary/fences; validates span by span (unknown `collection_hint` mapped to `"other"` and counted; unknown `kind` or invalid anchors dropped and counted); raises `GlmResponseError` if no JSON object decoded.
+  - `extract_hadith_anchors` executes up to 3 attempts, raising `GlmExtractionError` on exhaustion. An empty list strictly denotes "no hadith spans" as answered by GLM (no silent empties).
+- Bounded span locator:
+  - `locate_and_check_anchors` enforces `window_start <= start < end <= window_end`. Any span extending outside window is rejected with reason `outside_window`.
+- Gate 4b re-check (`logs/eval-4b-20261103-231808.json`):
+  - Run 1: P: 100.0%, R: 95.8%, IoU: 0.9958, 0 failed windows. **PASS**.
+  - Run 2: P: 100.0%, R: 100.0%, IoU: 0.9956, 0 failed windows. **PASS**.
+  - Run 3: P: 100.0%, R: 91.67%, IoU: 0.9913, 0 failed windows. **PASS**.
+- Resumable runner & build pipeline (`scripts/run_hadith_book.py`):
+  - `run_hadith_book.py`: processes windows in deterministic order, batches to keep memory flat (42.8 MB working set), flushes raw responses immediately to `hadith-raw.jsonl`.
+  - Resume skips `ok` windows, retries `failed` windows; automatic emergency stop if >20% of last 200 windows fail.
+  - `--build`: pure deterministic assembly to `hadith.jsonl` and `hadith-rejected.jsonl`. Merges identical spans and resolves partial overlaps (keeping longer span, rejecting shorter with `reason: "overlap"`).
+- Pilot 200 windows:
+  - 200 / 200 ok (100% success rate, 0 failed).
+  - Attempts needed: 197 on attempt 1 (98.5%), 3 on attempt 2 (1.5%), 0 on attempt 3.
+  - 192 kept spans (146 marfu, 46 athar), 0 fallbacks, 6 rejected (5 not_found, 1 overlap).
+  - Mean latency: 47.4 s/call. Projected whole-book time: ~42.0 hours (remaining: ~41.4 hours) at concurrency 4. Flat memory: 42.8 MB.
+
 ## 2026-11-03 — Hadith spans extraction pipeline and Gate 4b passed (T4.5)
 - Extraction contract v1.1 (`docs/extraction_schema.json`, `src/extract/models.py`):
   - Added `kind: Literal["marfu", "athar"]` to `HadithSpanAnchor` and schema. Bumped `$id` to `…/1.1`.
