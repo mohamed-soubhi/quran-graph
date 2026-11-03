@@ -184,6 +184,51 @@ def test_r3_edge_tokens_and_one_word_prefixes():
     assert conf == 1.0
 
 
+def test_r1_reference_check_allow_clitics_finding_e1():
+    """T4.4b Finding E1: quote with dropped/added clitic matches referenced ayat."""
+    # Finding E1: quote «ويل يومئذ للمكذبين» with ref [الطور: 11] (52:11 has «فويل...»)
+    q_52_11 = "﴿وَيْلٌ يَوْمَئِذٍ لِلْمُكَذِّبِينَ﴾"
+    ref_52_11 = {"ref_text": "[الطُّورِ: ١١]", "ayat": ["52:11"]}
+    ids, m, conf = match_quote(q_52_11, ["14:47", "14:48"], ref=ref_52_11)
+    assert ids == ["52:11"]
+    assert m == "regex"
+    assert conf == 1.0
+
+    # Reverse clitic: quote has leading clitic, referenced ayah does not
+    q_reverse = "﴿فَوَيْلٌ يَوْمَئِذٍ لِلْمُكَذِّبِينَ﴾"
+    ref_77_15 = {"ref_text": "[المرسلات: ١٥]", "ayat": ["77:15"]}
+    ids_rev, m_rev, conf_rev = match_quote(q_reverse, ["14:47", "14:48"], ref=ref_77_15)
+    assert ids_rev == ["77:15"]
+    assert m_rev == "regex"
+    assert conf_rev == 1.0
+
+
+def test_t4_4b_extracted_facts(quran_spans_jsonl):
+    """T4.4b facts: span ibn-kathir:14:47-48:1#367-403 links to 52:11, redirected refs = 39."""
+    target_span = None
+    redirected_count = 0
+    with open(quran_spans_jsonl, encoding="utf-8") as f:
+        for line in f:
+            sp = json.loads(line)
+            if sp["span_id"] == "ibn-kathir:14:47-48:1#367-403":
+                target_span = sp
+            links = sp.get("links", [])
+            if links and links[0]["method"] == "ngram" and links[0].get("ref_text"):
+                redirected_count += 1
+
+    assert target_span is not None
+    assert len(target_span["links"]) == 1
+    link = target_span["links"][0]
+    assert link["ayah_id"] == "52:11"
+    assert link["method"] == "regex"
+    assert link["confidence"] == 1.0
+    assert link["ref_text"] == "[الطُّورِ: ١١]"
+    assert link["rel"] == "CITES"
+
+    # Exactly 39 redirected reference typos (was 40 in T4.4)
+    assert redirected_count == 39
+
+
 def test_extracted_quran_spans_facts(quran_spans_jsonl):
     """Verify exactly 26,686 QURAN spans, bracket markers, and footnote enclosing invariant."""
     with DEFAULT_SEGMENTS_PATH.open("r", encoding="utf-8") as f:

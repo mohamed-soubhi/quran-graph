@@ -3,6 +3,17 @@
 Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
+## 2026-11-03 — Reference check: allow dropped or added clitic (T4.4b, Finding E1)
+- `src/extract/quran_spans.py`:
+  - Updated R1 reference verification: accepts quote as present in referenced ayat when first quote token equals referenced Quran token minus a leading clitic و/ف/ب/ل or the reverse (quote has clitic, ayah not), reusing R3 edge-token logic (exact, loose, skeleton).
+  - Precomputes `QuranCorpusIndex.ayah_stream_range` for fast stream slicing of referenced ayat.
+  - Span `ibn-kathir:14:47-48:1#367-403` (tafsir of 14:47–48 quoting «وَيْلٌ يَوْمَئِذٍ لِلْمُكَذِّبِينَ» [الطُّورِ: ١١]) now links to **52:11** with `method: regex`, `confidence: 1.0`, `ref_text: '[الطُّورِ: ١١]'` (finding E1 resolved).
+  - Redirected reference count decreased from 40 to **39** in `docs/findings/reference-typos.csv` and `.html`. No other reference redirected or changed.
+  - Links by method: `regex`: **7,222** (+1), `ngram`: **22,507** (-1).
+  - Links by confidence: `1.0`: **29,333** (+1), `0.9`: **240** (-1), `0.8`: **148**, `0.5`: **90**. Total link edges: **29,811** (unchanged: 20,941 EXPLAINS, 8,870 CITES).
+  - Gate 4a precision on gold set `data/gold/phase4.jsonl`: **100.00%** (79/79), recall: **100.00%**, link accuracy: **100.00%**, 0 disagreements. Log: `logs/eval-4a-20261103-1614.json`.
+  - Regenerated `data/interim/spans/quran.jsonl`, reloaded Neo4j idempotently (`tasks.py spans --write`).
+
 ## 2026-11-03 — Quran spans and ayah links verified (T4.4, Revision 1)
 - Quran quote extraction: `src/extract/quran_spans.py`, `scripts/tasks.py spans`.
   - Regex `﴿[^﴾]*﴾`, offsets in verbatim text, end exclusive, ornate brackets included.

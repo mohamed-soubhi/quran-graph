@@ -45,6 +45,7 @@ CONF_LOOSE = 0.9
 CONF_SKELETON = 0.8
 CONF_AMBIGUOUS = 0.5
 SPAN_TYPE_QURAN = "QURAN"
+CLITICS: tuple[str, ...] = ("\u0648", "\u0641", "\u0628", "\u0644")  # و, ف, ب, ل
 TR_SKELETON: dict[int, None] = str.maketrans(
     "", "", "\u0627\u0626\u0624\u0648\u064a\u0649"
 )  # loose + delete و, ي, ى
@@ -106,6 +107,7 @@ class QuranCorpusIndex:
 
         self.skel_stream: list[str] = []
         self.skel_index: dict[str, list[int]] = {}
+        self.ayah_stream_range: dict[str, tuple[int, int]] = {}
 
         if self.ayat_path.exists():
             with self.ayat_path.open("r", encoding="utf-8") as f:
@@ -119,6 +121,7 @@ class QuranCorpusIndex:
                     toks = clean_tokens(raw_text)
                     self.ayah_tokens[ayah_id] = set(toks)
 
+                    pos_start = len(self.stream)
                     for tok in toks:
                         pos = len(self.stream)
                         self.stream.append(tok)
@@ -128,6 +131,7 @@ class QuranCorpusIndex:
                         loose_tok = tok.translate(TR_LOOSE)
                         self.loose_stream.append(loose_tok)
                         self.loose_index.setdefault(loose_tok, []).append(pos)
+                    self.ayah_stream_range[ayah_id] = (pos_start, len(self.stream))
 
                     sk_toks = skel_tokens_from_text(raw_text)
                     for sk_tok in sk_toks:
@@ -302,6 +306,89 @@ def get_skel_candidates(
     return res
 
 
+def first_token_matches_clitic(q0: str, s0: str) -> bool:
+    """Return True if first quote token matches first Quran token with clitic / R3 edge rules.
+
+    Matches if identical, if Quran token ends with quote token (mid-word or ayah has leading clitic),
+    or if quote token has a leading clitic و/ف/ب/ل and ayah does not.
+    """
+    if q0 == s0:
+        return True
+    if s0.endswith(q0):
+        return True
+    if len(q0) > 1 and q0[0] in CLITICS and q0[1:] == s0:
+        return True
+    return False
+
+
+def last_token_matches_edge(qm: str, sm: str) -> bool:
+    """Return True if last quote token matches last Quran token with R3 edge rules (exact or startswith)."""
+    if qm == sm:
+        return True
+    if sm.startswith(qm):
+        return True
+    return False
+
+
+def matches_ref_with_clitic(
+    tokens: list[str],
+    ref_ayat: list[str],
+    index: QuranCorpusIndex,
+    allow_skel: bool = False,
+    inner_text: str = "",
+) -> bool:
+    """Check if quote tokens match within the referenced ayat allowing dropped/added clitic and R3 edge tokens."""
+    m = len(tokens)
+    valid_ayat = [a for a in ref_ayat if a in index.ayah_stream_range]
+    if not valid_ayat:
+        return False
+    ref_set = set(valid_ayat)
+
+    if m == 1:
+        tok = tokens[0]
+        tok_loose = tok.translate(TR_LOOSE)
+        for a in valid_ayat:
+            c_toks = index.ayah_tokens.get(a, set())
+            for c in c_toks:
+                if first_token_matches_clitic(tok, c):
+                    return True
+                if first_token_matches_clitic(tok_loose, c.translate(TR_LOOSE)):
+                    return True
+        return False
+
+    k_min = max(0, min(index.ayah_stream_range[a][0] for a in valid_ayat) - m + 1)
+    k_max = min(len(index.stream) - m, max(index.ayah_stream_range[a][1] for a in valid_ayat))
+
+    loose_tokens = [t.translate(TR_LOOSE) for t in tokens]
+    skel_tokens = skel_tokens_from_text(inner_text) if (m >= 3 and allow_skel) else []
+
+    for k in range(k_min, k_max + 1):
+        hit_ayat = index.stream_ayah[k : k + m]
+        if not any(a in ref_set for a in hit_ayat):
+            continue
+
+        # 1. Exact with clitic / R3 edge
+        st = index.stream[k : k + m]
+        if first_token_matches_clitic(tokens[0], st[0]) and last_token_matches_edge(tokens[-1], st[-1]):
+            if m <= 2 or tokens[1:-1] == st[1:-1]:
+                return True
+
+        # 2. Loose with clitic / R3 edge
+        st_loose = index.loose_stream[k : k + m]
+        if first_token_matches_clitic(loose_tokens[0], st_loose[0]) and last_token_matches_edge(loose_tokens[-1], st_loose[-1]):
+            if m <= 2 or loose_tokens[1:-1] == st_loose[1:-1]:
+                return True
+
+        # 3. Skeleton with clitic / R3 edge (only if allow_skel is True)
+        if allow_skel and m >= 3 and skel_tokens:
+            st_skel = index.skel_stream[k : k + m]
+            if first_token_matches_clitic(skel_tokens[0], st_skel[0]) and last_token_matches_edge(skel_tokens[-1], st_skel[-1]):
+                if m <= 2 or skel_tokens[1:-1] == st_skel[1:-1]:
+                    return True
+
+    return False
+
+
 def match_quote(
     quote: str,
     covers: list[str],
@@ -371,8 +458,10 @@ def match_quote(
         if ref_ayat:
             for a in ref_ayat:
                 c_toks = index.ayah_tokens.get(a, set())
-                if tok in c_toks or any((p + tok) in c_toks for p in ("و", "ف", "ب", "ل")):
+                if tok in c_toks or any((p + tok) in c_toks for p in CLITICS):
                     return list(ref_ayat), METHOD_REGEX, CONF_EXACT
+            if matches_ref_with_clitic(tokens, ref_ayat, index, allow_skel=False, inner_text=inner):
+                return list(ref_ayat), METHOD_REGEX, CONF_EXACT
             logger.info("One-word quote with reference not in ref ayat: %s -> %s", ascii(quote), ref_ayat)
             return [], METHOD_NGRAM, 0.0
 
@@ -420,6 +509,11 @@ def match_quote(
             if any(set(h) & ref_set for h in all_hits):
                 return list(ref_ayat), METHOD_REGEX, CONF_EXACT
 
+            # T4.4b: Allow a dropped or added clitic with R3 edge-token logic (finding E1)
+            has_exact_or_loose = bool(exact_matches or edge_exact_matches or loose_matches or edge_loose_matches)
+            if matches_ref_with_clitic(tokens, ref_ayat, index, allow_skel=not has_exact_or_loose, inner_text=inner):
+                return list(ref_ayat), METHOD_REGEX, CONF_EXACT
+
             # Text matches exist, but NONE occur in ref_ayat -> edition typo in written reference!
             logger.info(
                 "Reference typo detected for %s: ref=%s (%s), text hits in surah=%s",
@@ -444,7 +538,9 @@ def match_quote(
                         return seg_hits[0], METHOD_NGRAM, CONF_LOOSE
                 return all_hits[0], METHOD_NGRAM, CONF_LOOSE
         else:
-            # No text match anywhere in Quran (spelling variant): trust reference!
+            # No text match anywhere in Quran (spelling variant): check skeleton on ref_ayat or trust reference
+            if m >= 3 and matches_ref_with_clitic(tokens, ref_ayat, index, allow_skel=True, inner_text=inner):
+                return list(ref_ayat), METHOD_REGEX, CONF_EXACT
             return list(ref_ayat), METHOD_REGEX, CONF_EXACT
 
     # No reference or reference not applicable:

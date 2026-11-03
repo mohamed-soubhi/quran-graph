@@ -38,7 +38,7 @@ Aya & Mohamed after running its test scenarios. T0.0–T0.5 were accepted before
 | T4.2 | FOOTNOTE spans + span writer | 4 | agy | done | T4.1 | 48bea6f | Approved by Aya & Mohamed 2026-11-03. 31,203 `[[…]]` notes, regex, HAS_SPAN; idempotent writer in src/graph/spans.py; 74 tests pass |
 | T4.3 | Gold set (~50 windows) | 4 | Claude + Aya & Mohamed | done | T4.1 (parallel to T4.2, user OK 2026-11-03) | 52822ba | Approved by Aya & Mohamed 2026-11-03. data/gold/phase4.jsonl: 50 windows, 179 spans (QURAN 83, FOOTNOTE 68, HADITH 24, OTHER 4; 29 nested). Reviewed by Mohamed 2026-11-03: 172 ok, 5 wrong → resolved (W13 merge, W15 window moved back). Report: docs/tickets/reports/T4.3.md |
 | T4.4 | 4a Quran spans (no LLM) | 4 | agy | done | T4.3 | 83f506d | Approved by Aya & Mohamed 2026-11-03. 26,686 QURAN spans; 26,560 linked (20,941 EXPLAINS, 8,870 CITES); gate 4a 79/79; 40 references redirected (34 printing errors, see docs/findings/reference-typos.html); 1 our error → T4.4b. Report: docs/tickets/reports/T4.4.md |
-| T4.4b | Reference check: allow dropped clitic (finding E1) | 4 | agy | in-progress | T4.4 | | ﴿ويل يومئذ للمكذبين﴾ [الطور: ١١] must link to 52:11 |
+| T4.4b | Reference check: allow dropped clitic (finding E1) | 4 | agy | review | T4.4 | | Finding E1 fixed: 14:47-48 span links to 52:11 (regex, 1.0, ref_text); redirected typos 40->39; gate 4a 79/79; 91 passed. Report: docs/tickets/reports/T4.4b.md |
 | T4.5 | 4b Hadith spans (regex + GLM) | 4 | agy + GLM | todo | T4.4 | | anchors; P ≥ 90 %, R ≥ 80 %, IoU ≥ 0.9 |
 | T4.6 | 4c Nesting + COMMENTARY + coverage | 4 | agy | todo | T4.5 | | INSIDE parents; 100 % coverage, no overlap |
 | G4 | Phase 4 gate | 4 | Claude + Aya & Mohamed | todo | T4.1–T4.6 | | 4a/4b/4c targets on the gold set |
