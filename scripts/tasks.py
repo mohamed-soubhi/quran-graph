@@ -72,6 +72,7 @@ def run_parse() -> None:
     parsers = [
         "src/ingest/parse_quran.py",
         "src/ingest/quranic_corpus.py",
+        "src/ingest/parse_tafsir.py",
     ]
     for p in parsers:
         parser_path = ROOT / p

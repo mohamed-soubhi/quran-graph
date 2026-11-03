@@ -3,6 +3,19 @@
 Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
+## 2026-11-03 — Ibn Kathir parser to interim JSONL verified (T3.4)
+- Parsers: `src/ingest/parse_tafsir.py`, `scripts/tasks.py parse`.
+- Output: `data/interim/tafsir/ibn-kathir/segments.jsonl` (1,911 lines), `mufassir.jsonl` (1 line), `book.jsonl` (1 line); deterministic, UTF-8, keys sorted.
+- Exact counts:
+  - Exactly 1,911 segments; `covers` total 6,236 (every ayah covered exactly once).
+  - Verbatim raw text preserved across every covered ayah (`text` equals raw file).
+  - Sum of `char_count` = 13,401,179 characters.
+  - Largest group: 74:11–30 (20 ayat); second largest: 74:38–56 (19 ayat).
+  - Target fixture IDs verified: `ibn-kathir:2:255-255:1`, `ibn-kathir:30:30-32:1`, `ibn-kathir:4:116-122:1`.
+  - Mufassir: `mufassir_id = "ibn-kathir"`, `name = "إسماعيل بن عمر بن كثير"`, `death_hijri = 774`.
+  - TafsirBook: `book_id = "ibn-kathir"`, `mufassir_id = "ibn-kathir"`, `title = "تفسير القرآن العظيم"`, `source = "spa5k@eb82bb6"`.
+  - Rerun: byte-identical output files across runs.
+
 ## 2026-11-03 — Schema v1.1: changes C1–C4 (approved by Aya & Mohamed)
 Found by the G2 gate on real Ibn Kathir text (`docs/tickets/reports/G2.md`); written into `docs/schema.md` v1.1.
 - C1 nested spans via `(:Span)-[:INSIDE]->(:Span)`; the no-overlap/100 %-coverage rule is for top-level spans; footnotes do not split spans.
