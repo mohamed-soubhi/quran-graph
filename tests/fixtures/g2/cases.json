@@ -1,0 +1,364 @@
+{
+ "built_by": "scripts/build_g2_fixture.py",
+ "segments": [
+  {
+   "segment_id": "ibn-kathir:2:255-255:1",
+   "surah": 2,
+   "first_ayah": 255,
+   "last_ayah": 255
+  },
+  {
+   "segment_id": "ibn-kathir:30:30-32:1",
+   "surah": 30,
+   "first_ayah": 30,
+   "last_ayah": 32
+  },
+  {
+   "segment_id": "ibn-kathir:4:116-122:1",
+   "surah": 4,
+   "first_ayah": 116,
+   "last_ayah": 122
+  },
+  {
+   "segment_id": "ibn-kathir:17:15-15:1",
+   "surah": 17,
+   "first_ayah": 15,
+   "last_ayah": 15
+  }
+ ],
+ "spans": [
+  {
+   "span_id": "ibn-kathir:2:255-255:1#22110-22140",
+   "segment_id": "ibn-kathir:2:255-255:1",
+   "start": 22110,
+   "end": 22140,
+   "type": "QURAN",
+   "parent": null,
+   "begins_with": "﴿اللَّهُ لَا"
+  },
+  {
+   "span_id": "ibn-kathir:2:255-255:1#22474-22536",
+   "segment_id": "ibn-kathir:2:255-255:1",
+   "start": 22474,
+   "end": 22536,
+   "type": "QURAN",
+   "parent": null,
+   "begins_with": "﴿وَمِنْ آيَا"
+  },
+  {
+   "span_id": "ibn-kathir:2:255-255:1#27077-27239",
+   "segment_id": "ibn-kathir:2:255-255:1",
+   "start": 27077,
+   "end": 27239,
+   "type": "QURAN",
+   "parent": null,
+   "begins_with": "﴿إِنْ كُلُّ "
+  },
+  {
+   "span_id": "ibn-kathir:2:255-255:1#4257-5103",
+   "segment_id": "ibn-kathir:2:255-255:1",
+   "start": 4257,
+   "end": 5103,
+   "type": "HADITH",
+   "parent": null,
+   "begins_with": "قَالَ الْإِم",
+   "collection_hint": "ahmad",
+   "number_hint": null,
+   "note": "Musnad Ahmad 3/221 is volume/page; Musnad Ahmad not in our sources -> no CITES"
+  },
+  {
+   "span_id": "ibn-kathir:2:255-255:1#4599-4625",
+   "segment_id": "ibn-kathir:2:255-255:1",
+   "start": 4599,
+   "end": 4625,
+   "type": "QURAN",
+   "parent": "ibn-kathir:2:255-255:1#4257-5103",
+   "begins_with": "﴿قُلْ هُوَ ا"
+  },
+  {
+   "span_id": "ibn-kathir:2:255-255:1#4687-4720",
+   "segment_id": "ibn-kathir:2:255-255:1",
+   "start": 4687,
+   "end": 4720,
+   "type": "QURAN",
+   "parent": "ibn-kathir:2:255-255:1#4257-5103",
+   "begins_with": "﴿قُلْ يَا أَ"
+  },
+  {
+   "span_id": "ibn-kathir:2:255-255:1#4781-4799",
+   "segment_id": "ibn-kathir:2:255-255:1",
+   "start": 4781,
+   "end": 4799,
+   "type": "QURAN",
+   "parent": "ibn-kathir:2:255-255:1#4257-5103",
+   "begins_with": "﴿إِذَا زُلْز"
+  },
+  {
+   "span_id": "ibn-kathir:2:255-255:1#4860-4919",
+   "segment_id": "ibn-kathir:2:255-255:1",
+   "start": 4860,
+   "end": 4919,
+   "type": "QURAN",
+   "parent": "ibn-kathir:2:255-255:1#4257-5103",
+   "begins_with": "﴿إِذَا جَاءَ"
+  },
+  {
+   "span_id": "ibn-kathir:2:255-255:1#4902-4917",
+   "segment_id": "ibn-kathir:2:255-255:1",
+   "start": 4902,
+   "end": 4917,
+   "type": "FOOTNOTE",
+   "parent": "ibn-kathir:2:255-255:1#4860-4919",
+   "begins_with": "[[زيادة من و"
+  },
+  {
+   "span_id": "ibn-kathir:2:255-255:1#5000-5059",
+   "segment_id": "ibn-kathir:2:255-255:1",
+   "start": 5000,
+   "end": 5059,
+   "type": "QURAN",
+   "parent": "ibn-kathir:2:255-255:1#4257-5103",
+   "begins_with": "﴿اللَّهُ لَا"
+  },
+  {
+   "span_id": "ibn-kathir:2:255-255:1#5030-5057",
+   "segment_id": "ibn-kathir:2:255-255:1",
+   "start": 5030,
+   "end": 5057,
+   "type": "FOOTNOTE",
+   "parent": "ibn-kathir:2:255-255:1#5000-5059",
+   "begins_with": "[[في أ: \"هو "
+  },
+  {
+   "span_id": "ibn-kathir:2:255-255:1#141-657",
+   "segment_id": "ibn-kathir:2:255-255:1",
+   "start": 141,
+   "end": 657,
+   "type": "HADITH",
+   "parent": null,
+   "begins_with": "قَالَ الْإِم",
+   "collection_hint": "ahmad",
+   "number_hint": null,
+   "note": "Musnad Ahmad 5/141; not in our sources -> no CITES"
+  },
+  {
+   "span_id": "ibn-kathir:30:30-32:1#7755-7831",
+   "segment_id": "ibn-kathir:30:30-32:1",
+   "start": 7755,
+   "end": 7831,
+   "type": "HADITH",
+   "parent": null,
+   "begins_with": "انْفَرَدَ بِ",
+   "collection_hint": "muslim",
+   "number_hint": null
+  },
+  {
+   "span_id": "ibn-kathir:30:30-32:1#7832-7875",
+   "segment_id": "ibn-kathir:30:30-32:1",
+   "start": 7832,
+   "end": 7875,
+   "type": "FOOTNOTE",
+   "parent": null,
+   "begins_with": "[[المسند (٤/"
+  },
+  {
+   "span_id": "ibn-kathir:4:116-122:1#7126-7391",
+   "segment_id": "ibn-kathir:4:116-122:1",
+   "start": 7126,
+   "end": 7391,
+   "type": "HADITH",
+   "parent": null,
+   "begins_with": "وَفِي صَحِيح",
+   "collection_hint": "muslim",
+   "number_hint": null
+  },
+  {
+   "span_id": "ibn-kathir:4:116-122:1#7363-7383",
+   "segment_id": "ibn-kathir:4:116-122:1",
+   "start": 7363,
+   "end": 7383,
+   "type": "FOOTNOTE",
+   "parent": "ibn-kathir:4:116-122:1#7126-7391",
+   "begins_with": "[[في ر: \"ما "
+  },
+  {
+   "span_id": "ibn-kathir:4:116-122:1#7392-7419",
+   "segment_id": "ibn-kathir:4:116-122:1",
+   "start": 7392,
+   "end": 7419,
+   "type": "FOOTNOTE",
+   "parent": null,
+   "begins_with": "[[صحيح مسلم "
+  },
+  {
+   "span_id": "ibn-kathir:17:15-15:1#16163-16318",
+   "segment_id": "ibn-kathir:17:15-15:1",
+   "start": 16163,
+   "end": 16318,
+   "type": "HADITH",
+   "parent": null,
+   "begins_with": "وَفِي صَحِيح",
+   "collection_hint": "muslim",
+   "number_hint": null
+  },
+  {
+   "span_id": "ibn-kathir:17:15-15:1#16319-16346",
+   "segment_id": "ibn-kathir:17:15-15:1",
+   "start": 16319,
+   "end": 16346,
+   "type": "FOOTNOTE",
+   "parent": null,
+   "begins_with": "[[صحيح مسلم "
+  }
+ ],
+ "links": [
+  {
+   "span_id": "ibn-kathir:2:255-255:1#22110-22140",
+   "rel": "EXPLAINS",
+   "target": "2:255",
+   "method": "regex",
+   "note": "«فقوله:» introduces the ayah being explained"
+  },
+  {
+   "span_id": "ibn-kathir:2:255-255:1#22474-22536",
+   "rel": "CITES",
+   "target": "30:25",
+   "method": "regex",
+   "ref_text": "[الرُّومِ:٢٥]"
+  },
+  {
+   "span_id": "ibn-kathir:2:255-255:1#27077-27239",
+   "rel": "CITES",
+   "target": "19:93",
+   "method": "regex",
+   "ref_text": "[مَرْيَمَ: ٩٣-٩٥]"
+  },
+  {
+   "span_id": "ibn-kathir:2:255-255:1#27077-27239",
+   "rel": "CITES",
+   "target": "19:94",
+   "method": "regex",
+   "ref_text": "[مَرْيَمَ: ٩٣-٩٥]"
+  },
+  {
+   "span_id": "ibn-kathir:2:255-255:1#27077-27239",
+   "rel": "CITES",
+   "target": "19:95",
+   "method": "regex",
+   "ref_text": "[مَرْيَمَ: ٩٣-٩٥]"
+  },
+  {
+   "span_id": "ibn-kathir:2:255-255:1#4599-4625",
+   "rel": "CITES",
+   "target": "112:1",
+   "method": "regex"
+  },
+  {
+   "span_id": "ibn-kathir:2:255-255:1#4687-4720",
+   "rel": "CITES",
+   "target": "109:1",
+   "method": "regex"
+  },
+  {
+   "span_id": "ibn-kathir:2:255-255:1#4781-4799",
+   "rel": "CITES",
+   "target": "99:1",
+   "method": "regex"
+  },
+  {
+   "span_id": "ibn-kathir:2:255-255:1#4860-4919",
+   "rel": "CITES",
+   "target": "110:1",
+   "method": "regex"
+  },
+  {
+   "span_id": "ibn-kathir:2:255-255:1#5000-5059",
+   "rel": "EXPLAINS",
+   "target": "2:255",
+   "method": "regex"
+  },
+  {
+   "span_id": "ibn-kathir:30:30-32:1#7755-7831",
+   "rel": "CITES",
+   "target": "muslim:7207",
+   "method": "regex",
+   "evidence": "ibn-kathir:30:30-32:1#7832-7875",
+   "ref_text": "[[المسند (٤/١٦٢) وصحيح مسلم برقم (٢٨٦٥) .]]"
+  },
+  {
+   "span_id": "ibn-kathir:4:116-122:1#7126-7391",
+   "rel": "CITES",
+   "target": "muslim:7207",
+   "method": "regex",
+   "evidence": "ibn-kathir:4:116-122:1#7392-7419",
+   "ref_text": "[[صحيح مسلم برقم (٢٨٦٥) .]]"
+  },
+  {
+   "span_id": "ibn-kathir:17:15-15:1#16163-16318",
+   "rel": "CITES",
+   "target": "muslim:7207",
+   "method": "regex",
+   "evidence": "ibn-kathir:17:15-15:1#16319-16346",
+   "ref_text": "[[صحيح مسلم برقم (٢٨٦٥) .]]"
+  }
+ ],
+ "isnad": {
+  "span_id": "ibn-kathir:2:255-255:1#141-657",
+  "narrators": [
+   {
+    "narrator_id": "fixture:1",
+    "name": "عبد الرزاق",
+    "position": 1,
+    "mention": [
+     179,
+     197
+    ]
+   },
+   {
+    "narrator_id": "fixture:2",
+    "name": "سفيان",
+    "position": 2,
+    "mention": [
+     209,
+     218
+    ]
+   },
+   {
+    "narrator_id": "fixture:3",
+    "name": "سعيد الجريري",
+    "position": 3,
+    "mention": [
+     224,
+     245
+    ]
+   },
+   {
+    "narrator_id": "fixture:4",
+    "name": "أبو السليل",
+    "position": 4,
+    "mention": [
+     251,
+     267
+    ]
+   },
+   {
+    "narrator_id": "fixture:5",
+    "name": "عبد الله بن رباح",
+    "position": 5,
+    "mention": [
+     273,
+     300
+    ]
+   },
+   {
+    "narrator_id": "fixture:6",
+    "name": "أبي بن كعب",
+    "position": 6,
+    "mention": [
+     307,
+     333
+    ]
+   }
+  ]
+ }
+}

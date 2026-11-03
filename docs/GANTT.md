@@ -33,8 +33,8 @@ gantt
     section Phase 2 · Schema
     T2.1 schema.md v1.0            :done, t21, 2026-10-31, 1d
     T2.2 Constraints + indexes      :done, t22, 2026-10-31, 1d
-    T2.3 Extraction contract        :crit, active, t23, 2026-10-31, 1d
-    G2 Phase 2 gate (3 real cases)  :milestone, g2, after t23, 0d
+    T2.3 Extraction contract        :done, t23, 2026-10-31, 1d
+    G2 Phase 2 gate (3 real cases)  :crit, milestone, g2, 2026-11-03, 0d
 
     section Phase 3 · Load L0 + L1 (est.)
     Parsers → JSONL                 :p3a, after g2, 2d
@@ -72,7 +72,7 @@ gantt
 |---|---|---|---|
 | 0 · Setup | 7 / 7 | ✅ done | G0 signed off 2026-10-31 |
 | 1 · Data acquisition | 4 / 4 | ✅ G1 signed off 2026-10-31 | — |
-| 2 · Schema | 2 / 3 | 🔴 T2.3 waiting for your test approval | G2 next |
+| 2 · Schema | 3 / 3 | 🔴 G2 gate + schema changes C1–C4 waiting for your sign-off | Phase 3 next |
 | 3 · Load L0 + L1 | 0 | ⏳ | — |
 | 4 · Span annotation | 0 | ⏳ | — |
 | 5 · Hadith linking | 0 | ⏳ | — |
