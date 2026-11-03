@@ -37,7 +37,7 @@ gantt
     G2 Phase 2 gate ✔               :milestone, done, g2, 2026-11-03, 0d
 
     section Phase 3 · Load L0 + L1
-    T3.1 Tanzil metadata            :active, t31, 2026-11-03, 1d
+    T3.1 Tanzil metadata            :crit, active, t31, 2026-11-03, 1d
     T3.2 Quran → JSONL              :t32, after t31, 1d
     T3.3 Corpus → JSONL (Arabic)    :t33, after t32, 2d
     T3.4 Tafsir segments → JSONL    :t34, after t33, 1d
@@ -76,7 +76,7 @@ gantt
 | 0 · Setup | 7 / 7 | ✅ done | G0 signed off 2026-10-31 |
 | 1 · Data acquisition | 4 / 4 | ✅ G1 signed off 2026-10-31 | — |
 | 2 · Schema | 3 / 3 | ✅ G2 signed off 2026-11-03 (C1–C4 approval open) | — |
-| 3 · Load L0 + L1 | 0 / 5 | 🔵 T3.1 with agy | T3.2 next |
+| 3 · Load L0 + L1 | 0 / 5 | 🔴 T3.1 waiting for your test approval | T3.2 next |
 | 4 · Span annotation | 0 | ⏳ | — |
 | 5 · Hadith linking | 0 | ⏳ | — |
 | 6 · Semantics | 0 | ⏳ | — |
