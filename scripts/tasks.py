@@ -71,6 +71,7 @@ def run_parse() -> None:
     py = get_venv_python()
     parsers = [
         "src/ingest/parse_quran.py",
+        "src/ingest/quranic_corpus.py",
     ]
     for p in parsers:
         parser_path = ROOT / p

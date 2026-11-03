@@ -3,6 +3,21 @@
 Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
+## 2026-11-03 — Quranic Corpus parser to interim JSONL verified (T3.3)
+- Parsers: `src/ingest/buckwalter.py`, `src/ingest/quranic_corpus.py`, `scripts/tasks.py parse`.
+- Output: `data/interim/corpus/words.jsonl` (77,429 lines), `lemmas.jsonl` (4,832 lines), `roots.jsonl` (1,642 lines), `word_lemmas.jsonl` (74,608 lines), `word_roots.jsonl` (49,968 lines), `lemma_roots.jsonl` (4,657 lines), plus singular alias files (`word_lemma.jsonl`, `word_root.jsonl`, `lemma_root.jsonl`); deterministic, UTF-8, keys sorted.
+- Exact counts:
+  - Words: 77,429 words. First word 1:1:1 text is «بِسْمِ» (joined segments), POS = "N".
+  - Lemmas: 4,832 lemmas, 4,817 distinct texts, 15 with homonym sense (all sense 2, e.g. `عَاد#2`).
+  - Roots: 1,642 roots, root `smw` -> `سمو`.
+  - Links:
+    - Word→Lemma: 74,608 links, 486 words with 2 lemmas.
+    - Word→Root: 49,968 links, 1 word with 2 roots (`20:94:2`: «يَبْنَؤُمَّ»).
+    - Lemma→Root: 4,657 links, 0 lemmas with >1 root, 175 lemmas without root.
+  - Round-trip: Arabic ↔ Buckwalter checked lossless for all 1,642 roots, 4,817 lemma texts, and 12,205 word forms (0 unmapped characters).
+  - Ayah word counts: match T3.2 `data/interim/quran/ayat.jsonl` across all ayat except exactly the 4 known corpus join exceptions: 2:181 (13 vs 14), 8:6 (11 vs 12), 13:37 (19 vs 20), 37:130 (3 vs 4).
+  - Rerun: byte-identical output files.
+
 ## 2026-11-03 — Quran parser to interim JSONL verified (T3.2)
 - Parser: `src/ingest/parse_quran.py`, `scripts/tasks.py parse`.
 - Output: `data/interim/quran/surahs.jsonl` (114 lines) and `ayat.jsonl` (6,236 lines), deterministic, UTF-8, keys sorted.
