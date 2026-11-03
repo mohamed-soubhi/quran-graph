@@ -226,7 +226,21 @@ def write_spans(
                 for chunk in chunked(parent_rows, batch_size):
                     session.run(merge_inside_query, batch=chunk).consume()
 
-            # 4. Write ayah link relationships (if any links present)
+            # 4. Remove old ayah links for QURAN spans in rows, then write new links
+            quran_span_ids = [r["span_id"] for r in rows if r.get("type") == "QURAN"]
+            if quran_span_ids:
+                logger.info("Clearing previous ayah links for %d QURAN spans...", len(quran_span_ids))
+                for chunk in chunked(quran_span_ids, batch_size):
+                    session.run(
+                        """
+                        UNWIND $batch AS id
+                        MATCH (s:Span {span_id: id})-[r:EXPLAINS|CITES]->(:Ayah)
+                        DELETE r
+                        """,
+                        batch=chunk,
+                    ).consume()
+
+            # Write ayah link relationships (if any links present)
             link_counts = {"explains": 0, "cites": 0}
             if all_links:
                 link_counts = write_ayah_links(

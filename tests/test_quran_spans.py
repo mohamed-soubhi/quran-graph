@@ -103,6 +103,87 @@ def test_loose_key_matching_56_47():
     assert conf in (0.9, 1.0)
 
 
+def test_r1_reference_check_typos():
+    """R1: reference check catches edition typos and links nearest text match in referenced surah."""
+    # Example 1: «[النِّسَاءِ: ١١]» for 4:110
+    q_4_110 = "﴿وَمَنْ يَعْمَلْ سُوءًا أَوْ يَظْلِمْ نَفْسَهُ ثُمَّ يَسْتَغْفِرِ اللَّهَ يَجِدِ اللَّهَ غَفُورًا رَحِيمًا﴾"
+    ref_4_11 = {"ref_text": "[النِّسَاءِ: ١١]", "ayat": ["4:11"]}
+    ids, m, conf = match_quote(q_4_110, ["2:37"], ref=ref_4_11)
+    assert ids == ["4:110"]
+    assert m == "ngram"
+    assert conf == 0.9
+
+    # Example 2: «[الْأَنْبِيَاءِ: ٢٥]» for 21:35
+    q_21_35 = "﴿وَنَبْلُوكُمْ بِالشَّرِّ وَالْخَيْرِ فِتْنَةً﴾"
+    ref_21_25 = {"ref_text": "[الْأَنْبِيَاءِ: ٢٥]", "ayat": ["21:25"]}
+    ids, m, conf = match_quote(q_21_35, ["2:49", "2:50"], ref=ref_21_25)
+    assert ids == ["21:35"]
+    assert m == "ngram"
+    assert conf == 0.9
+
+    # Example 3: «[الشُّعَرَاءِ: ١١٠، ١١١]» for 26:100-101
+    q_26_100 = "﴿فَمَا لَنَا مِنْ شَافِعِينَ * وَلا صَدِيقٍ حَمِيمٍ﴾"
+    ref_26_110 = {"ref_text": "[الشُّعَرَاءِ: ١١٠، ١١١]", "ayat": ["26:110", "26:111"]}
+    ids, m, conf = match_quote(q_26_100, ["2:48"], ref=ref_26_110)
+    assert ids == ["26:100", "26:101"]
+    assert m == "ngram"
+    assert conf == 0.9
+
+
+def test_r2_skeleton_key_matching():
+    """R2: skeleton key matches spelling variants (>=3 words) inside covered ayat or unique."""
+    # 1. داود/داوود in 38:24
+    q_38_24 = "﴿وَظَنَّ دَاوُودُ أَنَّمَا فَتَنَّاهُ فَاسْتَغْفَرَ رَبَّهُ وَخَرَّ رَاكِعًا وَأَنَابَ﴾"
+    ids, m, conf = match_quote(q_38_24, ["38:21", "38:22", "38:23", "38:24"])
+    assert ids == ["38:24"]
+    assert conf in (0.8, 0.9, 1.0)
+
+    # 2. سنة/سنت in 8:38
+    q_8_38 = "﴿فَقَدْ مَضَتْ سُنَّةُ الأوَّلِينَ﴾"
+    ids, m, conf = match_quote(q_8_38, ["8:38", "8:39", "8:40"])
+    assert ids == ["8:38"]
+    assert conf in (0.8, 0.9, 1.0)
+
+    # 3. المسيطرون/المصيطرون in 52:37
+    q_52_37 = "﴿أَمْ عِنْدَهُمْ خَزَائِنُ رَبِّكَ أَمْ هُمُ الْمُسَيْطِرُونَ﴾"
+    ids, m, conf = match_quote(q_52_37, ["52:37"])
+    assert ids == ["52:37"]
+    assert conf in (0.8, 0.9, 1.0)
+
+    # 4. الجوار/الجواري in 81:16
+    q_81_16 = "﴿فَلا أُقْسِمُ بِالْخُنَّسِ * الْجَوَارِي الْكُنَّسِ﴾"
+    ids, m, conf = match_quote(q_81_16, ["81:15", "81:16"])
+    assert ids == ["81:15", "81:16"]
+    assert conf in (0.8, 0.9, 1.0)
+
+    # 5. يحيا/يحيى in 20:74
+    q_20_74 = "﴿إِنَّهُ مَنْ يَأْتِ رَبَّهُ مُجْرِمًا فَإِنَّ لَهُ جَهَنَّمَ لا يَمُوتُ فِيهَا وَلا يَحْيَا﴾"
+    ids, m, conf = match_quote(q_20_74, ["20:74"])
+    assert ids == ["20:74"]
+    assert conf in (0.8, 0.9, 1.0)
+
+
+def test_r3_edge_tokens_and_one_word_prefixes():
+    """R3: edge tokens (first endswith, last startswith) and one-word quotes with و/ف/ب/ل prefix."""
+    # Mid-word start quote in 2:282 «لْيَكْتُبْ» (وليكتب)
+    q_2_282 = "﴿لْيَكْتُبْ بَيْنَكُمْ كَاتِبٌ بِالْعَدْلِ﴾"
+    ids, m, conf = match_quote(q_2_282, ["2:282"])
+    assert ids == ["2:282"]
+    assert conf == 1.0
+
+    # One-word quote with clitic prefix و: «خُفْيَة» (وخفية in 7:55)
+    q_7_55 = "﴿خُفْيَةً﴾"
+    ids, m, conf = match_quote(q_7_55, ["7:55"])
+    assert ids == ["7:55"]
+    assert conf == 1.0
+
+    # One-word quote with clitic prefix و: «هُدًى» (وهدى in 3:138)
+    q_3_138 = "﴿هُدًى﴾"
+    ids, m, conf = match_quote(q_3_138, ["3:137", "3:138"])
+    assert ids == ["3:138"]
+    assert conf == 1.0
+
+
 def test_extracted_quran_spans_facts(quran_spans_jsonl):
     """Verify exactly 26,686 QURAN spans, bracket markers, and footnote enclosing invariant."""
     with DEFAULT_SEGMENTS_PATH.open("r", encoding="utf-8") as f:
@@ -198,8 +279,8 @@ def test_neo4j_write_quran_spans_and_idempotence(neo4j_driver, quran_spans_jsonl
         cites_in_db = session.run(
             "MATCH (:Span {type: 'QURAN'})-[r:CITES]->(:Ayah) RETURN count(r) AS cnt"
         ).single()["cnt"]
-        assert explains_in_db == 20717
-        assert cites_in_db == 8847
+        assert explains_in_db == 20941
+        assert cites_in_db == 8870
 
         # 2. Second write must change no count
         res2 = load_spans_file(quran_spans_jsonl, driver=neo4j_driver)

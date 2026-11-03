@@ -42,8 +42,12 @@ METHOD_REGEX = "regex"
 METHOD_NGRAM = "ngram"
 CONF_EXACT = 1.0
 CONF_LOOSE = 0.9
+CONF_SKELETON = 0.8
 CONF_AMBIGUOUS = 0.5
 SPAN_TYPE_QURAN = "QURAN"
+TR_SKELETON: dict[int, None] = str.maketrans(
+    "", "", "\u0627\u0626\u0624\u0648\u064a\u0649"
+)  # loose + delete و, ي, ى
 
 
 def clean_tokens(text: str) -> list[str]:
@@ -51,6 +55,13 @@ def clean_tokens(text: str) -> list[str]:
     norm, _ = normalize_with_map(text)
     clean = "".join(c if c.isalnum() else " " for c in norm)
     return clean.split()
+
+
+def skel_tokens_from_text(text: str) -> list[str]:
+    """Transform text for skeleton matching: map ة->ت, ص->س, then loose key + delete و ي ى."""
+    t = text.replace("ة", "ت").replace("ص", "س")
+    toks = clean_tokens(t)
+    return [tok.translate(TR_SKELETON) for tok in toks]
 
 
 class QuranCorpusIndex:
@@ -87,9 +98,14 @@ class QuranCorpusIndex:
         self.stream_ayah: list[str] = []
         self.ayah_tokens: dict[str, set[str]] = {}
         self.index: dict[str, list[int]] = {}
+        self.suffix_map: dict[str, list[str]] = {}
 
         self.loose_stream: list[str] = []
         self.loose_index: dict[str, list[int]] = {}
+        self.loose_suffix_map: dict[str, list[str]] = {}
+
+        self.skel_stream: list[str] = []
+        self.skel_index: dict[str, list[int]] = {}
 
         if self.ayat_path.exists():
             with self.ayat_path.open("r", encoding="utf-8") as f:
@@ -99,7 +115,8 @@ class QuranCorpusIndex:
                         continue
                     a = json.loads(line)
                     ayah_id = a["ayah_id"]
-                    toks = clean_tokens(a.get("text_simple", ""))
+                    raw_text = a.get("text_simple", "")
+                    toks = clean_tokens(raw_text)
                     self.ayah_tokens[ayah_id] = set(toks)
 
                     for tok in toks:
@@ -111,6 +128,20 @@ class QuranCorpusIndex:
                         loose_tok = tok.translate(TR_LOOSE)
                         self.loose_stream.append(loose_tok)
                         self.loose_index.setdefault(loose_tok, []).append(pos)
+
+                    sk_toks = skel_tokens_from_text(raw_text)
+                    for sk_tok in sk_toks:
+                        sk_pos = len(self.skel_stream)
+                        self.skel_stream.append(sk_tok)
+                        self.skel_index.setdefault(sk_tok, []).append(sk_pos)
+
+        # Precompute suffix maps for edge token lookup (R3)
+        for w in self.index:
+            for i in range(1, len(w)):
+                self.suffix_map.setdefault(w[i:], []).append(w)
+        for w in self.loose_index:
+            for i in range(1, len(w)):
+                self.loose_suffix_map.setdefault(w[i:], []).append(w)
 
 
 # Lazy singleton index
@@ -195,21 +226,104 @@ def parse_ref(
     }
 
 
+def get_exact_candidates(
+    tokens: list[str], index: QuranCorpusIndex, edge: bool = False
+) -> list[tuple[int, bool]]:
+    """Return stream positions matching tokens exactly (and optionally with edge tokens)."""
+    m = len(tokens)
+    t0 = tokens[0]
+    tm = tokens[-1]
+    res: list[tuple[int, bool]] = []
+
+    for k in index.index.get(t0, []):
+        if k + m <= len(index.stream):
+            if not edge:
+                if index.stream[k : k + m] == tokens:
+                    res.append((k, False))
+            else:
+                st = index.stream[k : k + m]
+                if (st[-1] == tm or st[-1].startswith(tm)) and (m <= 2 or st[1:-1] == tokens[1:-1]):
+                    res.append((k, st[-1] != tm))
+
+    if edge:
+        for w in index.suffix_map.get(t0, []):
+            for k in index.index.get(w, []):
+                if k + m <= len(index.stream):
+                    st = index.stream[k : k + m]
+                    if (st[-1] == tm or st[-1].startswith(tm)) and (m <= 2 or st[1:-1] == tokens[1:-1]):
+                        res.append((k, True))
+    return res
+
+
+def get_loose_candidates(
+    loose_tokens: list[str], index: QuranCorpusIndex, edge: bool = False
+) -> list[tuple[int, bool]]:
+    """Return stream positions matching loose tokens (and optionally with edge tokens)."""
+    m = len(loose_tokens)
+    t0 = loose_tokens[0]
+    tm = loose_tokens[-1]
+    res: list[tuple[int, bool]] = []
+
+    for k in index.loose_index.get(t0, []):
+        if k + m <= len(index.loose_stream):
+            if not edge:
+                if index.loose_stream[k : k + m] == loose_tokens:
+                    res.append((k, False))
+            else:
+                st = index.loose_stream[k : k + m]
+                if (st[-1] == tm or st[-1].startswith(tm)) and (m <= 2 or st[1:-1] == loose_tokens[1:-1]):
+                    res.append((k, st[-1] != tm))
+
+    if edge:
+        for w in index.loose_suffix_map.get(t0, []):
+            for k in index.loose_index.get(w, []):
+                if k + m <= len(index.loose_stream):
+                    st = index.loose_stream[k : k + m]
+                    if (st[-1] == tm or st[-1].startswith(tm)) and (m <= 2 or st[1:-1] == loose_tokens[1:-1]):
+                        res.append((k, True))
+    return res
+
+
+def get_skel_candidates(
+    skel_tokens: list[str], index: QuranCorpusIndex
+) -> list[int]:
+    """Return stream positions matching skeleton tokens."""
+    m = len(skel_tokens)
+    first_ne = next((i for i, t in enumerate(skel_tokens) if t), None)
+    if first_ne is None:
+        return []
+    anchor = skel_tokens[first_ne]
+    res: list[int] = []
+    for pos in index.skel_index.get(anchor, []):
+        k = pos - first_ne
+        if 0 <= k and k + m <= len(index.skel_stream):
+            if index.skel_stream[k : k + m] == skel_tokens:
+                res.append(k)
+    return res
+
+
 def match_quote(
     quote: str,
     covers: list[str],
     ref: dict[str, Any] | None = None,
     index: QuranCorpusIndex | None = None,
 ) -> tuple[list[str], str, float]:
-    """Match quote text to ayah(s) according to T4.4 preference order.
+    """Match quote text to ayah(s) according to T4.4 (with R1-R4) preference order.
 
     Order of preference:
-    1. written reference → its ayat (method: regex, confidence: 1.0);
-    2. exact match inside the ayat the segment covers (ngram, 1.0);
-    3. exact unique match in the whole Quran (ngram, 1.0); several matches →
-       prefer segment's surah, else first in mushaf order (ngram, 0.5);
-    4. looser key deleting ا ئ ؤ from both sides (ngram, 0.9);
-    5. one-word quote only matches inside covered ayat; otherwise no link.
+    1. Written reference verification (R1):
+       - If quote text (exact or loose) occurs in referenced ayat → reference links (regex, 1.0).
+       - If quote text matches in Quran but NOT in referenced ayat → link text match instead,
+         preferring occurrence in referenced surah nearest to referenced ayah (ngram, 0.9), keeping ref_text.
+       - If quote text has no Quran match anywhere (spelling variant) → trust reference (regex, 1.0).
+    2. One-word quote (R3): only matches inside covered ayat (exact or with prefix و/ف/ب/ل); otherwise no link.
+    3. Multi-word exact match (without edge tokens): covered ayat (1.0), unique (1.0), ambiguous surah/mushaf (0.5).
+    4. Multi-word exact match with edge tokens (R3): first token endswith, last startswith.
+    5. Multi-word loose match (TR_LOOSE): covered (0.9), unique (0.9), ambiguous (0.5, R4).
+    6. Multi-word loose match with edge tokens (R3).
+    7. Multi-word skeleton match (quotes >= 3 words, R2): loose + delete و ي ى, map ة→ت, ص→س.
+       Accept only inside covered ayat (0.8 / 0.5), in referenced surah (0.8 / 0.5), or unique (0.8).
+    8. No match → return ([], ngram, 0.0). No guessing.
 
     Returns:
         (ayah_ids, method, confidence)
@@ -217,91 +331,168 @@ def match_quote(
     if index is None:
         index = get_quran_index()
 
-    # 1. Written reference preference
-    if ref and ref.get("ayat"):
-        # Verify if text matches to log deviations if any
-        return list(ref["ayat"]), METHOD_REGEX, CONF_EXACT
-
-    # Strip inner footnotes [[...]] and quote brackets ﴿ ﴾
-    inner = FOOTNOTE_INNER_RE.sub(" ", quote)
-    inner = inner.strip("﴿﴾")
+    inner = FOOTNOTE_INNER_RE.sub(" ", quote).strip("﴿﴾")
     tokens = clean_tokens(inner)
     if not tokens:
         return [], METHOD_NGRAM, 0.0
 
+    m = len(tokens)
     seg_surah = int(covers[0].split(":")[0]) if covers else None
+    ref_ayat = ref.get("ayat", []) if ref else []
+    ref_surah = int(ref_ayat[0].split(":")[0]) if ref_ayat else None
+    ref_ayah = int(ref_ayat[0].split(":")[1]) if ref_ayat else None
 
-    # 5. One-word quote: only matches inside covered ayat; otherwise no link
-    if len(tokens) == 1:
+    # --- 1-word quotes (R3) ---
+    if m == 1:
         tok = tokens[0]
+        # Exact inside covered ayat
         cands = [a for a in covers if a in index.ayah_tokens and tok in index.ayah_tokens[a]]
         if cands:
+            if ref_ayat:
+                if any(a in ref_ayat for a in cands) or any(
+                    tok in index.ayah_tokens.get(a, set()) for a in ref_ayat
+                ):
+                    return list(ref_ayat), METHOD_REGEX, CONF_EXACT
             return [cands[0]], METHOD_NGRAM, CONF_EXACT
+
+        # With prefix و/ف/ب/ل in covered ayat (R3)
+        pref_cands = []
+        for a in covers:
+            c_toks = index.ayah_tokens.get(a, set())
+            if any((p + tok) in c_toks for p in ("و", "ف", "ب", "ل")):
+                pref_cands.append(a)
+        if pref_cands:
+            if ref_ayat:
+                if any(a in ref_ayat for a in pref_cands):
+                    return list(ref_ayat), METHOD_REGEX, CONF_EXACT
+            return [pref_cands[0]], METHOD_NGRAM, CONF_EXACT
+
+        # If ref was given, check if tok occurs in ref_ayat (exact or with prefix)
+        if ref_ayat:
+            for a in ref_ayat:
+                c_toks = index.ayah_tokens.get(a, set())
+                if tok in c_toks or any((p + tok) in c_toks for p in ("و", "ف", "ب", "ل")):
+                    return list(ref_ayat), METHOD_REGEX, CONF_EXACT
+            logger.info("One-word quote with reference not in ref ayat: %s -> %s", ascii(quote), ref_ayat)
+            return [], METHOD_NGRAM, 0.0
+
         logger.info("One-word quote not in covered ayat (no link): %s", ascii(quote))
         return [], METHOD_NGRAM, 0.0
 
-    # Find exact contiguous matches in the Quran token stream
-    m = len(tokens)
-    first_tok = tokens[0]
-    candidate_positions = index.index.get(first_tok, [])
-    matches: list[list[str]] = []
-    for k in candidate_positions:
-        if index.stream[k : k + m] == tokens:
-            touched = list(dict.fromkeys(index.stream_ayah[k : k + m]))
-            matches.append(touched)
+    # --- Multi-word quotes ---
+    # 1. Exact matches (without edge tokens)
+    exact_cand = get_exact_candidates(tokens, index, edge=False)
+    exact_matches = [list(dict.fromkeys(index.stream_ayah[k : k + m])) for k, _ in exact_cand]
 
-    if matches:
-        # 2. Exact match inside covered ayat
-        cov_matches = [c for c in matches if any(a in covers for a in c)]
-        if cov_matches:
-            return cov_matches[0], METHOD_NGRAM, CONF_EXACT
+    # 2. Exact matches with edge tokens (R3)
+    edge_exact_matches: list[list[str]] = []
+    if not exact_matches:
+        edge_cand = get_exact_candidates(tokens, index, edge=True)
+        edge_exact_matches = [list(dict.fromkeys(index.stream_ayah[k : k + m])) for k, _ in edge_cand]
 
-        # 3. Exact unique match in the whole Quran
-        if len(matches) == 1:
-            return matches[0], METHOD_NGRAM, CONF_EXACT
-
-        # Several matches: prefer segment's surah, else first in mushaf order
-        if seg_surah is not None:
-            surah_matches = [
-                c for c in matches if any(int(a.split(":")[0]) == seg_surah for a in c)
-            ]
-            if surah_matches:
-                logger.info("Ambiguous matches for quote, picked surah match: %s -> %s", ascii(quote), surah_matches[0])
-                return surah_matches[0], METHOD_NGRAM, CONF_AMBIGUOUS
-
-        logger.info("Ambiguous matches for quote, picked first in mushaf order: %s -> %s", ascii(quote), matches[0])
-        return matches[0], METHOD_NGRAM, CONF_AMBIGUOUS
-
-    # 4. Looser key deleting ا ئ ؤ from both sides
+    # 3. Loose matches
     loose_tokens = [t.translate(TR_LOOSE) for t in tokens]
-    first_loose = loose_tokens[0]
-    loose_candidates = index.loose_index.get(first_loose, [])
     loose_matches: list[list[str]] = []
-    for k in loose_candidates:
-        if index.loose_stream[k : k + m] == loose_tokens:
-            touched = list(dict.fromkeys(index.stream_ayah[k : k + m]))
-            loose_matches.append(touched)
+    if not exact_matches and not edge_exact_matches:
+        l_cand = get_loose_candidates(loose_tokens, index, edge=False)
+        loose_matches = [list(dict.fromkeys(index.stream_ayah[k : k + m])) for k, _ in l_cand]
 
-    if loose_matches:
-        cov_matches = [c for c in loose_matches if any(a in covers for a in c)]
-        if cov_matches:
-            return cov_matches[0], METHOD_NGRAM, CONF_LOOSE
+    # 4. Loose matches with edge tokens (R3)
+    edge_loose_matches: list[list[str]] = []
+    if not exact_matches and not edge_exact_matches and not loose_matches:
+        l_edge_cand = get_loose_candidates(loose_tokens, index, edge=True)
+        edge_loose_matches = [list(dict.fromkeys(index.stream_ayah[k : k + m])) for k, _ in l_edge_cand]
 
-        if len(loose_matches) == 1:
-            return loose_matches[0], METHOD_NGRAM, CONF_LOOSE
+    # 5. Skeleton matches (only if m >= 3, R2)
+    skel_tokens = skel_tokens_from_text(inner)
+    skel_matches: list[list[str]] = []
+    if m >= 3 and not (exact_matches or edge_exact_matches or loose_matches or edge_loose_matches):
+        sk_cand = get_skel_candidates(skel_tokens, index)
+        skel_matches = [list(dict.fromkeys(index.stream_ayah[k : k + m])) for k in sk_cand]
 
+    all_hits = exact_matches or edge_exact_matches or loose_matches or edge_loose_matches or skel_matches
+
+    # R1: Reference check
+    if ref and ref_ayat:
+        ref_set = set(ref_ayat)
+        if all_hits:
+            # Does text match occur in ref_ayat?
+            if any(set(h) & ref_set for h in all_hits):
+                return list(ref_ayat), METHOD_REGEX, CONF_EXACT
+
+            # Text matches exist, but NONE occur in ref_ayat -> edition typo in written reference!
+            logger.info(
+                "Reference typo detected for %s: ref=%s (%s), text hits in surah=%s",
+                ascii(quote),
+                ref.get("ref_text"),
+                ref_ayat,
+                [h for h in all_hits if any(int(a.split(":")[0]) == ref_surah for a in h)],
+            )
+            surah_hits = [h for h in all_hits if any(int(a.split(":")[0]) == ref_surah for a in h)]
+            if surah_hits and ref_ayah is not None:
+                picked = min(surah_hits, key=lambda h: min(abs(int(a.split(":")[1]) - ref_ayah) for a in h))
+                return picked, METHOD_NGRAM, CONF_LOOSE
+            else:
+                cov_hits = [h for h in all_hits if any(a in covers for a in h)]
+                if cov_hits:
+                    return cov_hits[0], METHOD_NGRAM, CONF_LOOSE
+                if len(all_hits) == 1:
+                    return all_hits[0], METHOD_NGRAM, CONF_LOOSE
+                if seg_surah is not None:
+                    seg_hits = [h for h in all_hits if any(int(a.split(":")[0]) == seg_surah for a in h)]
+                    if seg_hits:
+                        return seg_hits[0], METHOD_NGRAM, CONF_LOOSE
+                return all_hits[0], METHOD_NGRAM, CONF_LOOSE
+        else:
+            # No text match anywhere in Quran (spelling variant): trust reference!
+            return list(ref_ayat), METHOD_REGEX, CONF_EXACT
+
+    # No reference or reference not applicable:
+    cur_exact = exact_matches or edge_exact_matches
+    if cur_exact:
+        cov = [c for c in cur_exact if any(a in covers for a in c)]
+        if cov:
+            return cov[0], METHOD_NGRAM, CONF_EXACT
+        if len(cur_exact) == 1:
+            return cur_exact[0], METHOD_NGRAM, CONF_EXACT
         if seg_surah is not None:
-            surah_matches = [
-                c for c in loose_matches if any(int(a.split(":")[0]) == seg_surah for a in c)
-            ]
-            if surah_matches:
-                logger.info("Ambiguous loose matches, picked surah match: %s -> %s", ascii(quote), surah_matches[0])
-                return surah_matches[0], METHOD_NGRAM, CONF_LOOSE
+            surah_c = [c for c in cur_exact if any(int(a.split(":")[0]) == seg_surah for a in c)]
+            if surah_c:
+                logger.info("Ambiguous exact matches, picked surah match: %s -> %s", ascii(quote), surah_c[0])
+                return surah_c[0], METHOD_NGRAM, CONF_AMBIGUOUS
+        logger.info("Ambiguous exact matches, picked first in mushaf: %s -> %s", ascii(quote), cur_exact[0])
+        return cur_exact[0], METHOD_NGRAM, CONF_AMBIGUOUS
 
-        logger.info("Ambiguous loose matches, picked first in mushaf: %s -> %s", ascii(quote), loose_matches[0])
-        return loose_matches[0], METHOD_NGRAM, CONF_LOOSE
+    cur_loose = loose_matches or edge_loose_matches
+    if cur_loose:
+        cov = [c for c in cur_loose if any(a in covers for a in c)]
+        if cov:
+            return cov[0], METHOD_NGRAM, CONF_LOOSE
+        if len(cur_loose) == 1:
+            return cur_loose[0], METHOD_NGRAM, CONF_LOOSE
+        # R4: Ambiguous loose -> 0.5!
+        if seg_surah is not None:
+            surah_c = [c for c in cur_loose if any(int(a.split(":")[0]) == seg_surah for a in c)]
+            if surah_c:
+                logger.info("Ambiguous loose matches, picked surah match: %s -> %s", ascii(quote), surah_c[0])
+                return surah_c[0], METHOD_NGRAM, CONF_AMBIGUOUS
+        logger.info("Ambiguous loose matches, picked first in mushaf: %s -> %s", ascii(quote), cur_loose[0])
+        return cur_loose[0], METHOD_NGRAM, CONF_AMBIGUOUS
 
-    # No match
+    # Skeleton matches (R2, R4):
+    if skel_matches:
+        cov = [c for c in skel_matches if any(a in covers for a in c)]
+        if cov:
+            conf = CONF_SKELETON if len(cov) == 1 else CONF_AMBIGUOUS
+            return cov[0], METHOD_NGRAM, conf
+        if ref_surah is not None:
+            surah_c = [c for c in skel_matches if any(int(a.split(":")[0]) == ref_surah for a in c)]
+            if surah_c:
+                conf = CONF_SKELETON if len(surah_c) == 1 else CONF_AMBIGUOUS
+                return surah_c[0], METHOD_NGRAM, conf
+        if len(skel_matches) == 1:
+            return skel_matches[0], METHOD_NGRAM, CONF_SKELETON
+
     logger.info("No match found for quote: %s", ascii(quote))
     return [], METHOD_NGRAM, 0.0
 
