@@ -1,0 +1,845 @@
+{
+ "reviewer": "Mohamed",
+ "exported": "2026-11-03T11:40:33.927Z",
+ "draft": "phase4-draft",
+ "windows": {
+  "W01": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:2:255-255:1#791-833": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:2:255-255:1#658-790": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:2:255-255:1#141-657": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W02": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:23:1-11:1#2879-3533": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:23:1-11:1#3441-3471": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:23:1-11:1#3291-3306": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:23:1-11:1#3205-3224": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:23:1-11:1#2891-2908": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W03": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:2:198-198:1#2935-2964": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:2:198-198:1#2799-3131": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:2:198-198:1#3066-3131": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W04": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:6:141-142:1#870-907": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:6:141-142:1#954-970": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:6:141-142:1#981-1015": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:6:141-142:1#1088-1282": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:6:141-142:1#1215-1249": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W05": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:5:82-86:1#8066-8154": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:5:82-86:1#7747-8573": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:5:82-86:1#8451-8471": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:5:82-86:1#8575-8673": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W06": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:4:114-115:1#7163-7330": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:4:114-115:1#7293-7328": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:4:114-115:1#7365-7466": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W07": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:22:52-54:1#13081-13127": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:22:52-54:1#13100-13125": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:22:52-54:1#13215-13230": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:22:52-54:1#13233-13242": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:22:52-54:1#13361-13441": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W08": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:43:74-80:1#890-920": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:43:74-80:1#1019-1095": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:43:74-80:1#1355-1461": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:43:74-80:1#1139-1160": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:43:74-80:1#1121-1246": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:43:74-80:1#1324-1352": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W09": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:17:29-30:1#775-866": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:17:29-30:1#867-894": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:17:29-30:1#1083-1109": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:17:29-30:1#1198-1333": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W10": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:20:80-82:1#301-316": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:20:80-82:1#317-370": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W11": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:77:1-15:1#694-749": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:77:1-15:1#638-693": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:77:1-15:1#968-986": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:77:1-15:1#753-967": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W12": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:70:36-44:1#401-504": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:70:36-44:1#703-716": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:70:36-44:1#789-802": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:70:36-44:1#824-867": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:70:36-44:1#584-633": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:70:36-44:1#74-94": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W13": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:1:6-6:1#2975-3371": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:1:6-6:1#3124-3143": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:1:6-6:1#3372-3403": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:1:6-6:1#3406-3486": {
+     "verdict": "bad",
+     "comment": "مجرد اضافة لسند الحديث"
+    },
+    "ibn-kathir:1:6-6:1#3539-3564": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:1:6-6:1#3565-3754": {
+     "verdict": "bad",
+     "comment": "موقوف "
+    },
+    "ibn-kathir:1:6-6:1#3755-3784": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W14": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:53:42-55:1#29-44": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:53:42-55:1#45-81": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:53:42-55:1#121-487": {
+     "verdict": "bad",
+     "comment": "هذا الأثر المروي عن الصحابي الجليل معاذ بن جبل رضي الله عنه يُعدّ من الآثار الشهيرة التي تدور حول الوعظ والتذكير بالآخرة والبعث والجزاء."
+    }
+   }
+  },
+  "W15": {
+   "approved": true,
+   "note": "ليست واضحة كنص تحتاج مراجعة النص الكامل ",
+   "spans": {
+    "ibn-kathir:4:95-96:1#7721-7891": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:4:95-96:1#7910-7944": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:4:95-96:1#7622-7678": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:4:95-96:1#7601-7621": {
+     "verdict": "bad"
+    }
+   }
+  },
+  "W16": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:43:81-89:1#1777-1861": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:43:81-89:1#1862-1897": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:43:81-89:1#1739-1757": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:43:81-89:1#2236-2273": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W17": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:6:151-151:1#11083-11136": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:6:151-151:1#10654-11082": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W18": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:4:171-171:1#5511-5527": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:4:171-171:1#5441-6185": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W19": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:6:46-49:1#2026-2061": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:6:46-49:1#1921-2063": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:6:46-49:1#1761-1776": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:6:46-49:1#1619-1663": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:6:46-49:1#1579-1594": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:6:46-49:1#1446-1507": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:6:46-49:1#1320-1333": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W20": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:28:52-55:1#3596-3642": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:28:52-55:1#3726-3772": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:28:52-55:1#3796-3895": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:28:52-55:1#4155-4244": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W21": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:106:1-4:1#2518-2535": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:106:1-4:1#2680-2769": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:106:1-4:1#2807-2825": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:106:1-4:1#2878-2923": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W22": {
+   "approved": true,
+   "note": "",
+   "spans": {}
+  },
+  "W23": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:10:93-93:1#4323-4359": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:10:93-93:1#4467-4513": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:10:93-93:1#4715-5120": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:10:93-93:1#5040-5058": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W24": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:6:22-26:1#3900-3938": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:6:22-26:1#4001-4068": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:6:22-26:1#4187-4233": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:6:22-26:1#4248-4267": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:6:22-26:1#4543-4561": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:6:22-26:1#4618-4633": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:6:22-26:1#4690-4716": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W25": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:18:29-29:1#1036-1065": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:18:29-29:1#1093-1108": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:18:29-29:1#1110-1684": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:18:29-29:1#1468-1483": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:18:29-29:1#1540-1576": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:18:29-29:1#1685-1712": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W26": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:53:19-26:1#7291-7576": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:53:19-26:1#7435-7456": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W27": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:82:1-12:1#53-452": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:82:1-12:1#327-352": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:82:1-12:1#372-404": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:82:1-12:1#406-416": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:82:1-12:1#418-448": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:82:1-12:1#453-490": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W28": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:56:41-56:1#2723-2771": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:56:41-56:1#2490-2677": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:56:41-56:1#2233-2318": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:56:41-56:1#2004-2122": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W29": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:7:127-129:1#1477-1501": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:7:127-129:1#1358-1383": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W30": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:23:93-98:1#2062-2101": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:23:93-98:1#2229-2249": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:23:93-98:1#2337-2554": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:23:93-98:1#2555-2585": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W31": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:20:127-127:1#114-223": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:20:127-127:1#257-298": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:20:127-127:1#406-502": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W32": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:35:2-2:1#1630-1663": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:35:2-2:1#1353-1379": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:35:2-2:1#1311-1340": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:35:2-2:1#1048-1628": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W33": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:36:30-32:1#2039-2055": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W34": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:7:85-85:1#330-410": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W35": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:11:32-34:1#998-1018": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:11:32-34:1#900-939": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:11:32-34:1#646-753": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:11:32-34:1#437-549": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:11:32-34:1#395-434": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:11:32-34:1#269-296": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:11:32-34:1#137-198": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W36": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:13:27-29:1#7824-8290": {
+     "verdict": "bad",
+     "comment": "هو أثرٌ مرويٌّ بإسناد عن أبي هريرة رضي الله عنه، لكنه ليس حديثًا نبويًا مرفوعًا في هذه الرواية، وإنما هو موقوف على أبي هريرة."
+    },
+    "ibn-kathir:13:27-29:1#8292-8402": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W37": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:4:105-109:1#12346-12494": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:4:105-109:1#12474-12492": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:4:105-109:1#12673-12690": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:4:105-109:1#12773-12882": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W38": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:24:61-61:1#2453-2621": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:24:61-61:1#2638-2706": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W39": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:13:17-17:1#2096-2134": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:13:17-17:1#2211-2274": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W40": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:3:81-82:1#432-520": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:3:81-82:1#552-571": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:3:81-82:1#596-740": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W41": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:5:64-66:1#6241-6293": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:5:64-66:1#6417-6493": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:5:64-66:1#6546-6573": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W42": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:2:4-4:1#1189-1336": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:2:4-4:1#772-803": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W43": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:33:7-8:1#4296-4322": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:33:7-8:1#4345-4364": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W44": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:13:6-6:1#3217-3617": {
+     "verdict": "bad",
+     "comment": "ليس بحديث و انما اثار "
+    },
+    "ibn-kathir:13:6-6:1#3529-3590": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:13:6-6:1#3619-3654": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W45": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:2:246-246:1#502-520": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:2:246-246:1#703-735": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:2:246-246:1#771-819": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:2:246-246:1#837-857": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:2:246-246:1#898-922": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W46": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:2:148-148:1#383-399": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W47": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:24:20-21:1#261-279": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:24:20-21:1#18-99": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W48": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:9:58-59:1#2894-2923": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:9:58-59:1#2537-2702": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W49": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:9:100-100:1#1706-1735": {
+     "verdict": "ok"
+    }
+   }
+  },
+  "W50": {
+   "approved": true,
+   "note": "",
+   "spans": {
+    "ibn-kathir:47:29-31:1#688-750": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:47:29-31:1#842-861": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:47:29-31:1#1059-1101": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:47:29-31:1#1487-1597": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:47:29-31:1#1598-1659": {
+     "verdict": "ok"
+    },
+    "ibn-kathir:47:29-31:1#1780-1817": {
+     "verdict": "ok"
+    }
+   }
+  }
+ }
+}

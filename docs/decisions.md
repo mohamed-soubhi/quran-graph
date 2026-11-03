@@ -19,6 +19,10 @@ All external sources behind these decisions are listed in `docs/references.md`.
 - Athar (narrations stopping at a Companion or Successor) are HADITH spans with `kind: athar` and count toward the
   4b targets (precision, recall, IoU) together with `marfu`.
 - A dream or story report is COMMENTARY even when it carries an isnad (gold window W44, Ibn Asakir).
+- A takhrij line without its own chain joins the hadith before it; one with its own chain is a separate span (review of W13).
+- HADITH `kind` follows what the quoted route says, not Ibn Kathir's later preference (W13, «عن علي مرفوعا»).
+- Gold set `data/gold/phase4.jsonl`: 50 windows, 179 spans (QURAN 83, FOOTNOTE 68, HADITH 24, OTHER 4), reviewed by
+  Mohamed 2026-11-03 (172 spans ok, 5 marked wrong and resolved; W15 window moved back to hold a whole hadith).
 - Full rules: `docs/notes/phase4-annotation-rules.md`.
 
 ## 2026-11-03 — Normalizer v2: tatweel, hamza, and small waw/yeh skipped (T4.1)

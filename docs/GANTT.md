@@ -79,7 +79,7 @@ gantt
 | 1 · Data acquisition | 4 / 4 | ✅ G1 signed off 2026-10-31 | — |
 | 2 · Schema | 3 / 3 | ✅ G2 signed off 2026-11-03; schema v1.1 (C1–C4) approved | — |
 | 3 · Load L0 + L1 | 5 / 5 | ✅ G3 signed off 2026-11-03 | — |
-| 4 · Span annotation | 2 / 6 | 🟡 T4.3 gold set waiting for your review | T4.4 after T4.3 |
+| 4 · Span annotation | 2 / 6 | 🟡 T4.3 gold set waiting for your test (W13, W15 re-check) | T4.4 after T4.3 |
 | 5 · Hadith linking | 0 | ⏳ | — |
 | 6 · Semantics | 0 | ⏳ | — |
 | 7 · GraphRAG | 0 | ⏳ | — |

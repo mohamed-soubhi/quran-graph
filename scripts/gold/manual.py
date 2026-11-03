@@ -20,13 +20,15 @@ M = {
     ],
     "W12": [],
     "W13": [
-        dict(type="HADITH", kind="marfu", s="قال ابن ابي حاتم", e="الصراط المستقيم كتاب الله", cue="قال ابن أبي حاتم: حدثنا", hint="ibn-abi-hatim"),
-        dict(type="HADITH", kind="marfu", s="وكذلك رواه ابن جرير", e="حمزه بن حبيب الزيات", cue="وكذلك رواه ابن جرير", hint="ibn-jarir"),
+        # Review: the chainless takhrij line «وكذلك رواه ابن جرير من حديث …» joins the hadith before it.
+        dict(type="HADITH", kind="marfu", s="قال ابن ابي حاتم", e="حمزه بن حبيب الزيات", cue="قال ابن أبي حاتم: حدثنا", hint="ibn-abi-hatim"),
         dict(type="HADITH", kind="marfu", s="رواه احمد والترمذي", e="وهو الصراط المستقيم", cue="رواه أحمد والترمذي", hint="tirmidhi", num="2906"),
     ],
     "W14": [dict(type="HADITH", kind="athar", s="قال ابن ابي حاتم", e="الي الجنه او الي النار", cue="قال ابن أبي حاتم: حدثنا", hint="ibn-abi-hatim")],
     "W15": [
-        dict(type="HADITH", kind="marfu", s="لفظ ابي داود", e="لفظ ابي داود", cue="لفظ أبي داود", hint="abudawud", num="2508", note="takhrij tail of a hadith that starts before the window"),
+        # Review: window moved back so the Abu Dawud hadith is whole (was only its tail «لفظ أبي داود»).
+        dict(type="HADITH", kind="marfu", s="وهكذا رواه الامام احمد", e="وعلقه البخاري مجزوما", cue="وهكذا رواه الإمام أحمد", hint="ahmad", note="takhrij with its own chain; the chainless «وعلقه البخاري» line joins it"),
+        dict(type="HADITH", kind="marfu", s="ورواه ابو داود", e="لفظ ابي داود", cue="ورواه أبو داود", hint="abudawud", num="2508"),
         dict(type="OTHER", kind="poetry", s="يا راحلين", e="فقد راحا", ext=" ."),
     ],
     "W16": [dict(type="OTHER", kind="poetry", s="متي ما يشا ذو الود", e="لا محاله ظالما")],
@@ -70,7 +72,9 @@ M = {
     "W49": [],
     "W50": [dict(type="HADITH", kind="marfu", s="وفي الحديث", e="وان شرا فشر", cue="وفي الحديث")],
 }
-# Window edits: W50 ends with the cue of a hadith that continues after the window -> end the window before it.
+# Window edits: W15 starts at the paragraph holding this anchor (review 2026-11-03).
+WINDOW_START_AT = {"W15": "وهكذا رواه الامام احمد"}
+# W50 ends with the cue of a hadith that continues after the window -> end the window before it.
 TRIM_END_BEFORE = {"W50": "قال الامام احمد"}
 # Link corrections by (window, offset of the span start inside the window).
 LINK_FIX = {("W28", 51): (["56:47", "56:48"], "text match stopped at a hamza-seat variant (أَئِنَّا vs أإنا); quote covers 56:47-48")}

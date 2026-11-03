@@ -100,11 +100,17 @@ def match_quote(qt, covers):
 
 
 if __name__ == "__main__":
+    exec(open("scripts/gold/manual.py", encoding="utf-8").read())  # defines WINDOW_START_AT
     segs = {json.loads(l)["segment_id"]: json.loads(l) for l in open("data/interim/tafsir/ibn-kathir/segments.jsonl", encoding="utf-8")}
     out = []
     for w in map(json.loads, open("data/interim/gold/windows.jsonl", encoding="utf-8")):
         seg = segs[w["segment_id"]]
         t, a0, a1 = seg["text"], w["window_start"], w["window_end"]
+        if w["window_id"] in WINDOW_START_AT:
+            # Move the window start back to the paragraph that holds the anchor (review fix).
+            n, idx = norm_map(t[:a0])
+            a0 = t.rfind("\n\n", 0, idx[n.rfind(WINDOW_START_AT[w["window_id"]])]) + 2
+            w["window_start"] = a0
         spans = []
         for m in re.finditer(r"\[\[.*?\]\]", t[a0:a1], flags=re.S):
             spans.append({"start": a0 + m.start(), "end": a0 + m.end(), "type": "FOOTNOTE"})
