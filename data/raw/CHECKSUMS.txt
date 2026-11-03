@@ -3,3 +3,4 @@ bf4f57b968d03f4131c070b1e285da9be0e0a108a21c910e872801ca273312c8  data/raw/tanzi
 dde3583e095487f69d7d7e5e41170e378a6c792c330421cae9a8a16928a13874  data/raw/tafsir/ibn-kathir/MANIFEST.txt  https://github.com/spa5k/tafsir_api/tree/eb82bb6294efe30ad5c135c03b1864afaa70e855  2026-10-31
 941f350e3abefc58ebd4c8981df876f8143a65c862882fcb911d3b2fa9640e38  data/raw/hadith/fawazahmed0/MANIFEST.txt  https://github.com/fawazahmed0/hadith-api/tree/df57907be35291c91ad6a6691180e22ca9920784  2026-10-31
 fda26f87cc58b42fc992a3ad666a562805b636f34bcecb46326d048337ca7999  data/raw/quranic-corpus/quranic-corpus-morphology-0.4.zip  https://corpus.quran.com/download/  2026-10-31
+8867c1d88191472adec9db694b3cd9f135b1a2ef580574d32cf888dcb22c5c7a  data/raw/tanzil/quran-data.xml  https://tanzil.net/res/text/metadata/quran-data.xml  2026-11-03

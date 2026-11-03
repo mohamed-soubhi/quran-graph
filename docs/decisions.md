@@ -3,6 +3,11 @@
 Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
+## 2026-11-03 — Tanzil Quran metadata verified (T3.1)
+- Source: Tanzil metadata XML v1.0 via `https://tanzil.net/res/text/metadata/quran-data.xml` (licence: `cc-by`, copyright (C) 2008-2009 Tanzil.info).
+- File: `data/raw/tanzil/quran-data.xml` (77,234 bytes, SHA-256 `8867c1d88191472adec9db694b3cd9f135b1a2ef580574d32cf888dcb22c5c7a`).
+- Verification: 114 suras (index 1..114), 6,236 total ayas matching Tanzil uthmani ayah counts per surah, continuous start offsets, 86 Meccan, 28 Medinan.
+
 ## 2026-10-31 — Schema v1.0: answers Q1–Q5 (approved by Aya & Mohamed)
 - Q1: the basmala is an ayah only in Al-Fatiha (1:1). The loader removes the Tanzil basmala prefix from ayah 1 of the
   other 112 surahs and sets `Surah.has_basmala`; raw files unchanged.

@@ -8,6 +8,7 @@ ticket or decision relies on an outside source. Accessed dates are when the link
 |---|---|---|
 | [Tanzil — download & licence](https://tanzil.net/download/) | Selected Quran text source; licence: verbatim copies only, credit + link to tanzil.net; v1.1 (2021-02-12) | 2026-10-29 |
 | [Tanzil download endpoint (Uthmani, txt-2)](https://tanzil.net/pub/download/index.php?quranType=uthmani&outType=txt-2&agree=true) | T1.1 direct download; verified 200, 6236 ayah lines + 28-line `#` copyright block; `quranType=simple-clean` for the clean text | 2026-10-31 |
+| [Tanzil Quran metadata (quran-data.xml)](https://tanzil.net/res/text/metadata/quran-data.xml) | T3.1 surah metadata (names, ayah counts, Meccan/Medinan, revelation order, start offsets); licence: cc-by (Tanzil.info) | 2026-11-03 |
 | [Tanzil — Quran text types](https://tanzil.net/docs/Quran_Text_Types) | Uthmani vs Simple / Simple-Clean variants | 2026-10-29 |
 | [Tanzil — text updates](https://tanzil.net/docs/text_updates) | Version history | 2026-10-29 |
 | [tanzil-downloader (npm, unofficial)](https://npmjs.com/package/tanzil-downloader) | Lists available types/formats (txt, txt-2, xml, sql); not used | 2026-10-29 |

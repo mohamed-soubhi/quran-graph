@@ -8,6 +8,7 @@ Full list of every link consulted: `docs/references.md`.
 | Source | Version / pin | Downloaded | Raw location | Checksum | Ayah coverage |
 |---|---|---|---|---|---|
 | Tanzil Uthmani + Simple-Clean | Tanzil v1.1 (2021-02-12) | 2026-10-31 (T1.1) | `data/raw/tanzil/` | 2 lines in `CHECKSUMS.txt` | 114 surahs / 6,236 ayat |
+| Tanzil Quran metadata | v1.0 (2008-2009 Tanzil.info) | 2026-11-03 (T3.1) | `data/raw/tanzil/quran-data.xml` | 1 line in `CHECKSUMS.txt` | 114 surahs / 6,236 ayat |
 | Ibn Kathir (spa5k/tafsir_api) | commit `eb82bb6294efe30ad5c135c03b1864afaa70e855` | 2026-10-31 (T1.2) | `data/raw/tafsir/ibn-kathir/` (6,236 files) | `MANIFEST.txt`, listed in `CHECKSUMS.txt` | 114 / 6,236 (same set as Tanzil) |
 | Hadith (fawazahmed0/hadith-api) | commit `df57907be35291c91ad6a6691180e22ca9920784` | 2026-10-31 (T1.3) | `data/raw/hadith/fawazahmed0/` (11 files) | `MANIFEST.txt`, listed in `CHECKSUMS.txt` | n/a (36,512 hadith entries) |
 | Quranic Arabic Corpus morphology | v0.4 | 2026-10-31 (T1.4) | `data/raw/quranic-corpus/` (1 zip) | 1 line in `CHECKSUMS.txt` | 114 / 6,236 (same set as Tanzil) |
@@ -17,6 +18,7 @@ Full list of every link consulted: `docs/references.md`.
 | Category | Source | URL | Format | Licence | Stable IDs | Diacritics | Notes |
 |---|---|---|---|---|---|---|---|
 | Quran text | Tanzil v1.1 (2021-02-12) — Uthmani **and** Simple-Clean | https://tanzil.net/download/ | txt with aya numbers / XML | Verbatim copies only, no changes; credit + link to tanzil.net | surah\|ayah | Uthmani: full; Simple-Clean: none | Store both verbatim. Normalized forms are derived data, never written back as "Quran text". |
+| Quran metadata | Tanzil metadata v1.0 (`quran-data.xml`) | https://tanzil.net/res/text/metadata/quran-data.xml | XML | cc-by (Tanzil.info) | `index` (surah 1..114) | surah names diacritized | Downloaded in T3.1. 114 suras with Arabic name, transliterated name, English name, ayah count (sum 6,236), cumulative ayah start index, revelation type (86 Meccan, 28 Medinan), revelation order, rukus. |
 | Tafsir | Ibn Kathir (Arabic), via spa5k/tafsir_api, slug `ar-tafsir-ibn-kathir` | https://github.com/spa5k/tafsir_api | JSON per ayah: `{surah, ayah, text}` | Repo MIT; upstream QUL tafsir/22 says "no copyright information"; the work itself is pre-modern (public domain) | surah/ayah | Full | Quran quotes wrapped in `﴿…﴾`. Downloaded in T1.2 via raw.githubusercontent.com pinned to commit `eb82bb6294efe30ad5c135c03b1864afaa70e855` (2026-09-30). Measured stats (T1.2): 6,236 ayat, 48,211,904 total characters (incl. duplicates; **13,401,179 characters of distinct text** — the real tafsir size, Claude review), 0 empty texts, 4,325 texts identical to previous ayah, 1,911 distinct texts, 1,421 grouped passages (runs > 1). Top 5 largest groups: 74:11 (size 20), 74:38 (size 19), 44:17 (size 17), 55:62 (size 17), 68:17 (size 17). |
 | Tafsir (alt / cross-check) | QUL (Tarteel) tafsir 22 | https://qul.tarteel.ai/resources/tafsir/22 | JSON / SQLite | No copyright information | ayah ranges | Full | Original upstream; may give explicit ayah ranges per passage → prefer for grouping. Check in T1.x. |
 | Hadith | fawazahmed0/hadith-api, Arabic editions `ara-<collection>` | https://github.com/fawazahmed0/hadith-api | JSON per collection; `hadithnumber`, `arabicnumber`, `text`, `grades[]` | Unlicense (public domain) | collection + number | Full | Pinned to commit `df57907be35291c91ad6a6691180e22ca9920784` (branch `1`, 2026-06-03). Downloaded in T1.3: `editions.json` + 10 diacritized Arabic editions (36,512 total hadiths, 21,185 with ≥1 grade, 9 distinct graders). `text` = isnad + matn in one string. `grades[]` = list of `{name, grade}` — used as-is. **Missing: Musnad Ahmad** (heavily cited by Ibn Kathir). |
@@ -36,6 +38,7 @@ Full list of every link consulted: `docs/references.md`.
 | Source | Licence allows use? | Stable IDs? | Diacritized? | Grade + grade source? |
 |---|---|---|---|---|
 | Tanzil | ☑ (verbatim) | ☑ | ☑ both variants | n/a |
+| Tanzil metadata | ☑ cc-by | ☑ | ☑ names | n/a |
 | Ibn Kathir (spa5k/QUL) | ☑ for research; edition copyright unknown | ☑ (needs de-dup of groups) | ☑ | n/a |
 | fawazahmed0 hadith | ☑ | ☑ | ☑ | ☑ multiple graders, named |
 | Quranic Corpus | ☑ (verbatim, credit) | ☑ | Buckwalter | n/a |
@@ -101,6 +104,20 @@ Contains exactly one member `quranic-corpus-morphology-0.4.txt` (6,309,503 bytes
 | `REL` | Relative pronoun (3,575) |
 | `REM` | Resumption particle (2,925) |
 | `NEG` | Negative particle (2,688) |
+
+## Tanzil metadata measured (T3.1)
+File `data/raw/tanzil/quran-data.xml` (SHA-256 `8867c1d88191472adec9db694b3cd9f135b1a2ef580574d32cf888dcb22c5c7a`, 77,234 bytes).
+Licence attribute in file: `license="cc-by"`, `copyright="(C) 2008-2009 Tanzil.info"`.
+
+| Metric | Value |
+|---|---|
+| Suras count | 114 (indices 1..114) |
+| Total ayas | 6,236 (100% 1:1 match with Tanzil uthmani ayah counts per surah) |
+| Cumulative start offsets | Continuous: `start(n+1) = start(n) + ayas(n)` with surah 1 start = 0 |
+| Revelation types | 86 Meccan, 28 Medinan |
+| Surah 1 name | الفاتحة (Al-Faatiha / The Opening) |
+| Surah 2 name | البقرة (Al-Baqara / The Cow) |
+| Surah 30 name | الروم (Ar-Room / The Romans) |
 
 ## Risks / decisions for Phase 2
 1. **Grouped tafsir passages** → one `TafsirSegment` links to an ayah *range*. **Decided 2026-10-29** (see `docs/decisions.md`): segment_id = `ibn-kathir:<surah>:<first_ayah>-<last_ayah>:<n>`, with `(:TafsirSegment)-[:COVERS]->(:Ayah)` for every ayah in the range. Phase 3 gate "no ayah without tafsir" is checked via COVERS.

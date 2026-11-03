@@ -23,6 +23,7 @@ TANZIL_URLS = {
     "uthmani": "https://tanzil.net/pub/download/index.php?quranType=uthmani&outType=txt-2&agree=true",
     "simple-clean": "https://tanzil.net/pub/download/index.php?quranType=simple-clean&outType=txt-2&agree=true",
 }
+TANZIL_METADATA_URL = "https://tanzil.net/res/text/metadata/quran-data.xml"
 
 logger = get_logger("download")
 
@@ -179,6 +180,21 @@ def download_tanzil(
             checksums_path=checksums_path,
         )
     return results
+
+
+def download_tanzil_metadata(
+    dest_path: Path | str | None = None,
+    timeout: float = 60.0,
+    checksums_path: Path | str = CHECKSUMS_FILE,
+) -> Path:
+    """Download Tanzil Quran metadata XML (quran-data.xml)."""
+    dest = Path(dest_path) if dest_path else (RAW_DIR / "tanzil" / "quran-data.xml")
+    return fetch(
+        url=TANZIL_METADATA_URL,
+        dest_path=dest,
+        timeout=timeout,
+        checksums_path=checksums_path,
+    )
 
 
 if __name__ == "__main__":
