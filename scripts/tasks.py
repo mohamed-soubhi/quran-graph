@@ -1,6 +1,6 @@
 """Task runner replacing Makefile for the project.
 
-Targets: up, down, test, smoke, schema
+Targets: up, down, test, smoke, schema, parse, load
 """
 
 import os
@@ -83,6 +83,16 @@ def run_parse() -> None:
                 sys.exit(res.returncode)
 
 
+def run_load(args=None) -> None:
+    """Load JSONL data into Neo4j."""
+    py = get_venv_python()
+    cmd = [py, "src/graph/load.py"]
+    if args:
+        cmd.extend(args)
+    res = subprocess.run(cmd, cwd=ROOT)
+    sys.exit(res.returncode)
+
+
 TARGETS = {
     "test": run_test,
     "up": run_up,
@@ -90,6 +100,7 @@ TARGETS = {
     "smoke": run_smoke,
     "schema": run_schema,
     "parse": run_parse,
+    "load": run_load,
 }
 
 
@@ -100,7 +111,7 @@ def main() -> None:
 
     target = sys.argv[1]
     extra_args = sys.argv[2:]
-    if target in ("test", "smoke"):
+    if target in ("test", "smoke", "load"):
         TARGETS[target](extra_args)
     else:
         TARGETS[target]()
