@@ -7,13 +7,65 @@ import time
 from pathlib import Path
 from dotenv import load_dotenv
 
-from src.extract.models import HadithSpanList
+from src.extract.models import HadithSpanAnchorList, HadithSpanList
 from src.log import get_logger
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 load_dotenv(ROOT / ".env")
 
 logger = get_logger("glm_client")
+
+SCHEMA_PATH = ROOT / "docs" / "extraction_schema.json"
+
+# Few-shot examples for HadithSpanAnchorList (T4.5 - not from the gold set)
+FEWSHOT_ANCHOR_1_INPUT = (
+    "قال ابن ماجه: حدثنا محمد بن بشار حدثنا يحيى بن سعيد عن سفيان عن منصور عن ربعي بن حراش عن علي بن أبي طالب قال: "
+    "قال رسول الله ﷺ: \"لا تكذبوا علي فإنه من يكذب علي يلج النار\". "
+    "وقد رواه أحمد عن وكيع عن سفيان به [[سنن ابن ماجه برقم (٣١)]]."
+)
+FEWSHOT_ANCHOR_1_OUTPUT = {
+    "spans": [
+        {
+            "start_anchor": "قال ابن ماجه: حدثنا محمد",
+            "end_anchor": "علي يلج النار\"",
+            "cue": "قال ابن ماجه: حدثنا",
+            "collection_hint": "ibnmajah",
+            "number_hint": None,
+            "kind": "marfu",
+        },
+        {
+            "start_anchor": "وقد رواه أحمد عن وكيع",
+            "end_anchor": "عن سفيان به",
+            "cue": "وقد رواه أحمد",
+            "collection_hint": "ahmad",
+            "number_hint": None,
+            "kind": "marfu",
+        },
+    ]
+}
+
+FEWSHOT_ANCHOR_2_INPUT = (
+    "وقوله تعالى: ﴿فَاهْدُوهُمْ إِلَى صِرَاطِ الْجَحِيمِ﴾ قال مجاهد: أي طريق النار. "
+    "وقال عكرمة والسدي: هو السبل الموصلة إلى العذاب، وهذا قول جمهور المفسرين."
+)
+FEWSHOT_ANCHOR_2_OUTPUT = {
+    "spans": [],
+}
+
+ANCHOR_SYSTEM_PROMPT = (
+    "You are an expert Arabic hadith extraction assistant.\n"
+    "Extract all HADITH spans (narrations, quotations, and chained takhrij lines) from the input Arabic tafsir window.\n"
+    "Return ONLY a JSON object strictly conforming to the schema.\n\n"
+    "Extraction rules:\n"
+    "1. WHAT IS A HADITH: A narration with an isnad (حدثنا / أخبرنا / سمعت), an explicit takhrij (رواه / أخرجه / أخرجاه + collector), or the Prophet's ﷺ direct words or acts («قال رسول الله ﷺ», «وفي الحديث»).\n"
+    "2. START ANCHOR: The first 3-8 words of the span, copied EXACTLY from the input text, starting at the introducing formula (e.g. «قال الإمام أحمد: حدثنا», «وقد رواه مسلم»). Leading connectives like «ولهذا» stay outside.\n"
+    "3. END ANCHOR: The last 3-8 words of the span, copied EXACTLY from the input text, ending after the last word of the matn or takhrij (including closing quotes). Sentence-final full stops stay outside.\n"
+    "4. TAKHRIJ: A takhrij line with its own isnad/chain (e.g. «وقد رواه مسلم عن أبي بكر ... عن الجريري به») is its own separate HADITH span. A chainless takhrij line (e.g. «وكذلك رواه ابن جرير», «وعلقه البخاري مجزوما») joins the hadith before it.\n"
+    "5. KIND: 'marfu' if the quoted route reaches the Prophet ﷺ; 'athar' if it stops at a Companion or Successor (e.g. Ibn Abbas, Ibn Umar). Base this on the quoted route as written.\n"
+    "6. NOT HADITH: Tafsir opinions with short routes or no transmission verbs (e.g. «قال علي بن أبي طلحة عن ابن عباس», «قال مجاهد: ...») are commentary, NOT hadith. Dream or story reports (even with isnad) are commentary, NOT hadith.\n"
+    "7. FOOTNOTES: Text inside [[...]] is an editor footnote. NEVER extract from [[...]], and anchors must never be inside [[...]].\n"
+    "8. COLLECTION HINT: Must be one of 'bukhari', 'muslim', 'abudawud', 'tirmidhi', 'nasai', 'ibnmajah', 'malik', 'ahmad', 'darimi', or 'other' (for any other source like Tabari, Tabarani, Bazzar, Ibn Abi Hatim), or null."
+)
 
 # Default few-shot example (custom short example, not the fixture)
 FEWSHOT_INPUT = (
@@ -165,3 +217,99 @@ def extract_hadith_spans(
             )
 
     return span_list
+
+
+def extract_hadith_anchors(
+    window_text: str,
+    model: str | None = None,
+    host: str | None = None,
+    timeout: float = 120.0,
+) -> HadithSpanAnchorList:
+    """Call Ollama /api/chat to extract hadith anchor phrases from Arabic tafsir text.
+
+    Args:
+        window_text: Raw verbatim Arabic tafsir window text (UTF-8).
+        model: Ollama model tag, defaults to GLM_MODEL in .env.
+        host: Ollama server URL, defaults to OLLAMA_HOST in .env.
+        timeout: HTTP request timeout in seconds.
+
+    Returns:
+        Validated HadithSpanAnchorList instance.
+    """
+    import requests
+
+    load_dotenv(ROOT / ".env")
+    host = host or os.getenv("OLLAMA_HOST", "http://localhost:11434")
+    model = model or os.getenv("GLM_MODEL", "glm-5.3-flash:cloud")
+
+    schema_data = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    format_schema = ollama_format(schema_data)
+
+    user_prompt = (
+        f"Example 1:\nInput: {FEWSHOT_ANCHOR_1_INPUT}\nOutput: {json.dumps(FEWSHOT_ANCHOR_1_OUTPUT, ensure_ascii=False)}\n\n"
+        f"Example 2:\nInput: {FEWSHOT_ANCHOR_2_INPUT}\nOutput: {json.dumps(FEWSHOT_ANCHOR_2_OUTPUT, ensure_ascii=False)}\n\n"
+        f"Input:\n{window_text}"
+    )
+
+    payload = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": ANCHOR_SYSTEM_PROMPT},
+            {"role": "user", "content": user_prompt},
+        ],
+        "format": format_schema,
+        "stream": True,
+        "options": {"temperature": 0},
+    }
+
+    last_error: Exception | None = None
+    for attempt in range(2):
+        t0 = time.time()
+        try:
+            response = requests.post(f"{host}/api/chat", json=payload, stream=True, timeout=timeout)
+            response.raise_for_status()
+
+            content_parts = []
+            for line in response.iter_lines():
+                if line:
+                    chunk = json.loads(line)
+                    msg = chunk.get("message", {})
+                    if "content" in msg and msg["content"]:
+                        content_parts.append(msg["content"])
+
+            elapsed = time.time() - t0
+            raw_content = "".join(content_parts).strip()
+
+            cleaned = raw_content
+            if cleaned.startswith("```"):
+                cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
+                cleaned = re.sub(r"\s*```$", "", cleaned)
+
+            # Extract first JSON object from '{' using raw_decode to handle any trailing commentary
+            brace_pos = cleaned.find("{")
+            if brace_pos != -1:
+                try:
+                    obj, _ = json.JSONDecoder().raw_decode(cleaned[brace_pos:])
+                    anchor_list = HadithSpanAnchorList.model_validate(obj)
+                except Exception:
+                    anchor_list = HadithSpanAnchorList.model_validate_json(cleaned)
+            else:
+                anchor_list = HadithSpanAnchorList.model_validate_json(cleaned)
+            logger.info(
+                "Extracted %d hadith anchors in %.2fs for window of length %d chars (model: %s)",
+                len(anchor_list.spans),
+                elapsed,
+                len(window_text),
+                model,
+            )
+            return anchor_list
+        except Exception as exc:
+            last_error = exc
+            if attempt == 0:
+                logger.warning("Attempt 1 failed for extract_hadith_anchors, retrying: %s", exc)
+                time.sleep(1)
+            else:
+                logger.error("Attempt 2 failed for extract_hadith_anchors: %s", exc)
+
+    logger.warning("Returning empty HadithSpanAnchorList after error: %s", last_error)
+    return HadithSpanAnchorList(spans=[])

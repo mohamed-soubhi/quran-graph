@@ -1,7 +1,7 @@
 """Data models for extracted spans."""
 
-from typing import Literal, Optional
-from pydantic import BaseModel, ConfigDict, Field
+from typing import Any, Literal, Optional
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class HadithSpan(BaseModel):
@@ -37,6 +37,8 @@ CollectionHint = Literal[
     "other",
 ]
 
+HadithSpanKind = Literal["marfu", "athar"]
+
 
 class HadithSpanAnchor(BaseModel):
     """A hadith quotation or narration anchor matching the Phase 4b extraction schema."""
@@ -60,12 +62,46 @@ class HadithSpanAnchor(BaseModel):
     number_hint: str | None = Field(
         description="A hadith number written in the span itself, copied as written (Arabic-Indic digits allowed). Never from memory.",
     )
+    kind: HadithSpanKind = Field(
+        description="Whether the quoted route reaches the Prophet ﷺ ('marfu') or stops at a Companion or Successor ('athar'). Reading the route, not grading.",
+    )
 
     def __init__(self, /, **data):
         data.setdefault("cue", None)
         data.setdefault("collection_hint", None)
         data.setdefault("number_hint", None)
+        data.setdefault("kind", "marfu")
         super().__init__(**data)
+
+    @field_validator("collection_hint", mode="before")
+    @classmethod
+    def normalize_collection(cls, v: Any) -> Any:
+        if v is None:
+            return None
+        valid = {
+            "bukhari",
+            "muslim",
+            "abudawud",
+            "tirmidhi",
+            "nasai",
+            "ibnmajah",
+            "malik",
+            "ahmad",
+            "darimi",
+            "other",
+        }
+        if v in valid:
+            return v
+        return "other"
+
+    @field_validator("kind", mode="before")
+    @classmethod
+    def normalize_kind(cls, v: Any) -> Any:
+        if isinstance(v, str):
+            v_clean = v.strip().lower()
+            if v_clean in ("marfu", "athar"):
+                return v_clean
+        return "marfu"
 
 
 class HadithSpanAnchorList(BaseModel):

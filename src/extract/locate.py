@@ -17,6 +17,16 @@ CLOSING_MARKS: set[str] = {'"', "”", "»", ")", "]", "﴾"}
 FOOTNOTE_RE: re.Pattern[str] = re.compile(r"\[\[.*?\]\]", re.DOTALL)
 
 
+class LocateResult(tuple):
+    """(start, end) offsets in original text, with fallback usage indicator."""
+    used_fallback: bool
+
+    def __new__(cls, start: int, end: int, used_fallback: bool = False):
+        obj = super().__new__(cls, (start, end))
+        obj.used_fallback = used_fallback
+        return obj
+
+
 def locate(
     text: str,
     anchor: HadithSpanAnchor,
@@ -79,6 +89,17 @@ def locate(
         return -1
 
     s = find_outside(norm_start, norm_window_start)
+    used_fallback = False
+    if s == -1:
+        words = norm_start.split()
+        for k in range(len(words) - 1, 2, -1):
+            sub_needle = " ".join(words[:k])
+            s = find_outside(sub_needle, norm_window_start)
+            if s != -1:
+                used_fallback = True
+                logger.info("Start anchor %r matched with prefix %r", anchor.start_anchor, sub_needle)
+                break
+
     if s == -1:
         logger.warning(
             "Start anchor %r not found outside footnotes at or after window_start %d",
@@ -88,6 +109,18 @@ def locate(
         return None
 
     e = find_outside(norm_end, s)
+    match_end_len = len(norm_end)
+    if e == -1:
+        words = norm_end.split()
+        for k in range(len(words) - 1, 2, -1):
+            sub_needle = " ".join(words[-k:])
+            e = find_outside(sub_needle, s)
+            if e != -1:
+                used_fallback = True
+                match_end_len = len(sub_needle)
+                logger.info("End anchor %r matched with suffix %r", anchor.end_anchor, sub_needle)
+                break
+
     if e == -1:
         logger.warning(
             "End anchor %r not found outside footnotes at or after start match position %d",
@@ -97,7 +130,7 @@ def locate(
         return None
 
     start = index[s]
-    end = index[e + len(norm_end) - 1] + 1
+    end = index[e + match_end_len - 1] + 1
 
     # Extend end over following Mn characters (diacritics of the last letter)
     while end < len(text) and unicodedata.category(text[end]) == "Mn":
@@ -107,4 +140,4 @@ def locate(
     while end < len(text) and text[end] in CLOSING_MARKS:
         end += 1
 
-    return start, end
+    return LocateResult(start, end, used_fallback=used_fallback)

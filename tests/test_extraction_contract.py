@@ -20,6 +20,7 @@ def test_schema_is_valid_json_schema():
     with open(SCHEMA_PATH, encoding="utf-8") as f:
         schema = json.load(f)
 
+    assert schema["$id"].endswith("/1.1")
     validator_cls = jsonschema.validators.validator_for(schema)
     validator_cls.check_schema(schema)
 
@@ -54,6 +55,7 @@ def test_fixture_example_validates_against_schema():
                 "cue": "قال الإمام أحمد: حدثنا",
                 "collection_hint": "ahmad",
                 "number_hint": None,
+                "kind": "marfu",
             },
             {
                 "start_anchor": "وقد رواه مسلم",
@@ -61,6 +63,7 @@ def test_fixture_example_validates_against_schema():
                 "cue": "وقد رواه مسلم",
                 "collection_hint": "muslim",
                 "number_hint": None,
+                "kind": "marfu",
             },
         ]
     }

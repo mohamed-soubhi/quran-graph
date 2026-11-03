@@ -1,11 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "quran-graph/extraction_schema/hadith-spans/1.0",
+  "$id": "quran-graph/extraction_schema/hadith-spans/1.1",
   "title": "HadithSpanAnchors",
   "description": "GLM output contract for Phase 4b. GLM copies short anchor phrases from the input; it never returns offsets, never rewrites text and never assigns grades. Code locates anchors in the ORIGINAL text (NFC + diacritic-insensitive) and computes offsets.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["spans"],
+  "required": [
+    "spans"
+  ],
   "properties": {
     "spans": {
       "type": "array",
@@ -13,7 +15,14 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["start_anchor", "end_anchor", "cue", "collection_hint", "number_hint"],
+        "required": [
+          "start_anchor",
+          "end_anchor",
+          "cue",
+          "collection_hint",
+          "number_hint",
+          "kind"
+        ],
         "properties": {
           "start_anchor": {
             "type": "string",
@@ -26,17 +35,46 @@
             "description": "The last 3-8 words of the hadith span, copied exactly from the input (diacritics may be omitted)."
           },
           "cue": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "The introducing formula as written, e.g. 'قال الإمام أحمد: حدثنا', 'وقد رواه مسلم'."
           },
           "collection_hint": {
-            "type": ["string", "null"],
-            "enum": ["bukhari", "muslim", "abudawud", "tirmidhi", "nasai", "ibnmajah", "malik", "ahmad", "darimi", "other", null],
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "bukhari",
+              "muslim",
+              "abudawud",
+              "tirmidhi",
+              "nasai",
+              "ibnmajah",
+              "malik",
+              "ahmad",
+              "darimi",
+              "other",
+              null
+            ],
             "description": "Collection named in the span itself (not guessed). 'other' for a named source outside this list."
           },
           "number_hint": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "A hadith number written in the span itself, copied as written (Arabic-Indic digits allowed). Never from memory."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "marfu",
+              "athar"
+            ],
+            "description": "Whether the quoted route reaches the Prophet ﷺ ('marfu') or stops at a Companion or Successor ('athar'). Reading the route, not grading."
           }
         }
       }

@@ -3,6 +3,28 @@
 Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
+## 2026-11-03 — Hadith spans extraction pipeline and Gate 4b passed (T4.5)
+- Extraction contract v1.1 (`docs/extraction_schema.json`, `src/extract/models.py`):
+  - Added `kind: Literal["marfu", "athar"]` to `HadithSpanAnchor` and schema. Bumped `$id` to `…/1.1`.
+- Cue finder and pipeline (`src/extract/hadith_spans.py`):
+  - Regex `CUE_REGEX` on v2-normalized text outside `[[…]]` matches 12,683 paragraphs across 1,911 segments (12,770 windows after splitting paragraphs > 3,000 chars at sentence ends).
+- GLM Client (`src/extract/glm_client.py`):
+  - Model: `glm-5.3-flash:cloud` with structured outputs via `format: ollama_format(...)`, temperature 0, 1 retry.
+  - Thinking mode kept enabled (standard for `glm-5.3-flash:cloud` on Ollama cloud; provides boundary accuracy and marfu/athar distinction).
+- Locator fallback (`src/extract/locate.py`):
+  - Added prefix (start) and suffix (end) shorter-anchor fallback down to 3 words when exact 3–8 word phrase is missing.
+  - Fallback usage on gold set: 0 / 23 (Run 1), 0 / 25 (Run 2), 0 / 23 (Run 3) — all exact anchor matches.
+- Gate 4b on gold set (`data/gold/phase4.jsonl`, 50 windows, 24 HADITH spans: 19 marfu, 5 athar):
+  - Target: Precision ≥ 90 %, Recall ≥ 80 %, Mean IoU ≥ 0.90 in each of 3 runs.
+  - Run 1: Precision 100.0% (23/23), Recall 95.8% (23/24), Mean IoU 0.9954 (23/23 IoU ≥ 0.90), Kind accuracy 100%, wall time 354.95s. **PASS**.
+  - Run 2: Precision 96.0% (24/25), Recall 100.0% (24/24), Mean IoU 0.9767 (23/24 IoU ≥ 0.90), Kind accuracy 95.8%, wall time 369.58s. **PASS**.
+  - Run 3: Precision 100.0% (23/23), Recall 95.8% (23/24), Mean IoU 0.9945 (23/23 IoU ≥ 0.90), Kind accuracy 100%, wall time 386.43s. **PASS**.
+  - Log: `logs/eval-4b-20261103-203153.json`. Spans saved in `data/interim/spans/hadith-gold-run1..3.jsonl`.
+- Throughput benchmark (`scripts/hadith_throughput.py --sample 100`):
+  - Concurrency 1 (sample 10): mean 26.2s/call, 0% errors, 8 located / 0 rejected, projected 84.0h for 11,527 paras (92.4h for 12,683 paras).
+  - Concurrency 4 (sample 30): mean 39.1s/call, 0% errors, 21 located / 1 rejected, projected 36.2h for 11,527 paras (39.8h for 12,683 paras). **Recommended**.
+  - Concurrency 8 (sample 60): mean 77.5s/call, 0% errors, 46 located / 2 rejected, projected 37.2h for 11,527 paras (40.9h for 12,683 paras). (Queuing doubles per-call latency; no wall time gain over concurrency 4).
+
 ## 2026-11-03 — Reference check: allow dropped or added clitic (T4.4b, Finding E1)
 - `src/extract/quran_spans.py`:
   - Updated R1 reference verification: accepts quote as present in referenced ayat when first quote token equals referenced Quran token minus a leading clitic و/ف/ب/ل or the reverse (quote has clitic, ayah not), reusing R3 edge-token logic (exact, loose, skeleton).
