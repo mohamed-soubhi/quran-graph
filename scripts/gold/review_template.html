@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phase 4 Gold Review</title>
+<style>
+:root {
+  --bg: #f6f4ef; --card: #ffffff; --ink: #1f2328; --muted: #6b6f76; --line: #e3dfd6;
+  --quran: #d9f2df; --quran-b: #2f8f4e; --hadith: #dde9fb; --hadith-b: #2f62b5;
+  --foot: #ecebe8; --foot-b: #8a8780; --other: #f1e2f7; --other-b: #8b45a8;
+  --ok: #2f8f4e; --bad: #c0392b; --accent: #2f62b5;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15171a; --card: #1e2125; --ink: #e8e6e1; --muted: #9aa0a6; --line: #33373d;
+    --quran: #1f3a28; --quran-b: #5cc27f; --hadith: #1f2d45; --hadith-b: #7aa7ee;
+    --foot: #2b2b2b; --foot-b: #a8a49c; --other: #36253f; --other-b: #c98be3;
+    --ok: #5cc27f; --bad: #ef7a6d; --accent: #7aa7ee;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15171a; --card: #1e2125; --ink: #e8e6e1; --muted: #9aa0a6; --line: #33373d;
+  --quran: #1f3a28; --quran-b: #5cc27f; --hadith: #1f2d45; --hadith-b: #7aa7ee;
+  --foot: #2b2b2b; --foot-b: #a8a49c; --other: #36253f; --other-b: #c98be3;
+  --ok: #5cc27f; --bad: #ef7a6d; --accent: #7aa7ee;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, "Segoe UI", sans-serif; }
+header { position: sticky; top: 0; z-index: 5; background: var(--card); border-bottom: 1px solid var(--line); padding: 10px 16px; }
+.bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; max-width: 1100px; margin: 0 auto; }
+h1 { font-size: 17px; margin: 0 12px 0 0; }
+.progress { flex: 1; min-width: 160px; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+.progress > div { height: 100%; background: var(--ok); width: 0; transition: width .2s; }
+button, select, input[type=text] { font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; }
+button { cursor: pointer; }
+button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+main { max-width: 1100px; margin: 0 auto; padding: 16px; }
+details.guide { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 16px; margin-bottom: 16px; }
+details.guide summary { cursor: pointer; font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+.chip { padding: 1px 8px; border-radius: 4px; border-bottom: 2px solid; font-size: 13px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 18px; overflow: hidden; }
+.card.done { border-color: var(--ok); }
+.head { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: baseline; padding: 10px 16px; border-bottom: 1px solid var(--line); }
+.head b { font-size: 16px; }
+.meta { color: var(--muted); font-size: 13px; }
+.text { direction: rtl; text-align: right; font: 21px/2.1 "Amiri", "Traditional Arabic", "Noto Naskh Arabic", serif; padding: 14px 18px; white-space: pre-wrap; }
+.s { border-radius: 3px; padding: 1px 0; border-bottom: 2px solid; cursor: pointer; }
+.s .s { border-bottom-width: 2px; outline: 1px dashed currentColor; outline-offset: 1px; }
+.QURAN { background: var(--quran); border-color: var(--quran-b); }
+.HADITH { background: var(--hadith); border-color: var(--hadith-b); }
+.FOOTNOTE { background: var(--foot); border-color: var(--foot-b); color: var(--muted); font-size: 0.8em; }
+.OTHER { background: var(--other); border-color: var(--other-b); }
+.s.hl { box-shadow: 0 0 0 3px var(--accent); }
+sup.n { font: 600 11px system-ui, sans-serif; color: var(--muted); padding: 0 2px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { border-top: 1px solid var(--line); padding: 6px 8px; vertical-align: top; text-align: left; }
+th { color: var(--muted); font-weight: 500; font-size: 12px; }
+td.ar { direction: rtl; text-align: right; font: 17px/1.8 "Amiri", "Traditional Arabic", serif; }
+.verdict { display: flex; gap: 4px; }
+.verdict button { padding: 2px 9px; }
+.verdict button.on.ok { background: var(--ok); color: #fff; border-color: var(--ok); }
+.verdict button.on.bad { background: var(--bad); color: #fff; border-color: var(--bad); }
+tr.bad td { background: color-mix(in srgb, var(--bad) 8%, transparent); }
+.note { color: var(--muted); font-size: 12px; }
+.ayah { direction: rtl; font: 16px/1.8 "Amiri", serif; color: var(--muted); }
+.foot { padding: 10px 16px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.foot textarea { flex: 1; min-width: 240px; min-height: 38px; font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px; }
+td input[type=text] { width: 100%; min-width: 120px; }
+.wrapx { overflow-x: auto; }
+@media (max-width: 640px) { .text { font-size: 19px; padding: 12px; } th.hide, td.hide { display: none; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <h1>Phase 4 Gold Review</h1>
+    <label>Reviewer <select id="who"><option value="">choose…</option><option>Aya</option><option>Mohamed</option><option>Aya & Mohamed</option></select></label>
+    <label>Show <select id="filter"><option value="all">all windows</option><option value="todo">not approved yet</option><option value="flag">with a ✗ or note</option></select></label>
+    <div class="progress" title="windows approved"><div id="prog"></div></div>
+    <span id="progtxt" class="meta"></span>
+    <button class="primary" id="export">Export JSON</button>
+    <label><button id="importBtn" type="button">Import</button><input type="file" id="import" accept=".json" hidden></label>
+  </div>
+</header>
+<main>
+<details class="guide" open>
+  <summary>How to review (2 minutes) and the annotation rules</summary>
+  <div class="legend">
+    <span class="chip QURAN">QURAN quote</span><span class="chip HADITH">HADITH / athar</span>
+    <span class="chip FOOTNOTE">FOOTNOTE [[…]]</span><span class="chip OTHER">OTHER (poetry)</span>
+    <span class="meta">unmarked text = COMMENTARY · a dashed outline = a span nested inside another</span>
+  </div>
+  <ol>
+    <li>Read the highlighted text. Click a highlight to find its row in the table.</li>
+    <li>For each row press <b>✓</b> (right type, right start/end, right ayah) or <b>✗</b> and write what is wrong
+        (e.g. “should end at …”, “ayah is 2:256”, “this is commentary, not hadith”).</li>
+    <li>Anything <b>missing</b> (a hadith or quote that is not highlighted) goes into the window note.</li>
+    <li>Tick <b>Window approved</b> when the window is right as a whole. Your work saves in this browser automatically;
+        press <b>Export JSON</b> at the end and send the file to Claude.</li>
+  </ol>
+  <p><b>Rules used in this draft</b> (please confirm or correct them, too):</p>
+  <ul>
+    <li><b>QURAN</b>: everything between ﴿ and ﴾, brackets included, with footnotes inside nested. Links: EXPLAINS = an ayah this
+        passage explains, CITES = another ayah. Unbracketed quotes are marked only when presented as a quote (not phrases woven into prose).</li>
+    <li><b>HADITH</b>: a narration with an isnad (حدثنا / أخبرنا / سمعت) or an explicit takhrij (رواه / أخرجه + collector), or the Prophet’s ﷺ
+        words or acts quoted directly. Starts at the attribution cue («قال الإمام أحمد:», «وفي الحديث»), ends after the last word of the matn
+        or the takhrij that belongs to it; closing quote marks included, the sentence-final full stop not. A takhrij sentence about another
+        collection («وقد رواه مسلم عن … به») is its own span. A footnote after the end is not inside the hadith.</li>
+    <li><b>kind</b>: <i>marfu</i> = reaches the Prophet ﷺ; <i>athar</i> = stops at a Companion or Successor. <b>Open question:</b> should athar count as HADITH for the 4b gate?</li>
+    <li><b>Not HADITH</b> (left as commentary): a tafsir opinion with only a short route and no transmission verb or takhrij
+        («قال علي بن أبي طلحة عن ابن عباس: …», «قال مجاهد: …»).</li>
+    <li><b>OTHER</b>: poetry; one span per poem, from the first word to the last «...».</li>
+  </ul>
+</details>
+<div id="list"></div>
+</main>
+<script>
+/*DATA*/
+const KEY = "phase4-gold-review-v1";
+let S = {};
+try { S = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { S = {}; }
+S.windows = S.windows || {};
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} progress(); };
+const W = id => (S.windows[id] = S.windows[id] || { approved: false, note: "", spans: {} });
+const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function renderTree(nodes, wid) {
+  return nodes.map(n => n.t !== undefined ? esc(n.t)
+    : `<span class="s ${spanType(wid, n.n)}" data-w="${wid}" data-n="${n.n}"><sup class="n">${n.n}</sup>${renderTree(n.c, wid)}</span>`).join("");
+}
+function spanType(wid, n) { return WINDOWS.find(w => w.id === wid).spans[n - 1].type; }
+
+function linkCell(sp) {
+  const out = [];
+  if (sp.links.length) out.push(sp.links.map(l => `<div><b>${l.ayah_id}</b> ${l.rel}<div class="ayah">${esc(AYAT[l.ayah_id].u)}</div></div>`).join(""));
+  if (sp.ref) out.push(`<div class="note">written ref: <span dir="rtl">${esc(sp.ref)}</span></div>`);
+  if (sp.type === "HADITH") out.push(`<div>${sp.kind}${sp.hint ? " · " + sp.hint : ""}${sp.num ? " #" + sp.num : ""}</div>${sp.cue ? `<div class="note" dir="rtl">cue: ${esc(sp.cue)}</div>` : ""}`);
+  if (sp.type === "OTHER") out.push(sp.kind);
+  if (sp.parent) out.push(`<div class="note">inside #${sp.parent}</div>`);
+  if (sp.note) out.push(`<div class="note">${esc(sp.note)}</div>`);
+  return out.join("");
+}
+
+function card(w) {
+  const st = W(w.id);
+  const rows = w.spans.map(sp => {
+    const v = (st.spans[sp.id] || {});
+    const txt = textOf(w, sp);
+    return `<tr id="r-${w.id}-${sp.n}" class="${v.verdict === "bad" ? "bad" : ""}">
+      <td><b>${sp.n}</b></td><td><span class="chip ${sp.type}">${sp.type}</span></td>
+      <td class="ar">${esc(txt.length > 160 ? txt.slice(0, 80) + " … " + txt.slice(-60) : txt)}</td>
+      <td>${linkCell(sp)}</td>
+      <td class="hide note">${sp.start}–${sp.end}<br>${sp.method}</td>
+      <td><div class="verdict"><button class="ok ${v.verdict === "ok" ? "on" : ""}" data-v="ok" data-w="${w.id}" data-s="${sp.id}">✓</button><button class="bad ${v.verdict === "bad" ? "on" : ""}" data-v="bad" data-w="${w.id}" data-s="${sp.id}">✗</button></div>
+        <input type="text" placeholder="what is wrong?" value="${esc(v.comment || "")}" data-c="1" data-w="${w.id}" data-s="${sp.id}"></td></tr>`;
+  }).join("");
+  return `<section class="card ${st.approved ? "done" : ""}" id="c-${w.id}">
+    <div class="head"><b>${w.id}</b><span class="meta">${w.seg} · chars ${w.ws}–${w.we} · ${esc(w.why)} · passage covers ${w.covers.length > 6 ? w.covers[0] + " … " + w.covers[w.covers.length - 1] : w.covers.join(", ")}</span></div>
+    <div class="text">${renderTree(w.tree, w.id)}</div>
+    ${w.spans.length ? `<div class="wrapx"><table><tr><th>#</th><th>type</th><th>text</th><th>links / details</th><th class="hide">offsets</th><th>verdict</th></tr>${rows}</table></div>` : `<div class="foot meta">No spans drafted: the whole window is commentary.</div>`}
+    <div class="foot"><textarea placeholder="Missing spans or other notes for ${w.id}" data-note="${w.id}">${esc(st.note)}</textarea>
+      <label><input type="checkbox" data-appr="${w.id}" ${st.approved ? "checked" : ""}> Window approved</label></div></section>`;
+}
+function textOf(w, sp) {
+  const flat = []; (function walk(ns) { ns.forEach(n => n.t !== undefined ? flat.push(n.t) : walk(n.c)); })(w.tree);
+  const full = flat.join(""), off = sp.start - w.ws;
+  return Array.from(full).length === full.length ? full.slice(off, sp.end - w.ws) : Array.from(full).slice(off, sp.end - w.ws).join("");
+}
+
+function render() {
+  const f = document.getElementById("filter").value;
+  const shown = WINDOWS.filter(w => {
+    const st = W(w.id);
+    if (f === "todo") return !st.approved;
+    if (f === "flag") return st.note || Object.values(st.spans).some(v => v.verdict === "bad" || v.comment);
+    return true;
+  });
+  document.getElementById("list").innerHTML = shown.map(card).join("") || `<p class="meta">Nothing to show.</p>`;
+  progress();
+}
+function progress() {
+  const n = WINDOWS.filter(w => W(w.id).approved).length;
+  document.getElementById("prog").style.width = (100 * n / WINDOWS.length) + "%";
+  const spans = WINDOWS.reduce((a, w) => a + w.spans.length, 0);
+  const judged = WINDOWS.reduce((a, w) => a + w.spans.filter(sp => (W(w.id).spans[sp.id] || {}).verdict).length, 0);
+  document.getElementById("progtxt").textContent = `${n}/${WINDOWS.length} windows approved · ${judged}/${spans} spans judged`;
+}
+
+document.addEventListener("click", e => {
+  const b = e.target.closest("button[data-v]");
+  if (b) {
+    const st = W(b.dataset.w); const v = st.spans[b.dataset.s] = st.spans[b.dataset.s] || {};
+    v.verdict = v.verdict === b.dataset.v ? null : b.dataset.v; save();
+    const tr = b.closest("tr"); tr.classList.toggle("bad", v.verdict === "bad");
+    tr.querySelectorAll(".verdict button").forEach(x => x.classList.toggle("on", x.dataset.v === v.verdict));
+    return;
+  }
+  const s = e.target.closest(".s");
+  if (s) {
+    e.stopPropagation();
+    const row = document.getElementById(`r-${s.dataset.w}-${s.dataset.n}`);
+    if (row) { row.scrollIntoView({ behavior: "smooth", block: "center" }); row.style.outline = "2px solid var(--accent)"; setTimeout(() => row.style.outline = "", 1200); }
+  }
+});
+document.addEventListener("input", e => {
+  const t = e.target;
+  if (t.dataset.c) { const st = W(t.dataset.w); (st.spans[t.dataset.s] = st.spans[t.dataset.s] || {}).comment = t.value; save(); }
+  if (t.dataset.note) { W(t.dataset.note).note = t.value; save(); }
+});
+document.addEventListener("change", e => {
+  const t = e.target;
+  if (t.dataset.appr) { W(t.dataset.appr).approved = t.checked; document.getElementById("c-" + t.dataset.appr).classList.toggle("done", t.checked); save(); }
+});
+document.getElementById("filter").onchange = render;
+const who = document.getElementById("who");
+who.value = S.reviewer || ""; who.onchange = () => { S.reviewer = who.value; save(); };
+document.getElementById("export").onclick = () => {
+  const out = { reviewer: S.reviewer || "", exported: new Date().toISOString(), draft: "phase4-draft", windows: S.windows };
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(out, null, 1)], { type: "application/json" }));
+  a.download = `phase4-review-${(S.reviewer || "reviewer").replace(/\W+/g, "-")}-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+};
+document.getElementById("importBtn").onclick = () => document.getElementById("import").click();
+document.getElementById("import").onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try { const d = JSON.parse(await f.text()); S.windows = d.windows || {}; S.reviewer = d.reviewer || S.reviewer; who.value = S.reviewer || ""; save(); render(); }
+  catch (err) { console.log("import failed", err); }
+};
+render();
+</script>
+</body>
+</html>
