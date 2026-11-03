@@ -137,7 +137,8 @@ T = {
                "words were searched (diacritics and spelling differences removed) in the referenced ayat. In the cases below "
                "they are <b>not</b> there; they were found in another ayah. The graph links the quote to the ayah that holds "
                "the words, keeps the printed reference on the link (<code>ref_text</code>) and sets <code>confidence: 0.9</code>. "
-               "The tafsir text is never changed.",
+               "The tafsir text is never changed.<br><b>Second source (2026-11-03):</b> quran.com's Arabic Ibn Kathir prints the same reference in 38 of these 39; "
+               "it differs only in the tafsir of 73:1–9, where it has the correct 17:79 (<code>reference-crosscheck.csv</code>). No printed volume was compared.",
         stats=["references checked", "words not in the referenced ayah", "printing errors", "similar ayat",
                "passage references", "our error"],
         kinds="Kinds of difference", sep=", ", summary="Summary", details="Details",
@@ -157,7 +158,8 @@ T = {
         method="<b>الطريقة:</b> لكل اقتباس قرآني ﴿…﴾ تليه إحالة مكتوبة «[سورة: آية]»، بحثنا عن الكلمات المقتبسة — بعد حذف "
                "التشكيل وفروق الرسم — في الآيات المُحال إليها. في الحالات أدناه <b>ليست</b> فيها، ووُجدت في آية أخرى. "
                "يربط الرسمُ البياني الاقتباسَ بالآية التي فيها الكلمات فعلًا، ويحتفظ بنص الإحالة المطبوع على الرابط "
-               "(<code>ref_text</code>)، ويجعل الثقة <code>0.9</code>. لا يُغيَّر نص التفسير أبدًا.",
+               "(<code>ref_text</code>)، ويجعل الثقة <code>0.9</code>. لا يُغيَّر نص التفسير أبدًا.<br><b>مصدر ثانٍ (2026-11-03):</b> نص ابن كثير العربي في quran.com فيه الإحالة نفسها في 38 من هذه الـ39؛ "
+               "ويختلف في تفسير ٧٣:١–٩ فقط، إذ فيه الصحيح ١٧:٧٩ (<code>reference-crosscheck.csv</code>). لم نقارن بنسخة ورقية.",
         stats=["إحالة فُحصت", "الكلمات ليست في الآية المُحال إليها", "خطأ طباعي", "آيات متشابهة", "إحالة إلى أول المقطع",
                "خطؤنا"],
         kinds="أنواع الاختلاف", sep="، ", summary="الجدول المختصر", details="التفاصيل",
