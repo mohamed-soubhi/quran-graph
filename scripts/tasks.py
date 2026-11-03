@@ -94,12 +94,16 @@ def run_load(args=None) -> None:
 
 
 def run_spans(args=None) -> None:
-    """Run footnote span extraction (and optionally write to Neo4j)."""
+    """Run footnote and Quran span extraction (and optionally write to Neo4j)."""
     py = get_venv_python()
     extract_args = [a for a in (args or []) if a not in ("--write", "--load")]
     res = subprocess.run([py, "src/extract/footnotes.py", *extract_args], cwd=ROOT)
     if res.returncode != 0:
         sys.exit(res.returncode)
+
+    res_q = subprocess.run([py, "src/extract/quran_spans.py", *extract_args], cwd=ROOT)
+    if res_q.returncode != 0:
+        sys.exit(res_q.returncode)
 
     if args and ("--write" in args or "--load" in args):
         res2 = subprocess.run([py, "src/graph/spans.py"], cwd=ROOT)

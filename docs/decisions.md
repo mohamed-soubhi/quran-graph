@@ -3,6 +3,22 @@
 Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
+## 2026-11-03 — Quran spans and ayah links verified (T4.4)
+- Quran quote extraction: src/extract/quran_spans.py, scripts/tasks.py spans.
+  - Regex ﴿[^﴾]*﴾, offsets in verbatim text, end exclusive, ornate brackets included.
+  - Output: data/interim/spans/quran.jsonl (26,686 lines), deterministic, UTF-8, keys sorted.
+  - Exact counts: 26,686 QURAN spans; 26,340 linked, 346 unlinked (logged, never guessed); 635 footnotes enclosed inside quotes, 0 partial overlaps.
+  - Links: 20,717 EXPLAINS (covered by segment), 8,847 CITES (other ayat). Total links: 29,564.
+  - By method: 
+egex 7,267 (written references), 
+gram 22,297.
+  - By confidence: 1.0 (29,285), 0.9 (190, loose hamza key deleting ا ئ ؤ), 0.5 (89, mushaf tiebreak).
+- Gate 4a precision on gold set data/gold/phase4.jsonl: **100.00%** (target ≥ 98.0%), recall (bracketed gold): **100.00%** (79/79). Link accuracy: 100.00%. 0 disagreements. 4 unbracketed quotes reported as missed outside gate.
+- Neo4j span & link writer: src/graph/spans.py, scripts/tasks.py spans --write.
+  - Exactly 26,686 Span {type: 'QURAN'} nodes, 20,717 EXPLAINS edges, 8,847 CITES edges with provenance (source, method, confidence, 
+ef_text).
+  - Total Neo4j spans: 57,889 (31,203 FOOTNOTE + 26,686 QURAN). Second write produces identical counts (idempotent).
+
 ## 2026-11-03 — Footnote spans and Neo4j span writer verified (T4.2)
 - Footnote extraction: `src/extract/footnotes.py`, `scripts/tasks.py spans`.
   - Regex `\[\[.*?\]\]` with `re.DOTALL`, offsets in original text, end exclusive, markers included.

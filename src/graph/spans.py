@@ -1,7 +1,11 @@
-"""Neo4j span writer: write Span nodes, HAS_SPAN, and INSIDE relationships (T4.2).
+"""Neo4j span writer: write Span nodes, HAS_SPAN, INSIDE, and ayah links (T4.2, T4.4).
 
 Reusable for all Phase 4 spans (4a Quran, 4b Hadith, 4c Commentary & Footnotes).
-Idempotent UNWIND batches using MERGE on span_id and relationships.
+Idempotent UNWIND batches using MERGE on span_id and relationships:
+- (TafsirSegment)-[:HAS_SPAN]->(Span)
+- (Span)-[:INSIDE]->(Span)
+- (Span)-[:EXPLAINS]->(Ayah)
+- (Span)-[:CITES]->(Ayah)
 """
 
 import argparse
@@ -14,7 +18,7 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from neo4j import Driver
+from neo4j import Driver, Session
 
 from src.graph.client import get_driver
 from src.log import get_logger
@@ -23,12 +27,101 @@ logger = get_logger("spans")
 
 DEFAULT_BATCH_SIZE = 5000
 DEFAULT_SPANS_PATH = ROOT / "data" / "interim" / "spans" / "footnotes.jsonl"
+DEFAULT_QURAN_SPANS_PATH = ROOT / "data" / "interim" / "spans" / "quran.jsonl"
 
 
 def chunked(items: list[Any], size: int = DEFAULT_BATCH_SIZE) -> Iterable[list[Any]]:
     """Yield successive chunks from items with maximum size."""
     for i in range(0, len(items), size):
         yield items[i : i + size]
+
+
+def write_ayah_links(
+    links: list[dict[str, Any]],
+    driver: Driver | None = None,
+    session: Session | None = None,
+    batch_size: int = DEFAULT_BATCH_SIZE,
+) -> dict[str, int]:
+    """Write ayah link relationships (EXPLAINS or CITES) into Neo4j using idempotent UNWIND batches.
+
+    For each link record:
+    - (s:Span)-[r:EXPLAINS|CITES]->(a:Ayah)
+    Sets r.source, r.method, r.confidence, and r.ref_text (if present).
+
+    Returns actual DB count of links: {"explains": N, "cites": M}.
+    """
+    if not links:
+        return {"explains": 0, "cites": 0}
+
+    explains_links = [l for l in links if l.get("rel") == "EXPLAINS"]
+    cites_links = [l for l in links if l.get("rel") != "EXPLAINS"]
+
+    merge_explains_query = """
+    UNWIND $batch AS link
+    MATCH (s:Span {span_id: link.span_id})
+    MATCH (a:Ayah {ayah_id: link.ayah_id})
+    MERGE (s)-[r:EXPLAINS]->(a)
+    SET r.source = link.source,
+        r.method = link.method,
+        r.confidence = link.confidence
+    FOREACH (_ IN CASE WHEN link.ref_text IS NOT NULL THEN [1] ELSE [] END | SET r.ref_text = link.ref_text)
+    """
+
+    merge_cites_query = """
+    UNWIND $batch AS link
+    MATCH (s:Span {span_id: link.span_id})
+    MATCH (a:Ayah {ayah_id: link.ayah_id})
+    MERGE (s)-[r:CITES]->(a)
+    SET r.source = link.source,
+        r.method = link.method,
+        r.confidence = link.confidence
+    FOREACH (_ IN CASE WHEN link.ref_text IS NOT NULL THEN [1] ELSE [] END | SET r.ref_text = link.ref_text)
+    """
+
+    def _execute(sess: Session) -> dict[str, int]:
+        if explains_links:
+            logger.info("Writing EXPLAINS relationships (%d edges)...", len(explains_links))
+            for chunk in chunked(explains_links, batch_size):
+                sess.run(merge_explains_query, batch=chunk).consume()
+
+        if cites_links:
+            logger.info("Writing CITES relationships (%d edges)...", len(cites_links))
+            for chunk in chunked(cites_links, batch_size):
+                sess.run(merge_cites_query, batch=chunk).consume()
+
+        # Query actual counts written
+        explains_count = 0
+        if explains_links:
+            exp_span_ids = list({l["span_id"] for l in explains_links})
+            explains_count = sess.run(
+                "MATCH (s:Span)-[r:EXPLAINS]->(a:Ayah) WHERE s.span_id IN $ids RETURN count(r) AS cnt",
+                ids=exp_span_ids,
+            ).single()["cnt"]
+
+        cites_count = 0
+        if cites_links:
+            cites_span_ids = list({l["span_id"] for l in cites_links})
+            cites_count = sess.run(
+                "MATCH (s:Span)-[r:CITES]->(a:Ayah) WHERE s.span_id IN $ids RETURN count(r) AS cnt",
+                ids=cites_span_ids,
+            ).single()["cnt"]
+
+        return {"explains": explains_count, "cites": cites_count}
+
+    if session is not None:
+        return _execute(session)
+
+    close_driver = False
+    if driver is None:
+        driver = get_driver()
+        close_driver = True
+
+    try:
+        with driver.session() as sess:
+            return _execute(sess)
+    finally:
+        if close_driver:
+            driver.close()
 
 
 def write_spans(
@@ -50,11 +143,13 @@ def write_spans(
        MATCH (parent:Span {span_id: row.parent})
        MERGE (child)-[r:INSIDE]->(parent)
        SET r.source = row.source, r.method = row.method, r.confidence = row.confidence
+    4. If row has links:
+       Write EXPLAINS and CITES relationships to Ayah nodes.
 
-    Returns dict of counts processed: {"spans": N, "has_span": N, "inside": M}.
+    Returns dict of actual DB counts: {"spans": N, "has_span": N, "inside": M, "explains": E, "cites": C}.
     """
     if not rows:
-        return {"spans": 0, "has_span": 0, "inside": 0}
+        return {"spans": 0, "has_span": 0, "inside": 0, "explains": 0, "cites": 0}
 
     close_driver = False
     if driver is None:
@@ -95,6 +190,24 @@ def write_spans(
 
     parent_rows = [r for r in rows if r.get("parent")]
 
+    # Flatten links
+    all_links: list[dict[str, Any]] = []
+    for r in rows:
+        span_id = r["span_id"]
+        row_source = r.get("source", "")
+        for l in r.get("links", []):
+            all_links.append({
+                "span_id": span_id,
+                "ayah_id": l["ayah_id"],
+                "rel": l.get("rel", "CITES"),
+                "source": l.get("source") or row_source,
+                "method": l.get("method", "ngram"),
+                "confidence": l.get("confidence", 1.0),
+                "ref_text": l.get("ref_text") or r.get("ref_text"),
+            })
+
+    span_ids = [r["span_id"] for r in rows]
+
     try:
         with driver.session() as session:
             # 1. Write Span nodes
@@ -113,10 +226,37 @@ def write_spans(
                 for chunk in chunked(parent_rows, batch_size):
                     session.run(merge_inside_query, batch=chunk).consume()
 
+            # 4. Write ayah link relationships (if any links present)
+            link_counts = {"explains": 0, "cites": 0}
+            if all_links:
+                link_counts = write_ayah_links(
+                    all_links, session=session, batch_size=batch_size
+                )
+
+            # 5. Query actual counts verified in DB
+            span_count = session.run(
+                "MATCH (s:Span) WHERE s.span_id IN $ids RETURN count(s) AS cnt",
+                ids=span_ids,
+            ).single()["cnt"]
+
+            has_span_count = session.run(
+                "MATCH (:TafsirSegment)-[r:HAS_SPAN]->(s:Span) WHERE s.span_id IN $ids RETURN count(r) AS cnt",
+                ids=span_ids,
+            ).single()["cnt"]
+
+            inside_count = 0
+            if parent_rows:
+                inside_count = session.run(
+                    "MATCH (c:Span)-[r:INSIDE]->(:Span) WHERE c.span_id IN $ids RETURN count(r) AS cnt",
+                    ids=[r["span_id"] for r in parent_rows],
+                ).single()["cnt"]
+
         return {
-            "spans": len(rows),
-            "has_span": len(rows),
-            "inside": len(parent_rows),
+            "spans": span_count,
+            "has_span": has_span_count,
+            "inside": inside_count,
+            "explains": link_counts["explains"],
+            "cites": link_counts["cites"],
         }
     finally:
         if close_driver:
@@ -149,8 +289,8 @@ def main() -> None:
         "file",
         nargs="?",
         type=Path,
-        default=DEFAULT_SPANS_PATH,
-        help="Path to spans JSONL file (default: data/interim/spans/footnotes.jsonl)",
+        default=None,
+        help="Path to spans JSONL file (default: footnotes.jsonl and quran.jsonl)",
     )
     parser.add_argument(
         "--batch-size",
@@ -159,8 +299,34 @@ def main() -> None:
         help="Batch size for UNWIND",
     )
     args = parser.parse_args()
-    counts = load_spans_file(args.file, batch_size=args.batch_size)
-    print(f"Loaded {counts['spans']} spans, {counts['has_span']} HAS_SPAN, {counts['inside']} INSIDE into Neo4j.")
+
+    files_to_load = [args.file] if args.file else [DEFAULT_SPANS_PATH, DEFAULT_QURAN_SPANS_PATH]
+    total_spans = 0
+    total_has_span = 0
+    total_inside = 0
+    total_explains = 0
+    total_cites = 0
+
+    for f in files_to_load:
+        if f.exists():
+            logger.info("Loading %s...", f)
+            counts = load_spans_file(f, batch_size=args.batch_size)
+            total_spans += counts["spans"]
+            total_has_span += counts["has_span"]
+            total_inside += counts["inside"]
+            total_explains += counts.get("explains", 0)
+            total_cites += counts.get("cites", 0)
+            print(
+                f"Loaded {f.name}: {counts['spans']} spans, {counts['has_span']} HAS_SPAN, "
+                f"{counts['inside']} INSIDE, {counts.get('explains', 0)} EXPLAINS, {counts.get('cites', 0)} CITES."
+            )
+        else:
+            logger.warning("Spans file not found: %s", f)
+
+    print(
+        f"Total: {total_spans} spans, {total_has_span} HAS_SPAN, {total_inside} INSIDE, "
+        f"{total_explains} EXPLAINS, {total_cites} CITES in Neo4j."
+    )
 
 
 if __name__ == "__main__":
