@@ -356,12 +356,25 @@ del .scratch\backup.txt</code></pre>
 <!-- ================================================================== -->
 <h2 id="t45">10. Later — T4.5 hadith spans (regex cues + GLM anchors)</h2>
 <p>Targets from the plan (gate 4b): precision ≥ 90 %, recall ≥ 80 %, IoU ≥ 0.9, held over ≥ 3 GLM runs.
-Marfu and athar both count. The gold set has <b>24</b> HADITH spans in 50 windows. Script and test file names are set by the ticket.</p>
+Marfu and athar both count. The gold set has <b>24</b> HADITH spans (19 marfu, 5 athar) in 20 of the 50 windows.
+T4.5 (<code>docs/tickets/T4.5.md</code>) builds the pipeline, passes the gate on the gold set and measures speed: checks
+10.1 and 10.1b. The whole-book run and the Neo4j write come in the next ticket, after you approve the time estimate:
+checks 10.2–10.9.</p>
 
 <div class="later">
 <div class="t"><h4>10.1 Gate 4b on the gold set, 3 runs <span class="tag later">later</span></h4>
 <pre><code>.venv\Scripts\python.exe scripts\eval_4b.py --runs 3</code></pre>
-<p class="exp">Each run: precision <b>≥ 90 %</b>, recall <b>≥ 80 %</b>, mean IoU <b>≥ 0.9</b>; misses and extras listed by window.</p></div>
+<p class="exp">Each run: precision <b>≥ 90 %</b>, recall <b>≥ 80 %</b>, mean IoU <b>≥ 0.9</b>; misses and extras listed by window;
+exit code 0 only if all 3 runs pass.</p></div>
+
+<div class="t"><h4>10.1b GLM speed and the whole-book estimate <span class="tag later">later</span></h4>
+<pre><code>.venv\Scripts\python.exe scripts\hadith_throughput.py --sample 100</code></pre>
+<p class="exp">Seconds per call at 1, 4 and 8 parallel calls, error rate, and the projected time for all <b>11,527</b> cue paragraphs.
+You decide the whole-book run from this table.</p></div>
+
+<div class="t"><h4>10.1c Hadith tests <span class="tag later">later</span></h4>
+<pre><code>.venv\Scripts\python.exe -m pytest tests\test_hadith_spans.py tests\test_extraction_contract.py -v</code></pre>
+<p class="exp">All pass without network (cue finder, splitter, anchor checks, W01 anchors → <b>[141, 657)</b> and <b>[658, 790)</b>, IoU matcher).</p></div>
 
 <div class="t"><h4>10.2 Hadith spans exist and have a kind <span class="tag later">later</span></h4>
 <pre><code>MATCH (s:Span {type:'HADITH'}) RETURN s.kind, count(*) ORDER BY s.kind</code></pre>
