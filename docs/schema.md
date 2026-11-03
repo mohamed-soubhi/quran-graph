@@ -1,6 +1,7 @@
 # Graph schema (Phase 2)
 
-**Status:** v1.0 (T2.1, approved by Aya & Mohamed 2026-10-31). Q1–Q5 answered (end of file).
+**Status:** v1.1 (approved by Aya & Mohamed 2026-11-03). v1.0 = T2.1 (Q1–Q5, end of file); v1.1 adds C1–C4 found by
+the G2 gate on real text (`docs/tickets/reports/G2.md`).
 Background for Q2 and Q4: `docs/notes/schema-explained.md`. Changes after v1.0 go through `docs/decisions.md`.
 Facts behind each choice: `docs/decisions.md`. Sources: `docs/sources.md`.
 
@@ -24,18 +25,18 @@ Facts behind each choice: `docs/decisions.md`. Sources: `docs/sources.md`.
 ## L0 — Text
 | Label | Key | Properties |
 |---|---|---|
-| `Surah` | `surah_id` int 1–114 | `name` (Arabic, from Tanzil metadata, Phase 3), `ayah_count`, `has_basmala` bool (false for 9) |
+| `Surah` | `surah_id` int 1–114 | `name` (Arabic, Tanzil metadata), `tname`, `type` (Meccan/Medinan), `revelation_order`, `ayah_count`, `has_basmala` bool (false for 9) |
 | `Ayah` | `ayah_id` `"2:255"` | `surah_id`, `number`, `text` (Tanzil Uthmani), `text_simple` (Tanzil Simple-Clean), `text_norm`, `word_count` |
-
-**Basmala (Q1, approved):** only 1:1 keeps the basmala — it is an ayah of Al-Fatiha. For the 112 other surahs
-Tanzil puts the basmala in front of ayah 1; the loader removes it from `Ayah.text` / `text_simple` and sets
-`Surah.has_basmala = true` (false for surah 9). The raw Tanzil files stay unchanged. Test: 112 ayat stripped, 1:1 unchanged.
 | `Word` | `word_id` `"2:255:3"` | `ayah_id`, `position` (1-based, corpus order), `text` (Arabic, all segments joined), `bw`, `pos` (part of speech of the stem) |
 | `Root` | `root_id` = `text` `"سمو"` | `text` (letters, no spaces), `bw` `"smw"`; 1,642 nodes |
 | `Lemma` | `lemma_id` = `text` + `#<sense>` if any, e.g. `"ٱسْم"`, `"عَاد#2"` | `text`, `sense` (int or null), `bw` (without the sense digit); 4,832 nodes (4,817 distinct texts, 15 with a sense number) |
 
 `Lemma` is not in the plan's L0 list; it is added because one root has many words with different meanings
 (سمو → اسم، سماء) and 486 words have two lemmas (Q4, approved).
+
+**Basmala (Q1, approved):** only 1:1 keeps the basmala — it is an ayah of Al-Fatiha. For the 112 other surahs
+Tanzil puts the basmala in front of ayah 1; the loader removes it from `Ayah.text` / `text_simple` and sets
+`Surah.has_basmala = true` (false for surah 9). The raw Tanzil files stay unchanged. Test: 112 ayat stripped, 1:1 unchanged.
 
 | Relationship | From → To | Properties (+ provenance) |
 |---|---|---|
@@ -68,7 +69,7 @@ once** and linked to every ayah of the group by `COVERS` (Option A, approved; de
 ## L2 — Evidence
 | Label | Key | Properties |
 |---|---|---|
-| `Span` | `span_id` `"<segment_id>#141-657"` | `segment_id`, `start`, `end` (offsets in the segment's original `text`, end exclusive), `type` ∈ QURAN, HADITH, COMMENTARY, FOOTNOTE, OTHER; HADITH only: `cue`, `collection_hint`, `number_hint` |
+| `Span` | `span_id` `"<segment_id>#141-657"` | `segment_id`, `start`, `end` (offsets in the segment's original `text`, end exclusive), `type` ∈ QURAN, HADITH, COMMENTARY, FOOTNOTE, OTHER; HADITH only: `cue`, `collection_hint`, `number_hint`. Nested spans: see `INSIDE` (C1) |
 | `HadithBook` | `collection` `"muslim"` | `name` (Arabic), `edition` `"ara-muslim"`, `source` `hadith-api@df57907` |
 | `Hadith` | `hadith_id` `"muslim:7207"`, `"bukhari:402.2"` | `collection`, `number` (= source `hadithnumber`, string), `arabic_number` (= source `arabicnumber`, e.g. `"2865.01"`, may be null), `book_number`, `number_in_book` (= `reference`), `text` (verbatim, isnad + matn) |
 | `Grader` | `name` `"Al-Albani"` | 9 nodes |
@@ -79,23 +80,31 @@ The span `text` is not stored twice: it is `substring(segment.text, start, end -
 
 | Relationship | From → To | Properties (+ provenance) |
 |---|---|---|
-| `HAS_SPAN` | TafsirSegment → Span | |
+| `HAS_SPAN` | TafsirSegment → Span | every span, top-level or nested |
+| `INSIDE` | Span → Span | the span lies inside its parent span (C1) |
 | `EXPLAINS` | Span(QURAN) → Ayah | the quote is an ayah this segment `COVERS` |
-| `CITES` | Span(QURAN) → Ayah | the quote is another ayah (tafsir of Quran by Quran) |
+| `CITES` | Span(QURAN) → Ayah | the quote is another ayah (tafsir of Quran by Quran); `ref_text` = a written reference after the quote, e.g. «[الرُّومِ:٢٥]» (C4) |
 | `CITES` | Span(HADITH) → Hadith | linked hadith; `evidence` = span_id of the footnote that gave the number, if any |
 | `IN_BOOK` | Hadith → HadithBook | |
 | `GRADED` | Hadith → Grader | `grade` exactly as in the source (e.g. `"Sahih"`); no edge = no grade in source (Q5, approved) |
-| `IN_CHAIN` | Hadith → Narrator | `position` (1 = narrator nearest the collector) |
-| `HEARD_FROM` | Narrator → Narrator | `hadith_id` (one edge per hadith chain link; used by GDS) |
+| `IN_CHAIN` | Hadith → Narrator, or Span(HADITH) → Narrator | `position` (1 = narrator nearest the collector); from a Span also `mention_start`, `mention_end` (C2) |
+| `HEARD_FROM` | Narrator → Narrator | `chain_id` = hadith_id or span_id of the chain (one edge per chain link; used by GDS) (C2) |
 
 A quote spanning several ayat gets one `EXPLAINS`/`CITES` edge per ayah. A HADITH span with no match (e.g. Musnad Ahmad,
 not in our sources) keeps its hints and has no `CITES` edge: "not found", never guessed.
 
 ### Span rules
-1. Spans of one segment do not overlap and cover the whole text (Phase 4c gate: 100 %).
-2. A FOOTNOTE `[[…]]` inside a Quran quote or a hadith splits it: e.g. QURAN · FOOTNOTE · QURAN. Both QURAN parts
-   link to the same ayah. (2:255 has quotes like ﴿اللَّهُ لَا إِلَهَ إِلا هُوَ [[في أ: …]]﴾.)
-3. Editor additions in single brackets `[…]` stay inside the surrounding span.
+1. **Top-level spans** (no `INSIDE` edge) of one segment do not overlap and cover the whole text (Phase 4c gate: 100 %).
+2. **Nested spans (C1):** a span may lie inside exactly one parent span — `(:Span)-[:INSIDE]->(:Span)` — e.g. a Quran
+   quote inside a hadith, a footnote inside a Quran quote. A child lies within its parent's offsets; children of the
+   same parent do not overlap. Nothing is split. Real example (G2): Anas's hadith in 2:255 contains 5 Quran quotes, and
+   ﴿اللَّهُ لَا إِلَهَ إِلا هُوَ [[في أ: …]]﴾ inside it contains a footnote (3 levels).
+3. **QURAN spans include both ornate brackets** ﴿ … ﴾ (U+FD3F … U+FD3E), as FOOTNOTE spans include `[[ ]]` (C3).
+4. Editor additions in single brackets `[…]` stay inside the surrounding span.
+5. **Written references (C4):** when a Quran quote is followed by «[<surah name>: <ayah or range>]», Phase 4a links it by
+   regex first (surah name matched to Tanzil metadata after normalization), with `ref_text` on the `CITES`/`EXPLAINS` edge.
+6. **Isnad without a Hadith node (C2):** narrators of a chain quoted in the tafsir from a collection we do not have
+   (e.g. Musnad Ahmad) attach to the HADITH span via `IN_CHAIN`; the span has no `CITES` edge.
 
 ## L3 — Semantics (outline; detailed at the start of Phase 6)
 | Label / property | Notes |
@@ -123,3 +132,11 @@ HadithBook 10 · Grader 9. TafsirSegment 1,911 · COVERS 6,236 (every ayah exact
 | Q3 | Provenance method `dataset` | **Approved.** |
 | Q4 | `Lemma` nodes | **Approved:** 4,832 Lemma nodes from the same corpus file (Word → Lemma → Root). |
 | Q5 | Grades as `GRADED` edges to `Grader` | **Approved.** |
+
+## Changes v1.0 → v1.1 (approved 2026-11-03, found by the G2 gate)
+| # | Change |
+|---|---|
+| C1 | Nested spans via `INSIDE`; coverage/no-overlap rule applies to top-level spans; footnotes no longer split spans |
+| C2 | `IN_CHAIN` also from a HADITH `Span`; `HEARD_FROM.chain_id` replaces `hadith_id` |
+| C3 | QURAN spans include both ornate brackets ﴿ ﴾ |
+| C4 | Written references «[سورة: آية]» after a quote are linked by regex first (`ref_text`) |
