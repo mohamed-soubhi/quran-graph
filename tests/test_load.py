@@ -68,16 +68,27 @@ def test_load_surah_1_idempotent(neo4j_driver):
     assert counts1 == counts2
 
 
+L0_L1_TYPES = ["HAS_AYAH", "NEXT", "HAS_WORD", "HAS_LEMMA", "HAS_ROOT", "LEMMA_OF_ROOT",
+               "WROTE", "HAS_SEGMENT", "COVERS"]
+
+
 def test_provenance_properties(neo4j_driver):
-    """Every relationship must carry source, method='dataset', and confidence=1.0."""
+    """Every relationship carries source, method and confidence; L0/L1 edges are method='dataset', confidence 1.0.
+
+    Later phases add regex/glm/human edges, so the 'dataset' check is limited to the L0/L1 types.
+    """
     with neo4j_driver.session() as session:
+        missing = session.run(
+            "MATCH ()-[r]->() WHERE r.source IS NULL OR r.method IS NULL OR r.confidence IS NULL "
+            "RETURN count(r) AS cnt"
+        ).single()["cnt"]
+        assert missing == 0
         invalid_res = session.run(
             """
             MATCH ()-[r]->()
-            WHERE r.source IS NULL
-               OR r.method <> 'dataset'
-               OR r.confidence <> 1.0
+            WHERE type(r) IN $types AND (r.method <> 'dataset' OR r.confidence <> 1.0)
             RETURN count(r) AS cnt
-            """
+            """,
+            types=L0_L1_TYPES,
         ).single()["cnt"]
         assert invalid_res == 0
