@@ -73,6 +73,7 @@ ticket or decision relies on an outside source. Accessed dates are when the link
 ## Tools
 | Reference | Used for | Accessed |
 |---|---|---|
+| [quran/quran-mcp](https://github.com/quran/quran-mcp) (hosted: `https://mcp.quran.ai`, no key) | Evaluated 2026-11-03, not in the pipeline. MCP server from Quran Foundation (quran.com, nuqayah.com): Quran text in several qira'at, 50+ translations, 15+ tafsirs (Ibn Kathir, al-Tabari, al-Qurtubi, al-Sa'di), search, morphology; no hadith. Licence QFGPL-1.0. Possible uses: spot-check our Ibn Kathir edition (e.g. the 39 reference errors) and a later multi-tafsir layer or chat interface; bulk data stays on pinned downloads | 2026-11-03 |
 | [Ollama](https://ollama.com) | GLM (`glm-5.3:cloud`, `glm-5.3-flash:cloud`), embeddings (`bge-m3`) | 2026-10-29 |
 | [Ollama API docs](https://github.com/ollama/ollama/blob/main/docs/api.md) | `/api/generate`, `/api/chat` (`format` = JSON schema), `/api/embed` | 2026-10-29 |
 | [bge-m3 on Ollama](https://ollama.com/library/bge-m3) | Multilingual embedding model, 1024 dims, used for Arabic | 2026-10-29 |
