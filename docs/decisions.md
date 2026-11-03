@@ -3,6 +3,18 @@
 Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
+## 2026-11-03 — Footnote spans and Neo4j span writer verified (T4.2)
+- Footnote extraction: `src/extract/footnotes.py`, `scripts/tasks.py spans`.
+  - Regex `\[\[.*?\]\]` with `re.DOTALL`, offsets in original text, end exclusive, markers included.
+  - Output: `data/interim/spans/footnotes.jsonl` (31,203 lines), deterministic, UTF-8, keys sorted.
+  - Facts verified: exactly 31,203 `[[…]]` notes; 1,857 segments have at least one; 110 span several lines; longest 7,075 chars (`ibn-kathir:33:41-44:1`); G2 footnote `ibn-kathir:2:255-255:1#5030-5057` verified; 0 overlaps.
+  - Rerun: byte-identical output files across runs.
+- Reusable span writer: `src/graph/spans.py`, `scripts/tasks.py spans --write`.
+  - UNWIND batches with MERGE on `Span.span_id` and `(TafsirSegment)-[:HAS_SPAN]->(Span)` setting provenance (`source`, `method`, `confidence`).
+  - Supports `INSIDE` relationship when `parent` is set.
+  - Neo4j counts: 31,203 `Span {type: 'FOOTNOTE'}` nodes and 31,203 `HAS_SPAN` relationships.
+  - Idempotent: second write produces 100% identical counts; provenance check in `tests/test_load.py` passes.
+
 ## 2026-11-03 — Phase 4 hadith annotation rules (approved by Aya & Mohamed)
 - Athar (narrations stopping at a Companion or Successor) are HADITH spans with `kind: athar` and count toward the
   4b targets (precision, recall, IoU) together with `marfu`.

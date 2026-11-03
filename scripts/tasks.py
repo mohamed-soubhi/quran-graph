@@ -93,6 +93,20 @@ def run_load(args=None) -> None:
     sys.exit(res.returncode)
 
 
+def run_spans(args=None) -> None:
+    """Run footnote span extraction (and optionally write to Neo4j)."""
+    py = get_venv_python()
+    extract_args = [a for a in (args or []) if a not in ("--write", "--load")]
+    res = subprocess.run([py, "src/extract/footnotes.py", *extract_args], cwd=ROOT)
+    if res.returncode != 0:
+        sys.exit(res.returncode)
+
+    if args and ("--write" in args or "--load" in args):
+        res2 = subprocess.run([py, "src/graph/spans.py"], cwd=ROOT)
+        if res2.returncode != 0:
+            sys.exit(res2.returncode)
+
+
 TARGETS = {
     "test": run_test,
     "up": run_up,
@@ -101,6 +115,7 @@ TARGETS = {
     "schema": run_schema,
     "parse": run_parse,
     "load": run_load,
+    "spans": run_spans,
 }
 
 
@@ -111,7 +126,7 @@ def main() -> None:
 
     target = sys.argv[1]
     extra_args = sys.argv[2:]
-    if target in ("test", "smoke", "load"):
+    if target in ("test", "smoke", "load", "spans"):
         TARGETS[target](extra_args)
     else:
         TARGETS[target]()
