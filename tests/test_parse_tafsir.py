@@ -37,10 +37,16 @@ def _sha256(path: Path) -> str:
     return h.hexdigest()
 
 
-def test_parse_mufassir_and_book():
-    """Verify mufassir.jsonl and book.jsonl have exact schema properties."""
+@pytest.fixture(scope="module")
+def built() -> Path:
+    """Parse the 6,236 raw files once per module; the tests below read the output."""
     _check_raw_present()
     parse_tafsir(output_dir=INTERIM_DIR)
+    return INTERIM_DIR
+
+
+def test_parse_mufassir_and_book(built):
+    """Verify mufassir.jsonl and book.jsonl have exact schema properties."""
 
     assert MUFASSIR_JSONL.exists()
     assert BOOK_JSONL.exists()
@@ -63,10 +69,8 @@ def test_parse_mufassir_and_book():
     assert b["source"] == "spa5k@eb82bb6"
 
 
-def test_segments_count_structure_and_ids():
+def test_segments_count_structure_and_ids(built):
     """Verify exactly 1,911 segments, fields, ordering, and G2 fixture IDs."""
-    _check_raw_present()
-    parse_tafsir(output_dir=INTERIM_DIR)
 
     assert SEGMENTS_JSONL.exists()
 
@@ -118,10 +122,8 @@ def test_segments_count_structure_and_ids():
     assert "ibn-kathir:4:116-122:1" in seg_ids
 
 
-def test_covers_total_6236_and_text_equals_raw():
+def test_covers_total_6236_and_text_equals_raw(built):
     """Verify covers total 6,236 with every ayah covered once, and text equals raw files."""
-    _check_raw_present()
-    parse_tafsir(output_dir=INTERIM_DIR)
 
     with open(SEGMENTS_JSONL, "r", encoding="utf-8") as f:
         segments = [json.loads(line) for line in f]
@@ -153,10 +155,8 @@ def test_covers_total_6236_and_text_equals_raw():
             )
 
 
-def test_char_counts_and_largest_group():
+def test_char_counts_and_largest_group(built):
     """Verify sum of char_count == 13,401,179 and largest group == 74:11-30 (20 ayat)."""
-    _check_raw_present()
-    parse_tafsir(output_dir=INTERIM_DIR)
 
     with open(SEGMENTS_JSONL, "r", encoding="utf-8") as f:
         segments = [json.loads(line) for line in f]
@@ -179,13 +179,11 @@ def test_char_counts_and_largest_group():
     assert len(second_largest["covers"]) == 19
 
 
-def test_byte_identical_rerun(tmp_path):
-    """Running parse_tafsir produces deterministic, byte-identical output."""
-    _check_raw_present()
-    dir1 = tmp_path / "run1"
+def test_byte_identical_rerun(built, tmp_path):
+    """A second run produces byte-identical output to the module's first run."""
+    dir1 = built
     dir2 = tmp_path / "run2"
 
-    parse_tafsir(output_dir=dir1)
     parse_tafsir(output_dir=dir2)
 
     for fname in ["segments.jsonl", "mufassir.jsonl", "book.jsonl"]:
