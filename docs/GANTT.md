@@ -34,11 +34,14 @@ gantt
     T2.1 schema.md v1.0            :done, t21, 2026-10-31, 1d
     T2.2 Constraints + indexes      :done, t22, 2026-10-31, 1d
     T2.3 Extraction contract        :done, t23, 2026-10-31, 1d
-    G2 Phase 2 gate (3 real cases)  :crit, milestone, g2, 2026-11-03, 0d
+    G2 Phase 2 gate ✔               :milestone, done, g2, 2026-11-03, 0d
 
-    section Phase 3 · Load L0 + L1 (est.)
-    Parsers → JSONL                 :p3a, after g2, 2d
-    Neo4j writers (Fatiha → Baqarah → all) :p3b, after p3a, 3d
+    section Phase 3 · Load L0 + L1
+    T3.1 Tanzil metadata            :active, t31, 2026-11-03, 1d
+    T3.2 Quran → JSONL              :t32, after t31, 1d
+    T3.3 Corpus → JSONL (Arabic)    :t33, after t32, 2d
+    T3.4 Tafsir segments → JSONL    :t34, after t33, 1d
+    T3.5 Neo4j writers (MERGE)      :p3b, after t34, 2d
     G3 Phase 3 gate                 :milestone, g3, after p3b, 0d
 
     section Phase 4 · Span annotation (est.)
@@ -72,14 +75,15 @@ gantt
 |---|---|---|---|
 | 0 · Setup | 7 / 7 | ✅ done | G0 signed off 2026-10-31 |
 | 1 · Data acquisition | 4 / 4 | ✅ G1 signed off 2026-10-31 | — |
-| 2 · Schema | 3 / 3 | 🔴 G2 gate + schema changes C1–C4 waiting for your sign-off | Phase 3 next |
-| 3 · Load L0 + L1 | 0 | ⏳ | — |
+| 2 · Schema | 3 / 3 | ✅ G2 signed off 2026-11-03 (C1–C4 approval open) | — |
+| 3 · Load L0 + L1 | 0 / 5 | 🔵 T3.1 with agy | T3.2 next |
 | 4 · Span annotation | 0 | ⏳ | — |
 | 5 · Hadith linking | 0 | ⏳ | — |
 | 6 · Semantics | 0 | ⏳ | — |
 | 7 · GraphRAG | 0 | ⏳ | — |
 
 ## Waiting on Aya & Mohamed
+- **Schema changes C1–C4** from G2 (`docs/tickets/reports/G2.md`) — needed before Phase 4.
 - ~~T1.4: download the Quranic Corpus file~~ — done by Claude 2026-10-31.
 - Plan updates (segment range ID, FOOTNOTE, NFC rule); `Citation` vs `HadithSpan`; review the T0.5 fixture.
 - Approval of each ticket after its test scenarios.
