@@ -19,7 +19,7 @@ import sys
 import threading
 import time
 from collections import Counter, deque
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from pathlib import Path
 from typing import Sequence
 
@@ -316,6 +316,8 @@ def run_build(
     windows_ok = 0
     windows_failed = 0
     windows_no_span = 0
+    total_unknown_collections = 0
+    total_dropped_spans = 0
 
     ok_by_segment: dict[str, list[dict]] = collections.defaultdict(list)
     for rec in latest_by_key.values():
@@ -347,6 +349,21 @@ def run_build(
             except GlmResponseError as exc:
                 logger.warning("Failed to parse raw_text for %s: %s", rec["key"], exc)
                 continue
+
+            total_unknown_collections += parsed.unknown_collections
+            total_dropped_spans += parsed.dropped_spans
+
+            for dropped in parsed.dropped_items:
+                seg_rejected.append({
+                    "segment_id": seg_id,
+                    "span_id": None,
+                    "window_start": w_s,
+                    "window_end": w_e,
+                    "start": None,
+                    "end": None,
+                    "reason": "invalid_span",
+                    "raw": dropped,
+                })
 
             if len(parsed.spans) == 0:
                 windows_no_span += 1
@@ -401,6 +418,8 @@ def run_build(
     print(f"Windows failed:       {windows_failed}")
     print(f"Windows with no span: {windows_no_span}")
     print(f"Total spans kept:     {len(all_kept_spans)}")
+    print(f"Dropped spans:        {total_dropped_spans}")
+    print(f"Unknown collections:  {total_unknown_collections}")
     print(f"Spans by kind:        marfu={spans_by_kind.get('marfu', 0)}, athar={spans_by_kind.get('athar', 0)}")
     print(f"Fallback count:       {fallback_count} (confidence 0.8)")
     print(f"Exact match count:    {len(all_kept_spans) - fallback_count} (confidence 0.9)")
@@ -419,6 +438,8 @@ def run_build(
         "windows_failed": windows_failed,
         "windows_no_span": windows_no_span,
         "total_spans": len(all_kept_spans),
+        "dropped_spans": total_dropped_spans,
+        "unknown_collections": total_unknown_collections,
         "spans_by_kind": dict(spans_by_kind),
         "rejected_by_reason": dict(rejected_by_reason),
         "fallback_count": fallback_count,
@@ -483,6 +504,15 @@ def run_extraction(
                 segments[d["segment_id"]] = d["text"]
 
     raw_path.parent.mkdir(parents=True, exist_ok=True)
+    # Ensure raw file ends in newline before appending (F6)
+    if raw_path.exists() and raw_path.stat().st_size > 0:
+        with open(raw_path, "rb") as f_check:
+            f_check.seek(-1, os.SEEK_END)
+            last_byte = f_check.read(1)
+            if last_byte != b"\n":
+                with open(raw_path, "a", encoding="utf-8") as f_fix:
+                    f_fix.write("\n")
+
     raw_file = open(raw_path, "a", encoding="utf-8")
     file_lock = threading.Lock()
 
@@ -495,7 +525,6 @@ def run_extraction(
     failed_in_run = 0
 
     t_run_start = time.time()
-    batch_size = max(concurrency * 2, 8)
 
     def worker(win_item):
         key, seg_id, w_s, w_e = win_item
@@ -526,15 +555,26 @@ def run_extraction(
 
         return status == "ok", sec, key, err, attempt_num
 
-    print(f"\nProcessing {len(pending)} windows in small batches of {batch_size}...")
+    print(f"\nProcessing {len(pending)} windows with sliding window concurrency of {concurrency}...")
 
     try:
         with ThreadPoolExecutor(max_workers=concurrency) as executor:
-            for i in range(0, len(pending), batch_size):
-                batch = pending[i : i + batch_size]
-                futures = [executor.submit(worker, item) for item in batch]
+            in_flight: dict = {}
+            pending_iter = iter(pending)
 
-                for fut in futures:
+            # Fill up to concurrency tasks
+            for _ in range(concurrency):
+                try:
+                    item = next(pending_iter)
+                    fut = executor.submit(worker, item)
+                    in_flight[fut] = item
+                except StopIteration:
+                    break
+
+            while in_flight:
+                done, _ = wait(list(in_flight.keys()), return_when=FIRST_COMPLETED)
+                for fut in done:
+                    item = in_flight.pop(fut)
                     ok, sec, key, err, attempt_num = fut.result()
                     processed_in_run += 1
                     recent_outcomes.append(ok)
@@ -553,25 +593,42 @@ def run_extraction(
                             f"\nERROR: More than 20% of the last 200 windows failed! "
                             f"Stopping runner automatically (cloud outage or quota limit)."
                         )
+                        # F6: Drain remaining in-flight calls before closing raw file
+                        for rem_fut in list(in_flight.keys()):
+                            try:
+                                rem_fut.result()
+                            except Exception:
+                                pass
                         raw_file.close()
                         sys.exit(2)
 
                     # Print progress every 100 windows (or first, or last in run)
                     if processed_in_run % 100 == 0 or processed_in_run == len(pending):
-                        mean_sec = sum(call_durations) / len(call_durations) if call_durations else 0.0
+                        elapsed_so_far = time.time() - t_run_start
+                        real_sec_per_window = elapsed_so_far / processed_in_run if processed_in_run > 0 else 0.0
                         total_done_book = sum(1 for s in raw_status.values() if s == "ok") + ok_in_run
                         remaining_book = total_book_windows - total_done_book
-                        hours_left = (remaining_book * mean_sec / concurrency) / 3600 if mean_sec > 0 else 0.0
+                        hours_left = (remaining_book * real_sec_per_window) / 3600 if real_sec_per_window > 0 else 0.0
+                        mean_sec = sum(call_durations) / len(call_durations) if call_durations else 0.0
 
                         print(
                             f"[{processed_in_run}/{len(pending)} in run | {total_done_book}/{total_book_windows} book] "
                             f"ok: {ok_in_run}, failed: {failed_in_run}, "
-                            f"{mean_sec:.1f}s/call, ~{hours_left:.1f}h left"
+                            f"{mean_sec:.1f}s/call (real {real_sec_per_window:.1f}s/win), ~{hours_left:.1f}h left"
                         )
+
+                    # Submit next window if available
+                    try:
+                        next_item = next(pending_iter)
+                        new_fut = executor.submit(worker, next_item)
+                        in_flight[new_fut] = next_item
+                    except StopIteration:
+                        pass
     finally:
         raw_file.close()
 
     total_time = time.time() - t_run_start
+    real_sec_per_window_all = total_time / processed_in_run if processed_in_run > 0 else 0.0
     mean_sec_all = sum(call_durations) / len(call_durations) if call_durations else 0.0
     rss_mb, peak_mb = get_process_memory_mb()
 
@@ -579,10 +636,10 @@ def run_extraction(
     print(f"Extraction run finished in {total_time:.1f}s.")
     print(f"Processed: {processed_in_run} windows (ok: {ok_in_run}, failed: {failed_in_run})")
     print(f"Attempts needed: 1 attempt: {attempts_counter[1]}, 2 attempts: {attempts_counter[2]}, 3 attempts: {attempts_counter[3]}")
-    print(f"Mean call duration: {mean_sec_all:.1f}s")
+    print(f"Mean call duration: {mean_sec_all:.1f}s (real wall duration: {real_sec_per_window_all:.1f}s per window)")
     remaining_all = total_book_windows - (sum(1 for s in raw_status.values() if s == "ok") + ok_in_run)
-    projected_hours_remaining = (remaining_all * mean_sec_all / concurrency) / 3600 if mean_sec_all > 0 else 0.0
-    projected_hours_full_book = (total_book_windows * mean_sec_all / concurrency) / 3600 if mean_sec_all > 0 else 0.0
+    projected_hours_remaining = (remaining_all * real_sec_per_window_all) / 3600 if real_sec_per_window_all > 0 else 0.0
+    projected_hours_full_book = (total_book_windows * real_sec_per_window_all) / 3600 if real_sec_per_window_all > 0 else 0.0
     print(f"Projected whole-book time (12,770 windows at c={concurrency}): ~{projected_hours_full_book:.1f} hours (remaining: ~{projected_hours_remaining:.1f} hours)")
     print(f"Memory use of process: Working set: {rss_mb:.1f} MB, Peak working set: {peak_mb:.1f} MB")
     print(f"=======================================================")

@@ -4,8 +4,10 @@ import json
 import os
 import re
 import time
+import unicodedata
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 from dotenv import load_dotenv
 
 from src.extract.models import HadithSpanAnchor, HadithSpanAnchorList, HadithSpanList
@@ -107,6 +109,7 @@ class ParsedAnchors:
     spans: list[HadithSpanAnchor] = field(default_factory=list)
     unknown_collections: int = 0
     dropped_spans: int = 0
+    dropped_items: list[dict] = field(default_factory=list)
 
     def __iter__(self):
         return iter(self.spans)
@@ -132,6 +135,23 @@ VALID_COLLECTIONS = {
 }
 
 
+def normalize_kind(raw_kind: Any) -> str | None:
+    """Normalize kind by removing accents and non-letters (T4.5b F2).
+
+    marfu' / marfū' / Marfu -> marfu
+    athar / Athar -> athar
+    Anything else -> None
+    """
+    if not isinstance(raw_kind, str):
+        return None
+    decomposed = unicodedata.normalize("NFKD", raw_kind)
+    stripped = "".join(c for c in decomposed if unicodedata.category(c) != "Mn")
+    letters_only = re.sub(r"[^a-zA-Z]", "", stripped).lower()
+    if letters_only in ("marfu", "athar"):
+        return letters_only
+    return None
+
+
 def parse_anchor_response(raw: str) -> ParsedAnchors:
     """Parse raw GLM answer into ParsedAnchors without network calls (T4.5b).
 
@@ -139,6 +159,8 @@ def parse_anchor_response(raw: str) -> ParsedAnchors:
     - take the first JSON object, ignore markdown fences and trailing text;
     - validate span by span: an unknown collection_hint becomes 'other' (keep the span, count it);
       an invalid span is dropped and counted, the others are kept; an unknown kind drops the span;
+      kind is compared after removing accents and non-letters (F2);
+    - dropped spans are preserved in dropped_items with their raw values (F2);
     - no JSON object at all -> raise GlmResponseError.
     """
     if not raw or not raw.strip():
@@ -168,28 +190,30 @@ def parse_anchor_response(raw: str) -> ParsedAnchors:
     valid_spans: list[HadithSpanAnchor] = []
     unknown_collections = 0
     dropped_spans = 0
+    dropped_items: list[dict] = []
 
     for item in raw_spans:
         if not isinstance(item, dict):
             dropped_spans += 1
+            dropped_items.append({"raw": item})
             continue
 
         start_anchor = item.get("start_anchor")
         end_anchor = item.get("end_anchor")
         if not isinstance(start_anchor, str) or not start_anchor.strip():
             dropped_spans += 1
+            dropped_items.append(dict(item))
             continue
         if not isinstance(end_anchor, str) or not end_anchor.strip():
             dropped_spans += 1
+            dropped_items.append(dict(item))
             continue
 
         raw_kind = item.get("kind")
-        if not isinstance(raw_kind, str):
+        kind = normalize_kind(raw_kind)
+        if not kind:
             dropped_spans += 1
-            continue
-        kind = raw_kind.strip().lower()
-        if kind not in ("marfu", "athar"):
-            dropped_spans += 1
+            dropped_items.append(dict(item))
             continue
 
         col = item.get("collection_hint")
@@ -226,11 +250,13 @@ def parse_anchor_response(raw: str) -> ParsedAnchors:
             valid_spans.append(anchor)
         except Exception:
             dropped_spans += 1
+            dropped_items.append(dict(item))
 
     return ParsedAnchors(
         spans=valid_spans,
         unknown_collections=unknown_collections,
         dropped_spans=dropped_spans,
+        dropped_items=dropped_items,
     )
 
 

@@ -3,6 +3,29 @@
 Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
+## 2026-11-04 — Hadith extraction review fixes before full run (T4.5b F1–F7)
+- F1 Runner sliding window concurrency:
+  - Replaced batch-waiting with sliding-window concurrency (`FIRST_COMPLETED`) keeping up to `concurrency` calls in flight flatly.
+  - Progress and final summary compute hours left from real elapsed time per window (`elapsed / done`), correcting the previous idle factor (~63h wall time measured vs 42h displayed). The fixed runner should yield close to ~42h, to be measured.
+- F2 Kind normalization:
+  - `parse_anchor_response`: normalizes `kind` by stripping accents and non-letters so `marfu'`, `marfū'`, `Marfu` become `marfu`.
+  - Dropped spans are saved to `hadith-rejected.jsonl` with reason `invalid_span` and raw values. `--build` totals print dropped spans and unknown collections.
+- F3 Footnote-tolerant anchor locator:
+  - `locate()` searches normalized text with `[[...]]` footnote characters removed and whitespace collapsed while preserving 1-to-1 character offset map to original text.
+  - Matches crossing footnotes are exact (confidence 0.9). Anchors occurring only inside footnotes return None.
+- F4 Word boundary enforcement:
+  - `locate()` expands `start` backwards and `end` forwards to word boundaries before applying closing-mark extension. Whole span remains bounded within window.
+- F5 Neo4j safety:
+  - `write_hadith_spans` reads and validates input file first, refusing empty or missing files before deleting old spans.
+  - Tests delete only their own test `span_id` and test `delete_spans_by_type` only with test-specific types (`TEST_DELETE_TYPE`). Real graph HADITH spans are never deleted by tests.
+- F6 Half-written line resilience:
+  - Checks if `hadith-raw.jsonl` ends with newline before appending, ensuring clean line starts after interrupted runs.
+  - On stop rule, drains active in-flight calls before closing file.
+- F7 Gate 4b re-verified (`logs/eval-4b-20261104-005754.json`):
+  - Run 1: Precision 91.67%, Recall 91.67%, Mean IoU 0.9978, 0 failed windows. **PASS**.
+  - Run 2: Precision 100.00%, Recall 95.83%, Mean IoU 0.9757, 0 failed windows. **PASS**.
+  - Run 3: Precision 100.00%, Recall 91.67%, Mean IoU 0.9956, 0 failed windows. **PASS**.
+
 ## 2026-11-04 — Reliable GLM answers, whole-book runner, and locator confidence (T4.5b)
 - Schema locator rules (`x-locator-rules` confidence adaptation for single-pass whole-book run):
   - In gold set evaluation, agreement across runs measured consistency. For the whole-book run (~36–45 hours), running 3 passes is computationally prohibitive.

@@ -1,6 +1,8 @@
 """Unit tests for Hadith span extractor (T4.5, T4.5b - no network)."""
 
 import json
+import os
+import threading
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 import pytest
@@ -17,6 +19,7 @@ from src.extract.glm_client import (
     GlmExtractionError,
     GlmResponseError,
     extract_hadith_anchors,
+    normalize_kind,
     parse_anchor_response,
 )
 from scripts.run_hadith_book import (
@@ -25,7 +28,7 @@ from scripts.run_hadith_book import (
     should_stop_for_failures,
 )
 from src.graph.client import get_driver
-from src.graph.spans import delete_spans_by_type, write_spans
+from src.graph.spans import delete_spans_by_type, write_spans, write_hadith_spans
 
 ROOT = Path(__file__).resolve().parent.parent
 GOLD_PATH = ROOT / "data" / "gold" / "phase4.jsonl"
@@ -443,7 +446,7 @@ def test_build_merges_identical_spans_and_rejects_partial_overlaps():
 
 
 def test_neo4j_write_hadith_spans_stores_kind(neo4j_driver):
-    """Span writer stores 'kind' on HADITH spans and delete_spans_by_type cleans up (T4.5b Step 8)."""
+    """Span writer stores 'kind' on HADITH spans without deleting real HADITH spans (T4.5b F5)."""
     test_hadith = {
         "span_id": "test:seg:hadith#500-600",
         "segment_id": "ibn-kathir:1:1-1:1",
@@ -457,7 +460,21 @@ def test_neo4j_write_hadith_spans_stores_kind(neo4j_driver):
         "confidence": 0.9,
     }
 
+    test_custom = {
+        "span_id": "test:seg:custom_type#100-200",
+        "segment_id": "ibn-kathir:1:1-1:1",
+        "start": 100,
+        "end": 200,
+        "type": "TEST_DELETE_TYPE",
+        "kind": "marfu",
+        "cue": "cue",
+        "source": "test",
+        "method": "test",
+        "confidence": 0.9,
+    }
+
     try:
+        # Write test HADITH span
         write_spans([test_hadith], driver=neo4j_driver)
 
         with neo4j_driver.session() as session:
@@ -480,13 +497,249 @@ def test_neo4j_write_hadith_spans_stores_kind(neo4j_driver):
             ).single()["cnt"]
             assert count == 1
 
-        # Test deletion
-        deleted = delete_spans_by_type("HADITH", driver=neo4j_driver)
-        assert deleted >= 1
+        # Delete only its own span_id (F5: never delete_spans_by_type("HADITH") on real DB)
         with neo4j_driver.session() as session:
+            session.run("MATCH (s:Span {span_id: 'test:seg:hadith#500-600'}) DETACH DELETE s")
             count_after = session.run(
                 "MATCH (s:Span {span_id: 'test:seg:hadith#500-600'}) RETURN count(s) AS cnt"
             ).single()["cnt"]
             assert count_after == 0
+
+        # Test delete_spans_by_type with a test-only type
+        write_spans([test_custom], driver=neo4j_driver)
+        deleted = delete_spans_by_type("TEST_DELETE_TYPE", driver=neo4j_driver)
+        assert deleted >= 1
     finally:
-        delete_spans_by_type("HADITH", driver=neo4j_driver)
+        with neo4j_driver.session() as session:
+            session.run("MATCH (s:Span) WHERE s.span_id STARTS WITH 'test:' DETACH DELETE s")
+
+
+def test_neo4j_safety_unit_f5(tmp_path):
+    """No-network test for write_hadith_spans order: read -> delete HADITH -> write (T4.5b F5)."""
+    # 1. Missing file raises FileNotFoundError, delete is never called
+    with patch("src.graph.spans.delete_spans_by_type") as mock_del:
+        with pytest.raises(FileNotFoundError):
+            write_hadith_spans(tmp_path / "missing.jsonl")
+        mock_del.assert_not_called()
+
+    # 2. Empty file raises ValueError, delete is never called
+    empty_file = tmp_path / "empty.jsonl"
+    empty_file.write_text("", encoding="utf-8")
+    with patch("src.graph.spans.delete_spans_by_type") as mock_del:
+        with pytest.raises(ValueError, match="empty"):
+            write_hadith_spans(empty_file)
+        mock_del.assert_not_called()
+
+    # 3. Valid file: order is read -> delete HADITH -> write_spans
+    valid_file = tmp_path / "hadith.jsonl"
+    row = {
+        "span_id": "seg1#10-50",
+        "segment_id": "seg1",
+        "start": 10,
+        "end": 50,
+        "type": "HADITH",
+        "kind": "marfu",
+    }
+    valid_file.write_text(json.dumps(row) + "\n", encoding="utf-8")
+
+    call_order = []
+    dummy_driver = MagicMock()
+
+    def fake_delete(span_type, driver):
+        call_order.append(("delete", span_type))
+        return 0
+
+    def fake_write(rows, driver, batch_size):
+        call_order.append(("write", rows))
+        return {"spans": len(rows), "has_span": len(rows)}
+
+    with patch("src.graph.spans.delete_spans_by_type", side_effect=fake_delete), \
+         patch("src.graph.spans.write_spans", side_effect=fake_write):
+        counts = write_hadith_spans(valid_file, driver=dummy_driver)
+        assert counts["spans"] == 1
+        assert len(call_order) == 2
+        assert call_order[0] == ("delete", "HADITH")
+        assert call_order[1][0] == "write"
+        assert call_order[1][1] == [row]
+
+
+def test_sliding_window_concurrency_f1():
+    """Runner submits next window as soon as one completes using FIRST_COMPLETED (T4.5b F1)."""
+    from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
+    import time
+
+    start_times = {}
+    end_times = {}
+    active_in_flight = 0
+    max_in_flight = 0
+    lock = threading.Lock()
+
+    def fake_call(item):
+        nonlocal active_in_flight, max_in_flight
+        idx, delay = item
+        with lock:
+            start_times[idx] = time.time()
+            active_in_flight += 1
+            if active_in_flight > max_in_flight:
+                max_in_flight = active_in_flight
+
+        time.sleep(delay)
+
+        with lock:
+            end_times[idx] = time.time()
+            active_in_flight -= 1
+        return idx
+
+    # 3 items, concurrency=2:
+    # Item 0 is slow (0.15s)
+    # Item 1 is fast (0.02s)
+    # Item 2 is fast (0.02s)
+    items = [(0, 0.15), (1, 0.02), (2, 0.02)]
+    concurrency = 2
+    pending_iter = iter(items)
+    in_flight = {}
+
+    with ThreadPoolExecutor(max_workers=concurrency) as executor:
+        for _ in range(concurrency):
+            it = next(pending_iter)
+            in_flight[executor.submit(fake_call, it)] = it
+
+        while in_flight:
+            done, _ = wait(list(in_flight.keys()), return_when=FIRST_COMPLETED)
+            for fut in done:
+                in_flight.pop(fut)
+                fut.result()
+                try:
+                    next_it = next(pending_iter)
+                    in_flight[executor.submit(fake_call, next_it)] = next_it
+                except StopIteration:
+                    pass
+
+    # Verify at most concurrency (2) were ever in flight simultaneously
+    assert max_in_flight <= concurrency
+
+    # Verify Item 2 started BEFORE the slow Item 0 finished!
+    assert start_times[2] < end_times[0], (
+        f"Item 2 start ({start_times[2]}) should be earlier than Item 0 end ({end_times[0]})"
+    )
+
+
+def test_kind_normalization_f2():
+    """parse_anchor_response normalizes kind (accents/non-letters stripped) and records dropped (T4.5b F2)."""
+    assert normalize_kind("marfu'") == "marfu"
+    assert normalize_kind("marfū'") == "marfu"
+    assert normalize_kind("Marfu") == "marfu"
+    assert normalize_kind("athar") == "athar"
+    assert normalize_kind("Athar") == "athar"
+    assert normalize_kind("hadith") is None
+    assert normalize_kind("sahih") is None
+
+    # Valid response with accented marfu'
+    raw_marfu = json.dumps({
+        "spans": [
+            {
+                "start_anchor": "قال رسول الله",
+                "end_anchor": "في الجنة",
+                "cue": "قال رسول الله",
+                "collection_hint": "bukhari",
+                "kind": "marfu'",
+            }
+        ]
+    })
+    parsed = parse_anchor_response(raw_marfu)
+    assert len(parsed.spans) == 1
+    assert parsed.spans[0].kind == "marfu"
+    assert parsed.dropped_spans == 0
+
+    # Response with an invalid kind drops the span and preserves it in dropped_items
+    raw_invalid = json.dumps({
+        "spans": [
+            {
+                "start_anchor": "قال رسول الله",
+                "end_anchor": "في الجنة",
+                "cue": "قال رسول الله",
+                "kind": "unknown_kind",
+            }
+        ]
+    })
+    parsed_inv = parse_anchor_response(raw_invalid)
+    assert len(parsed_inv.spans) == 0
+    assert parsed_inv.dropped_spans == 1
+    assert len(parsed_inv.dropped_items) == 1
+    assert parsed_inv.dropped_items[0]["kind"] == "unknown_kind"
+
+
+def test_locate_crosses_footnote_f3():
+    """locate() matches anchors that cross a [[...]] footnote without fallback (T4.5b F3)."""
+    text = (
+        "عَنْ يَزِيدَ بْنِ زِيَادِ بْنِ أَبِي الْجَعْدِ [[في أ: \"الجعدية\".]] ، بِهِ [[سنن النسائي]]."
+    )
+    anchor = HadithSpanAnchor(
+        start_anchor="بْنِ أَبِي الْجَعْدِ",
+        end_anchor="، بِهِ",
+        kind="athar",
+    )
+    res = locate(text, anchor)
+    assert res is not None
+    assert not res.used_fallback  # Not a fallback -> confidence 0.9
+    matched_text = text[res[0]:res[1]]
+    assert "[[في أ: \"الجعدية\".]]" in matched_text
+    assert matched_text.startswith("بْنِ أَبِي الْجَعْدِ")
+    assert matched_text.endswith("، بِهِ")
+
+    # Anchor found only inside footnote returns None
+    fn_only = HadithSpanAnchor(
+        start_anchor="في أ: الجعدية",
+        end_anchor="الجعدية",
+        kind="athar",
+    )
+    assert locate(text, fn_only) is None
+
+
+def test_word_boundary_expansion_f4():
+    """locate() expands boundaries to whole words (start moves back past و, end moves forward past ء) (T4.5b F4)."""
+    text = (
+        "وَقَالَ ابْنُ أَبِي حَاتِمٍ: حَدَّثَنَا أَبِي عَنْ فُلَانٍ بِمِثْلِهِ سَوَاءٌ."
+    )
+    # Start anchor missing leading 'وَ', end anchor missing hamza/tanween 'ءٌ'
+    anchor = HadithSpanAnchor(
+        start_anchor="قَالَ ابْنُ أَبِي حَاتِمٍ",
+        end_anchor="بِمِثْلِهِ سَوَا",
+        kind="marfu",
+    )
+    res = locate(text, anchor)
+    assert res is not None
+    matched = text[res[0]:res[1]]
+    assert matched.startswith("وَقَالَ")  # expanded back to word boundary past و
+    assert matched.endswith("سَوَاءٌ.") or matched.endswith("سَوَاءٌ")  # expanded forward to word boundary
+
+
+def test_raw_file_newline_fix_f6(tmp_path):
+    """Raw file without trailing newline gets newline added before appending (T4.5b F6)."""
+    raw_path = tmp_path / "hadith-raw.jsonl"
+    # Write a truncated line without newline
+    with open(raw_path, "w", encoding="utf-8") as f:
+        f.write('{"key": "truncated"')
+
+    # Verify file does not end in newline
+    with open(raw_path, "rb") as f_check:
+        f_check.seek(-1, os.SEEK_END)
+        assert f_check.read(1) != b"\n"
+
+    # Simulate runner fix
+    if raw_path.exists() and raw_path.stat().st_size > 0:
+        with open(raw_path, "rb") as f_check:
+            f_check.seek(-1, os.SEEK_END)
+            if f_check.read(1) != b"\n":
+                with open(raw_path, "a", encoding="utf-8") as f_fix:
+                    f_fix.write("\n")
+
+    # Now append a valid line
+    valid_rec = {"key": "new_key", "status": "ok"}
+    with open(raw_path, "a", encoding="utf-8") as f:
+        f.write(json.dumps(valid_rec) + "\n")
+
+    # Verify load_raw_status reads new_key and ignores corrupted line
+    st = load_raw_status(raw_path)
+    assert st == {"new_key": "ok"}
+

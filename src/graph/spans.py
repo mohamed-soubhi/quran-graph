@@ -337,10 +337,21 @@ def write_hadith_spans(
     driver: Driver | None = None,
     batch_size: int = DEFAULT_BATCH_SIZE,
 ) -> dict[str, int]:
-    """Read hadith.jsonl, remove old HADITH spans first, write new HADITH spans through write_spans (T4.5b)."""
+    """Read hadith.jsonl, validate, remove old HADITH spans, write new HADITH spans through write_spans (T4.5b F5)."""
     p = Path(path)
     if not p.exists():
         raise FileNotFoundError(f"Hadith spans JSONL file not found: {p}")
+
+    # 1. Read and validate hadith.jsonl first (refuse empty file before deleting anything)
+    rows: list[dict[str, Any]] = []
+    with p.open("r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                rows.append(json.loads(line))
+
+    if not rows:
+        raise ValueError(f"Hadith spans JSONL file is empty: {p}")
 
     close_driver = False
     if driver is None:
@@ -348,16 +359,8 @@ def write_hadith_spans(
         close_driver = True
 
     try:
-        # 1. Remove old HADITH spans first (only type: 'HADITH')
+        # 2. Remove old HADITH spans first (only type: 'HADITH')
         delete_spans_by_type("HADITH", driver=driver)
-
-        # 2. Read hadith.jsonl
-        rows: list[dict[str, Any]] = []
-        with p.open("r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if line:
-                    rows.append(json.loads(line))
 
         # 3. Write through write_spans (stores kind)
         return write_spans(rows, driver=driver, batch_size=batch_size)
