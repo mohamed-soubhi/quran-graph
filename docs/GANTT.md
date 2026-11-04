@@ -81,7 +81,7 @@ gantt
 | 1 · Data acquisition | 4 / 4 | ✅ G1 signed off 2026-10-31 | — |
 | 2 · Schema | 3 / 3 | ✅ G2 signed off 2026-11-03; schema v1.1 (C1–C4) approved | — |
 | 3 · Load L0 + L1 | 5 / 5 | ✅ G3 signed off 2026-11-03 | — |
-| 4 · Span annotation | 6 / 8 | 🔵 T4.5b: reliable GLM answers + runner, then whole-book run | ~36–45 h at 4 parallel |
+| 4 · Span annotation | 6 / 8 | 🔵 T4.5b: whole-book run started 2026-11-04 (12,770 windows) | about 42 h at 4 parallel if the fixed runner keeps workers busy; not yet measured |
 | 5 · Hadith linking | 0 | ⏳ | — |
 | 6 · Semantics | 0 | ⏳ | — |
 | 7 · GraphRAG | 0 | ⏳ | — |

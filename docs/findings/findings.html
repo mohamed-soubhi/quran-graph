@@ -211,6 +211,24 @@ the quote, as the matcher already does elsewhere. Done in T4.4b: the quote links
 less than it seemed. A whole-book check found A1–A4.</p>
 <p class="action">Action: every extractor is also checked on the whole book, not only on the gold set.</p>
 </div>
+<div class="finding" id="E3">
+<h3>E3. GLM answers can break the format, and failures looked like "no hadith" <span class="tag done">fixed in T4.5b</span></h3>
+<p>Ollama's cloud model does not strictly enforce the requested JSON format. In about 350 calls during T4.5, 5 first attempts failed: an unescaped quote, text after the JSON, or an unlisted <code>collection_hint</code> such as <code>tabari</code>. After the last failure the old code returned an empty list, the same answer as "no hadith here".</p>
+<p>The first fix still lost spans. In the 200-window pilot GLM wrote <code>"kind": "marfu'"</code> with an apostrophe in 2 windows, so 6 valid spans were dropped and both windows looked empty. All 5 <code>not_found</code> rejections were anchors that skip a <code>[[…]]</code> footnote, because GLM copies the sentence without it.</p>
+<p class="action">Fix: a failed window now stays <code>failed</code> until it is retried, and never looks like an empty answer. Raw answers are kept, so parser and locator fixes need no new GLM calls. Rebuilding the same 200 answers went from 192 spans to 203, with 0 dropped and 0 <code>not_found</code>.</p>
+</div>
+
+<div class="finding" id="E4">
+<h3>E4. The pilot's time estimate and a new test were both wrong <span class="tag done">fixed in T4.5b</span></h3>
+<p>The runner printed about 42 hours for the book, but it waited for each batch of 8 calls, so workers were busy only 67 % of the time. The pilot's real pace meant about 63 hours. Separately, a new test deleted every <code>HADITH</code> span in the real graph; this did no harm only because there were none yet.</p>
+<p class="action">Fix: the runner starts the next call as soon as one ends and reports hours left from real elapsed time. Tests delete only their own span, and the writer reads and checks its file before deleting anything.</p>
+</div>
+
+<div class="finding" id="E5">
+<h3>E5. The gold set is too thin to judge athar <span class="tag open">open</span></h3>
+<p>Gate 4b passes, but only 5 of its 24 gold spans are athar. In the pilot, 19 of 45 no-span windows contain an isnad or takhrij cue, and about 11 look like real misses by our reading, nearly all athar. The same chain from Ibn Ishaq to Ibn Abbas was found in 2 windows and missed in 3. W08, an athar with a takhrij, was missed in all 3 runs of the latest gate.</p>
+<p class="action">Action: decide after the whole-book counts. Option: a second GLM pass on no-span windows that contain such a cue, about 10 % of the windows.</p>
+</div>
 </main>
 </body>
 </html>

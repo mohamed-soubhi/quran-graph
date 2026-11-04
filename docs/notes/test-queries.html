@@ -30,7 +30,7 @@
 <p class="crumb"><a href="T4.4-queries-ar.html">شرح استعلامات T4.4 (عربي)</a> · <a href="../findings/findings.html">Findings</a></p>
 <h1>Test queries — now and later</h1>
 <p class="lead">Every check from the ticket and gate reports in one place, with today's expected values, plus the
-checks planned for the tickets still ahead. Values verified on 2026-11-03 after T4.4b (commit <code>bce928d</code>).</p>
+checks planned for the tickets still ahead. Values verified on 2026-11-03 after T4.4b (commit <code>bce928d</code>); section 10 and the suite count verified on 2026-11-04 after the T4.5b review (commit <code>3f2ae8f</code>).</p>
 
 <div class="card">
 <p><b>How to run.</b> Open <b>cmd</b> in <code>C:\MSA\QuranGDBExplanation</code> and type <code>chcp 65001</code> first
@@ -65,7 +65,7 @@ When that happens this page is updated with the ticket review.</p>
 
 <div class="t"><h4>1.1 Full test suite <span class="src">· all tickets</span> <span class="tag now">now</span></h4>
 <pre><code>.venv\Scripts\python.exe scripts\tasks.py test</code></pre>
-<p class="exp"><b>97 passed, 3 skipped</b> (about 2 minutes). The 3 skipped tests need a Neo4j that is empty or stopped.</p></div>
+<p class="exp"><b>111 passed, 3 skipped</b> (about 2 minutes). This suite no longer touches real HADITH spans. The 3 skipped tests need a Neo4j that is empty or stopped.</p></div>
 
 <div class="t"><h4>1.2 Phase 3 gate: two full loads give identical counts <span class="src">· G3, T4.1</span> <span class="tag now">now</span></h4>
 <pre><code>.venv\Scripts\python.exe -X utf8 scripts\gate_g3.py
@@ -358,15 +358,13 @@ del .scratch\backup.txt</code></pre>
 <h2 id="t45">10. Later — T4.5 hadith spans (regex cues + GLM anchors)</h2>
 <p>Targets from the plan (gate 4b): precision ≥ 90 %, recall ≥ 80 %, IoU ≥ 0.9, held over ≥ 3 GLM runs.
 Marfu and athar both count. The gold set has <b>24</b> HADITH spans (19 marfu, 5 athar) in 20 of the 50 windows.
-T4.5 (<code>docs/tickets/T4.5.md</code>) builds the pipeline, passes the gate on the gold set and measures speed: checks
-10.1 and 10.1b. The whole-book run and the Neo4j write come in the next ticket, after you approve the time estimate:
-checks 10.2–10.9.</p>
+T4.5 builds the pipeline and passes the gate: checks 10.1–10.1d. T4.5b makes GLM answers reliable and adds the whole-book runner: checks 10.1e–10.1h. The whole-book run started on 2026-11-04; the Neo4j write waits for review of its output: checks 10.2–10.9.</p>
 
 <div class="t"><h4>10.1 Gate 4b on the gold set, 3 runs <span class="src">· T4.5</span> <span class="tag now">now</span></h4>
 <pre><code>.venv\Scripts\python.exe scripts\eval_4b.py --runs 3</code></pre>
 <p class="exp">Each run: precision <b>≥ 90 %</b>, recall <b>≥ 80 %</b>, mean IoU <b>≥ 0.9</b>; misses and extras listed by window;
 exit code 0 only if all 3 runs pass. About 6 minutes per run; <code>--runs 1</code> for a quick check.
-Measured (T4.5): precision 100 / 96 / 100 %, recall 95.8 / 100 / 95.8 %, mean IoU 0.995 / 0.977 / 0.995.</p></div>
+Measured (T4.5b, after the review fixes): precision 91.7 / 100 / 100 %, recall 91.7 / 95.8 / 91.7 %, mean IoU 0.998 / 0.976 / 0.996. GLM varies from run to run, so a rerun gives close but not identical numbers. It adds GLM calls alongside the full run, so wait until that run ends.</p></div>
 
 <div class="t"><h4>10.1b GLM speed and the whole-book estimate <span class="src">· T4.5</span> <span class="tag once">one-time</span></h4>
 <pre><code>.venv\Scripts\python.exe scripts\hadith_throughput.py --sample 100</code></pre>
@@ -376,11 +374,29 @@ Measured (T4.5): 0 % errors; 4 parallel calls is best, 8 doubles the time per ca
 
 <div class="t"><h4>10.1c Hadith tests <span class="src">· T4.5</span> <span class="tag now">now</span></h4>
 <pre><code>.venv\Scripts\python.exe -m pytest tests\test_hadith_spans.py tests\test_extraction_contract.py -v</code></pre>
-<p class="exp"><b>14 passed</b> without network (cue finder, splitter, anchor checks, W01 anchors → <b>[141, 657)</b> and <b>[658, 790)</b>, IoU matcher, 3-word fallback).</p></div>
+<p class="exp"><b>28 passed</b> without network (20 hadith tests and 8 contract tests: cue finder, splitter, anchor checks, W01 anchors → <b>[141, 657)</b> and <b>[658, 790)</b>, IoU matcher, 3-word fallback, parser, window limit, resume, stop rule, Neo4j safety).</p></div>
 
 <div class="t"><h4>10.1d The 2:255 hadiths in a saved gold run <span class="src">· T4.5</span> <span class="tag now">now</span></h4>
 <pre><code>findstr /c:"ibn-kathir:2:255-255:1#" data\interim\spans\hadith-gold-run1.jsonl</code></pre>
 <p class="exp">2 lines: <b>#141-657</b> (ahmad, marfu) and <b>#658-790</b> (muslim, marfu); the same in run2 and run3.</p></div>
+
+<div class="t"><h4>10.1e Pilot rebuilt from a saved copy, no GLM <span class="src">· T4.5b</span> <span class="tag now">now</span></h4>
+<pre><code>.venv\Scripts\python.exe scripts\run_hadith_book.py --build --raw-path .scratch\pilot-raw.jsonl --out-path .scratch\pilot-hadith.jsonl --rejected-path .scratch\pilot-rejected.jsonl</code></pre>
+<p class="exp">Windows ok <b>200</b>, failed <b>0</b>, no span <b>43</b>, spans <b>203</b> (marfu <b>155</b>, athar <b>48</b>), dropped <b>0</b>, rejected only <b>overlap: 1</b>.</p></div>
+
+<div class="t"><h4>10.1f No span boundary inside a word <span class="src">· T4.5b</span> <span class="tag now">now</span></h4>
+<pre><code>set PYTHONPATH=.
+.venv\Scripts\python.exe .scratch\t45b_cuts.py .scratch\pilot-hadith.jsonl</code></pre>
+<p class="exp"><b>spans 203 cuts 0</b>. Run 10.1e first; it writes the file this reads.</p></div>
+
+<div class="t"><h4>10.1g The whole-book run is moving <span class="src">· T4.5b</span> <span class="tag now">now, until it ends</span></h4>
+<pre><code>type logs\hadith-book-run.log
+find /c /v "" data\interim\spans\hadith-raw.jsonl</code></pre>
+<p class="exp">A progress line every 100 windows with failed count, real seconds per window and hours left. The line count grows to <b>12,770</b> or a little more, since failed windows are retried. It stops by itself with exit code 2 if more than 20 % of the last 200 windows fail.</p></div>
+
+<div class="t"><h4>10.1h Resume after a stop <span class="src">· T4.5b</span> <span class="tag once">only if it stops</span></h4>
+<pre><code>.venv\Scripts\python.exe -u scripts\run_hadith_book.py --concurrency 4 &gt;&gt; logs\hadith-book-run.log 2&gt;&amp;1</code></pre>
+<p class="exp">Prints the existing records, skips windows with status ok and retries failed ones. Run it once more at the end if any window failed.</p></div>
 
 <div class="later">
 
