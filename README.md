@@ -9,6 +9,8 @@
 
 **صفحة المشروع:** https://mohamed-soubhi.github.io/quran-graph/ — الفكرة، والتقدّم، والجدول الزمني، والملاحظات.
 
+**لوحة المهام:** https://github.com/users/mohamed-soubhi/projects/1
+
 مشروع آية ومحمد، بدأ في 29 أكتوبر 2026.
 
 ### الطبقات
@@ -49,6 +51,7 @@ evidence (other ayat, hadith), so any statement can be traced back to its source
 
 **Project page:** https://mohamed-soubhi.github.io/quran-graph/ (Arabic) ·
 [English](https://mohamed-soubhi.github.io/quran-graph/en.html): overview, progress, Gantt timeline and findings.
+Task board: https://github.com/users/mohamed-soubhi/projects/1
 
 A project by Aya & Mohamed, started 2026-10-29.
 
