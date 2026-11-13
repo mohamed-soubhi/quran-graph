@@ -11,6 +11,8 @@
 
 **لوحة المهام:** https://github.com/users/mohamed-soubhi/projects/1
 
+**النقاش في مجتمع إتقان:** https://community.itqan.dev/d/981
+
 مشروع آية ومحمد، بدأ في 29 أكتوبر 2026.
 
 ### الطبقات
@@ -52,6 +54,7 @@ evidence (other ayat, hadith), so any statement can be traced back to its source
 **Project page:** https://mohamed-soubhi.github.io/quran-graph/ (Arabic) ·
 [English](https://mohamed-soubhi.github.io/quran-graph/en.html): overview, progress, Gantt timeline and findings.
 Task board: https://github.com/users/mohamed-soubhi/projects/1
+Discussion on the Itqan community: https://community.itqan.dev/d/981
 
 A project by Aya & Mohamed, started 2026-10-29.
 

@@ -84,3 +84,10 @@ ticket or decision relies on an outside source. Accessed dates are when the link
 | [Quranic Corpus extended Buckwalter table](https://corpus.quran.com/java/buckwalter.jsp) | Official Buckwalter → Arabic mapping for roots/lemmas/forms; lossless round-trip check (Arabic-script decision) | 2026-10-31 |
 | [bge-m3 model card](https://huggingface.co/BAAI/bge-m3) | Max input 8,192 tokens → whole Ibn Kathir passages (up to 72,681 chars) are too long to embed (schema Q2) | 2026-10-31 |
 | [jsonschema on PyPI](https://pypi.org/project/jsonschema/) | T2.3: JSON Schema validation for extraction contract (pinned 4.26.0) | 2026-10-31 |
+
+## Project pages
+| Reference | Used for | Accessed |
+|---|---|---|
+| [Itqan community discussion: شبكة تفسير القرآن بين الآيات و الأحاديث](https://community.itqan.dev/d/981) | The project's discussion thread on the Itqan community (مجتمع إتقان); linked from the README | 2026-11-14 |
+| [Project website (GitHub Pages)](https://mohamed-soubhi.github.io/quran-graph/) | Public project page: overview, progress, Gantt, findings (Arabic + English) | 2026-11-14 |
+| [Task board (GitHub Projects)](https://github.com/users/mohamed-soubhi/projects/1) | One card per ticket; status mirrors docs/tickets/TRACKER.md | 2026-11-14 |
