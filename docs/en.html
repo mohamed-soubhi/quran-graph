@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quran Tafsir Graph</title>
+<meta name="description" content="A graph database that links every ayah to Ibn Kathir's tafsir and its evidence (ayat and hadith), with every link traceable to its source.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<header class="top">
+  <nav aria-label="Page sections">
+    <a class="brand" href="#">Quran Tafsir Graph</a>
+    <a href="#idea">Idea</a>
+    <a href="#progress">Progress</a>
+    <a href="#gantt">Timeline</a>
+    <a href="#findings">Findings</a>
+    <a href="#docs">Documents</a>
+    <a class="lang" href="index.html" hreflang="ar" lang="ar">العربية</a>
+  </nav>
+</header>
+
+<main class="page">
+
+  <section class="hero">
+    <div class="eyebrow">A project by Aya &amp; Mohamed · started 29 Oct 2026 · updated 13 Nov 2026</div>
+    <h1>Quran Tafsir Graph</h1>
+    <p class="lead">A graph database that links every ayah to Ibn Kathir's tafsir, and the tafsir to its evidence (other ayat and hadith), so every link can be traced back to its source.</p>
+    <div class="path" aria-label="Trace path">
+      <span class="step s0"><b>Ayah</b></span><span class="arr">→</span>
+      <span class="step s1"><b>Tafsir passage</b> Ibn Kathir</span><span class="arr">→</span>
+      <span class="step s2"><b>Evidence</b> a cited ayah</span><span class="arr">or</span>
+      <span class="step s2"><b>Hadith</b> with its grade from the source</span>
+    </div>
+  </section>
+
+  <section class="sec" id="idea">
+    <div class="main">
+      <h2>The idea</h2>
+      <p>Ibn Kathir's tafsir is a long text (13.4 million characters) that mixes explanation with other ayat, hadith, reports of the Companions and editor footnotes. We never change a character of it. Instead we add a layer of structure on top: every part of the text is marked by its exact character offsets, then linked to the ayah or hadith it refers to.</p>
+      <p>The graph can then answer questions such as: which hadith did Ibn Kathir cite for this ayah? Where does a given hadith appear across the whole tafsir? Which ayat did he use to explain the Quran by the Quran? Every answer comes with its path to the source.</p>
+      <ul class="rules">
+        <li><span class="k">1</span><span>Language models <b>only extract and link</b>; they never write tafsir and never grade hadith.</span></li>
+        <li><span class="k">2</span><span>Hadith grades come <b>from the source, unchanged</b>, with the grader's name.</span></li>
+        <li><span class="k">3</span><span>The original tafsir text is <b>never cut or edited</b>; structure is added as character offsets.</span></li>
+        <li><span class="k">4</span><span>Every link carries its <b>source, method and confidence</b>.</span></li>
+        <li><span class="k">5</span><span>Raw source files are <b>read-only</b>, each with a SHA-256 checksum.</span></li>
+        <li><span class="k">6</span><span>A phase starts only after the previous one passes a <b>measured gate</b> signed off by Aya &amp; Mohamed.</span></li>
+      </ul>
+    </div>
+    <aside class="note">
+      <b>Why a graph?</b>
+      <span>Here the links are the information: one ayah explained by another, one hadith cited in dozens of places. Neo4j makes those paths directly queryable.</span>
+    </aside>
+  </section>
+
+  <section class="sec">
+    <div class="main">
+      <h2>Four layers</h2>
+      <div class="layers">
+        <div class="layer L0"><div class="tag"><span class="code">L0</span><span class="name">Text</span></div>
+          <div class="body"><div class="chips"><span class="chip">Surah <span class="n">114</span></span><span class="chip">Ayah <span class="n">6,236</span></span><span class="chip">Word <span class="n">77,429</span></span><span class="chip">Lemma <span class="n">4,832</span></span><span class="chip">Root <span class="n">1,642</span></span></div>
+          <p>Quran text from Tanzil (Uthmani and simple spelling); words, roots and lemmas from the Quranic Arabic Corpus.</p></div></div>
+        <div class="layer L1"><div class="tag"><span class="code">L1</span><span class="name">Tafsir</span></div>
+          <div class="body"><div class="chips"><span class="chip">Mufassir</span><span class="chip">TafsirBook</span><span class="chip">TafsirSegment <span class="n">1,911</span></span><span class="chip">COVERS <span class="n">6,236</span></span></div>
+          <p>Ibn Kathir in 1,911 passages as in the source; each passage is stored once and linked to every ayah it covers.</p></div></div>
+        <div class="layer L2"><div class="tag"><span class="code">L2</span><span class="name">Evidence</span></div>
+          <div class="body"><div class="chips"><span class="chip">Span</span><span class="chip">Hadith <span class="n">36,512</span></span><span class="chip">HadithBook <span class="n">10</span></span><span class="chip">Grader <span class="n">9</span></span><span class="chip">Narrator</span></div>
+          <p>Marked parts of the tafsir (Quran, hadith, footnote, commentary), linked to ayat and hadith, and later to narrator chains.</p></div></div>
+        <div class="layer L3"><div class="tag"><span class="code">L3</span><span class="name">Semantics</span></div>
+          <div class="body"><div class="chips"><span class="chip">Topic</span><span class="chip">Concept</span><span class="chip">ABOUT</span></div>
+          <p>Topics and concepts (people, places, rulings) with embeddings for search by meaning.</p></div></div>
+      </div>
+    </div>
+    <aside class="note">
+      <b>Real counts</b>
+      <span>Every number is measured from the data loaded in the graph, and checked by tests after each load.</span>
+    </aside>
+  </section>
+
+  <section class="sec" id="progress">
+    <div class="main">
+      <h2>Progress</h2>
+      <div class="status">
+        <div class="fig"><span class="v">4 / 8</span><span class="t">phases past their gate</span></div>
+        <div class="fig"><span class="v">31,203</span><span class="t">editor footnotes marked</span></div>
+        <div class="fig"><span class="v">26,686</span><span class="t">Quran quotes marked</span></div>
+        <div class="fig"><span class="v">10,667</span><span class="t">hadith spans extracted (in review)</span></div>
+      </div>
+      <ol class="phases">
+        <li class="phase"><span class="no">0</span><div><h3>Setup</h3><p class="d">Environment, Neo4j with GDS, models, logging and working rules. 7 tickets.</p></div><span class="pill done">G0 · 31 Oct</span></li>
+        <li class="phase"><span class="no">1</span><div><h3>Data acquisition</h3><p class="d">Sources downloaded, every file checksummed (6,252 files). 4 tickets.</p></div><span class="pill done">G1 · 31 Oct</span></li>
+        <li class="phase"><span class="no">2</span><div><h3>Schema</h3><p class="d">Nodes, relationships, constraints and the extraction contract; schema v1.1. 3 tickets.</p></div><span class="pill done">G2 · 3 Nov</span></li>
+        <li class="phase"><span class="no">3</span><div><h3>Load text and tafsir</h3><p class="d">L0 and L1 with exact counts and 229,191 links carrying provenance. 5 tickets.</p></div><span class="pill done">G3 · 3 Nov</span></li>
+        <li class="phase cur"><span class="no">4</span><div><h3>Span annotation</h3><p class="d">Footnotes and Quran quotes done. Whole-book hadith extraction finished (12,770 windows, 0 failed); a second pass for missed athar is running, then nesting and full coverage.</p><div class="bar" aria-label="7 of 9 tickets"><i style="width:78%"></i></div></div><span class="pill wip">in progress · 7 of 9</span></li>
+        <li class="phase"><span class="no">5</span><div><h3>Hadith linking</h3><p class="d">Footnote numbers first, then fuzzy and embedding matching, then human review.</p></div><span class="pill next">next</span></li>
+        <li class="phase"><span class="no">6</span><div><h3>Semantics</h3><p class="d">Topic taxonomy, embeddings, GDS analysis.</p></div><span class="pill next">later</span></li>
+        <li class="phase"><span class="no">7</span><div><h3>Question answering</h3><p class="d">Arabic questions answered only from the graph, with the source path; tested on 20 questions.</p></div><span class="pill next">later</span></li>
+      </ol>
+      <h3>Phase 4 tickets</h3>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>Ticket</th><th>Title</th><th>Status</th><th>Result</th></tr></thead>
+          <tbody>
+            <tr><td class="id">T4.1</td><td>Normalizer v2</td><td><span class="pill done">approved</span></td><td>corpus vs Tanzil word differences 319 → 2</td></tr>
+            <tr><td class="id">T4.2</td><td>Editor footnotes</td><td><span class="pill done">approved</span></td><td class="n">31,203 footnotes</td></tr>
+            <tr><td class="id">T4.3</td><td>Gold set</td><td><span class="pill done">approved</span></td><td>50 windows, 179 spans, reviewed by Mohamed</td></tr>
+            <tr><td class="id">T4.4</td><td>Quran quotes</td><td><span class="pill done">approved</span></td><td>26,686 quotes; gate 79 / 79</td></tr>
+            <tr><td class="id">T4.4b</td><td>Reference check</td><td><span class="pill done">approved</span></td><td>fixes finding E1</td></tr>
+            <tr><td class="id">T4.5</td><td>Hadith pipeline</td><td><span class="pill done">approved</span></td><td>gate 4b passed in 3 runs</td></tr>
+            <tr><td class="id">T4.5b</td><td>Whole-book run</td><td><span class="pill done">approved</span></td><td>12,770 windows, 0 failed, 36.7 h; 10,667 spans</td></tr>
+            <tr><td class="id">T4.5c</td><td>Second pass for athar + kind fix</td><td><span class="pill wip">in progress</span></td><td>about 1,500 windows; 236 kind corrections</td></tr>
+            <tr><td class="id">T4.6</td><td>Nesting and full coverage</td><td><span class="pill next">todo</span></td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <aside class="note">
+      <b>Hadith gate (4b)</b>
+      <span>On the gold set, 3 runs: precision 91.7–100 %, recall 91.7–95.8 %, boundary overlap above 0.97. Thresholds: precision 90 %, recall 80 %.</span>
+      <b>Workflow</b>
+      <span>Each ticket: implementation, review, then tests that Aya &amp; Mohamed run themselves. The next ticket starts only after explicit approval.</span>
+    </aside>
+  </section>
+
+  <section id="gantt">
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <h2>Timeline</h2>
+      <p>Finished bars are actual; bars for later phases are estimates, re-planned when each phase starts.</p>
+      <div class="gantt">
+<pre class="mermaid">
+gantt
+    dateFormat YYYY-MM-DD
+    axisFormat %d %b
+    todayMarker stroke-width:3px,stroke:#d33
+    section 0 Setup
+    Env, Neo4j, models            :done, t0, 2026-10-29, 3d
+    G0                            :milestone, g0, 2026-10-31, 0d
+    section 1 Data
+    Download 5 sources            :done, t1, 2026-10-31, 1d
+    G1                            :milestone, g1, 2026-10-31, 0d
+    section 2 Schema
+    Schema, constraints, contract :done, t2, 2026-10-31, 3d
+    G2                            :milestone, g2, 2026-11-03, 0d
+    section 3 Load
+    L0 + L1 in Neo4j              :done, t3, 2026-11-03, 1d
+    G3                            :milestone, g3, 2026-11-03, 0d
+    section 4 Spans
+    Normalizer, footnotes, gold   :done, t41, 2026-11-03, 1d
+    Quran quotes                  :done, t44, 2026-11-03, 1d
+    Hadith pipeline + gate        :done, t45, 2026-11-03, 1d
+    Whole-book run                :done, t45b, 2026-11-04, 2d
+    Athar second pass             :active, t45c, 2026-11-13, 2d
+    Nesting + coverage            :t46, after t45c, 2d
+    G4                            :milestone, g4, after t46, 0d
+    section 5 Hadith linking
+    Footnote numbers              :p5a, after g4, 2d
+    Fuzzy + embedding match       :p5b, after p5a, 4d
+    Human review                  :crit, p5c, after p5b, 2d
+    G5                            :milestone, g5, after p5c, 0d
+    section 6 Semantics
+    Topics                        :p6a, after g5, 4d
+    Embeddings                    :p6b, after g5, 2d
+    GDS analysis                  :p6c, after p6a, 3d
+    G6                            :milestone, g6, after p6c, 0d
+    section 7 GraphRAG
+    Retrieval                     :p7a, after g6, 3d
+    Answer with source path       :p7b, after p7a, 3d
+    Interface                     :p7c, after p7b, 2d
+    G7                            :milestone, g7, after p7c, 0d
+</pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="findings">
+    <div class="main">
+      <h2>Findings</h2>
+      <p>Every finding is documented with counts. The main ones are below; the full list is on the <a href="findings/findings.html">findings page</a>.</p>
+      <div class="findings">
+        <div class="finding"><div class="h"><span class="fid">A1</span><h3>Printed references that point to the wrong ayah</h3><span class="tagx src">edition</span></div><p>39 «[surah: ayah]» references after a quote point elsewhere. Compared with quran.com: 38 have the same error there.</p><a href="findings/reference-typos.html">Full list</a></div>
+        <div class="finding"><div class="h"><span class="fid">A5</span><h3>Editor footnotes</h3><span class="tagx src">edition</span></div><p>31,203 footnotes in 1,857 of 1,911 passages; marked as their own spans, never removed.</p><a href="findings/findings.html#A5">Details</a></div>
+        <div class="finding"><div class="h"><span class="fid">B1</span><h3>Basmala at the start of 112 surahs</h3><span class="tagx src">source</span></div><p>Tanzil puts the basmala at the start of ayah 1; kept only in Al-Fatiha, as Aya &amp; Mohamed decided.</p><a href="findings/findings.html#B1">Details</a></div>
+        <div class="finding"><div class="h"><span class="fid">C2 C4</span><h3>Gaps in the hadith source</h3><span class="tagx src">source</span></div><p>No grades for Bukhari and Muslim in this source, and Musnad Ahmad is missing although Ibn Kathir cites it often.</p><a href="findings/findings.html#C4">Details</a></div>
+        <div class="finding"><div class="h"><span class="fid">E3</span><h3>Model answers can break the format</h3><span class="tagx fixed">fixed</span></div><p>Failures used to look like "no hadith here". The pipeline now retries and counts everything it drops.</p><a href="findings/findings.html#E3">Details</a></div>
+        <div class="finding"><div class="h"><span class="fid">E4</span><h3>Time estimate and a dangerous test</h3><span class="tagx fixed">fixed</span></div><p>The runner idled a third of the time, and a test would have deleted the hadith spans. Both fixed before the full run.</p><a href="findings/findings.html#E4">Details</a></div>
+        <div class="finding open"><div class="h"><span class="fid">E5</span><h3>Athar are harder for the model</h3><span class="tagx open">in progress</span></div><p>About 1,500 windows returned nothing although they contain narration words. The second pass (T4.5c) addresses this.</p><a href="findings/findings.html#E5">Details</a></div>
+        <div class="finding"><div class="h"><span class="fid">E1</span><h3>Reference check and a dropped «ف»</h3><span class="tagx fixed">fixed</span></div><p>Our own error: a correct reference was flagged because the quote dropped a letter. Fixed in T4.4b.</p><a href="findings/findings.html#E1">Details</a></div>
+      </div>
+    </div>
+    <aside class="note">
+      <b>Our errors too</b>
+      <span>Section E of the findings page lists mistakes we made ourselves and that review caught.</span>
+    </aside>
+  </section>
+
+  <section class="sec">
+    <div class="main">
+      <h2>Team</h2>
+      <div class="team">
+        <div class="member lead"><span class="r">Project owners</span><h3>Aya &amp; Mohamed</h3><p>Set the plan, review the gold set, and approve each ticket after testing it.</p></div>
+        <div class="member"><span class="r">Planning and review</span><h3>Claude</h3><p>Writes tickets and the schema, builds the gold set, reviews every implementation.</p></div>
+        <div class="member"><span class="r">Implementation</span><h3>agy</h3><p>One ticket per session: code, tests and a report.</p></div>
+        <div class="member"><span class="r">Bulk extraction</span><h3>GLM via Ollama</h3><p>Reads thousands of windows and returns hadith positions as JSON.</p></div>
+      </div>
+    </div>
+    <aside class="note">
+      <b>Stack</b>
+      <span>Neo4j 5.26 with GDS in Docker, Python 3.12, Ollama for GLM and bge-m3 embeddings.</span>
+    </aside>
+  </section>
+
+  <section class="sec" id="docs">
+    <div class="main">
+      <h2>Documents</h2>
+      <div class="links">
+        <a href="findings/findings.html">Findings<span>everything we found, with counts</span></a>
+        <a href="findings/reference-typos.html">Wrong references<span>39 references, compared</span></a>
+        <a href="notes/test-queries.html">Test queries<span>now and later</span></a>
+        <a href="https://github.com/mohamed-soubhi/quran-graph/blob/main/docs/schema.md">Graph schema<span>schema.md</span></a>
+        <a href="https://github.com/mohamed-soubhi/quran-graph/blob/main/docs/tickets/TRACKER.md">Ticket tracker<span>TRACKER.md</span></a>
+        <a href="https://github.com/mohamed-soubhi/quran-graph/blob/main/docs/decisions.md">Decisions<span>decisions.md</span></a>
+        <a href="https://github.com/mohamed-soubhi/quran-graph/blob/main/docs/sources.md">Sources and licences<span>sources.md</span></a>
+        <a href="https://github.com/users/mohamed-soubhi/projects">Task board<span>GitHub Projects</span></a>
+        <a href="https://github.com/mohamed-soubhi/quran-graph">Code<span>the GitHub repository</span></a>
+      </div>
+    </div>
+    <aside class="note">
+      <b>Sources</b>
+      <span>Tanzil, Quranic Arabic Corpus, Ibn Kathir (spa5k/tafsir_api), fawazahmed0/hadith-api, Sanadset.</span>
+    </aside>
+  </section>
+
+  <footer>Quran Tafsir Graph · Aya &amp; Mohamed · status as of 13 Nov 2026.</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>
+  var dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  mermaid.initialize({ startOnLoad: true, theme: dark ? "dark" : "neutral", gantt: { barHeight: 18, fontSize: 12, sectionFontSize: 13, leftPadding: 140 } });
+</script>
+</body>
+</html>

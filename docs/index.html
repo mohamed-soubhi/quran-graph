@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>شبكة تفسير القرآن</title>
+<meta name="description" content="قاعدة بيانات رسومية تربط كل آية بتفسير ابن كثير وبأدلّته من آيات وأحاديث، مع تتبّع كل صلة إلى مصدرها.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<header class="top">
+  <nav aria-label="أقسام الصفحة">
+    <a class="brand" href="#">شبكة تفسير القرآن</a>
+    <a href="#idea">الفكرة</a>
+    <a href="#progress">التقدّم</a>
+    <a href="#gantt">الجدول الزمني</a>
+    <a href="#findings">الملاحظات</a>
+    <a href="#docs">الوثائق</a>
+    <a class="lang" href="en.html" hreflang="en" lang="en">English</a>
+  </nav>
+</header>
+
+<main class="page">
+
+  <section class="hero">
+    <div class="eyebrow">مشروع آية ومحمد · بدأ في 29 أكتوبر 2026 · آخر تحديث 13 نوفمبر 2026</div>
+    <h1>شبكة تفسير القرآن</h1>
+    <p class="lead">قاعدة بيانات رسومية تربط كل آية بتفسيرها عند ابن كثير، وتربط التفسير بأدلّته من آيات وأحاديث، بحيث يمكن تتبّع كل صلة إلى مصدرها.</p>
+    <div class="path" aria-label="مسار التتبع">
+      <span class="step s0"><b>آية</b></span><span class="arr">←</span>
+      <span class="step s1"><b>مقطع تفسير</b> ابن كثير</span><span class="arr">←</span>
+      <span class="step s2"><b>دليل</b> آية مستشهَد بها</span><span class="arr">أو</span>
+      <span class="step s2"><b>حديث</b> ودرجته كما في المصدر</span>
+    </div>
+  </section>
+
+  <section class="sec" id="idea">
+    <div class="main">
+      <h2>الفكرة</h2>
+      <p>تفسير ابن كثير نصّ طويل (13.4 مليون حرف) يمزج شرح الآية بآيات أخرى وأحاديث وآثار وحواشٍ للمحقق. لا نغيّر منه حرفًا، بل نضيف فوقه طبقة بنية: كل مقطع داخل التفسير يُعلَّم بموضعه الدقيق بالحروف، ثم يُربط بالآية أو الحديث الذي يدلّ عليه.</p>
+      <p>فتصبح الشبكة قابلة للسؤال: ما الأحاديث التي استشهد بها ابن كثير في تفسير آية ما؟ أين ورد حديث معيّن في التفسير كله؟ ما الآيات التي فسّر بها القرآنَ بالقرآن؟ وكل جواب يأتي مع مساره إلى المصدر.</p>
+      <ul class="rules">
+        <li><span class="k">١</span><span>النماذج اللغوية <b>تستخرج وتربط فقط</b>؛ لا تكتب تفسيرًا ولا تحكم على حديث.</span></li>
+        <li><span class="k">٢</span><span>درجة الحديث تؤخذ <b>من مصدرها كما هي</b>، مع اسم من حكم بها.</span></li>
+        <li><span class="k">٣</span><span>نصّ التفسير الأصلي <b>لا يُقطع ولا يُعدَّل</b>؛ البنية تُضاف بمواضع الحروف.</span></li>
+        <li><span class="k">٤</span><span>كل علاقة تحمل <b>مصدرها وطريقتها ودرجة الثقة</b> فيها.</span></li>
+        <li><span class="k">٥</span><span>ملفات المصادر الخام <b>للقراءة فقط</b>، ولكل ملف بصمة SHA-256.</span></li>
+        <li><span class="k">٦</span><span>لا تبدأ مرحلة قبل أن تجتاز سابقتها <b>بوابة قياس</b> يوقّعها آية ومحمد.</span></li>
+      </ul>
+    </div>
+    <aside class="note">
+      <b>لماذا رسم بياني؟</b>
+      <span>العلاقات هنا هي المعلومة نفسها: آية تفسّرها أخرى، وحديث يتكرر في عشرات المواضع. قاعدة Neo4j تجعل هذه المسارات قابلة للسؤال مباشرة.</span>
+    </aside>
+  </section>
+
+  <section class="sec">
+    <div class="main">
+      <h2>أربع طبقات</h2>
+      <div class="layers">
+        <div class="layer L0"><div class="tag"><span class="code">L0</span><span class="name">النص</span></div>
+          <div class="body"><div class="chips"><span class="chip">Surah <span class="n">114</span></span><span class="chip">Ayah <span class="n">6,236</span></span><span class="chip">Word <span class="n">77,429</span></span><span class="chip">Lemma <span class="n">4,832</span></span><span class="chip">Root <span class="n">1,642</span></span></div>
+          <p>نص المصحف من Tanzil (الرسم العثماني والإملائي)، والكلمات وجذورها ولمّاتها من Quranic Arabic Corpus.</p></div></div>
+        <div class="layer L1"><div class="tag"><span class="code">L1</span><span class="name">التفسير</span></div>
+          <div class="body"><div class="chips"><span class="chip">Mufassir</span><span class="chip">TafsirBook</span><span class="chip">TafsirSegment <span class="n">1,911</span></span><span class="chip">COVERS <span class="n">6,236</span></span></div>
+          <p>تفسير ابن كثير في 1,911 مقطعًا كما هو في المصدر؛ كل مقطع يُخزَّن مرة واحدة ويرتبط بكل آية يغطيها.</p></div></div>
+        <div class="layer L2"><div class="tag"><span class="code">L2</span><span class="name">الأدلّة</span></div>
+          <div class="body"><div class="chips"><span class="chip">Span</span><span class="chip">Hadith <span class="n">36,512</span></span><span class="chip">HadithBook <span class="n">10</span></span><span class="chip">Grader <span class="n">9</span></span><span class="chip">Narrator</span></div>
+          <p>مقاطع داخل التفسير: قرآن، حديث، حاشية محقق، شرح. ثم ربطها بالآيات والأحاديث، ولاحقًا بسلاسل الرواة.</p></div></div>
+        <div class="layer L3"><div class="tag"><span class="code">L3</span><span class="name">الدلالات</span></div>
+          <div class="body"><div class="chips"><span class="chip">Topic</span><span class="chip">Concept</span><span class="chip">ABOUT</span></div>
+          <p>موضوعات ومفاهيم (أشخاص، أماكن، أحكام) مع تضمينات دلالية للبحث بالمعنى.</p></div></div>
+      </div>
+    </div>
+    <aside class="note">
+      <b>الأرقام فعلية</b>
+      <span>كل عدد هنا مقيس من البيانات المحمّلة في القاعدة، وتتحقق منه الاختبارات بعد كل تحميل.</span>
+    </aside>
+  </section>
+
+  <section class="sec" id="progress">
+    <div class="main">
+      <h2>التقدّم</h2>
+      <div class="status">
+        <div class="fig"><span class="v">4 / 8</span><span class="t">مراحل اكتملت بوابتها</span></div>
+        <div class="fig"><span class="v">31,203</span><span class="t">حاشية محقق معلَّمة</span></div>
+        <div class="fig"><span class="v">26,686</span><span class="t">اقتباسًا قرآنيًا معلَّمًا</span></div>
+        <div class="fig"><span class="v">10,667</span><span class="t">مقطع حديث مستخرج (قيد المراجعة)</span></div>
+      </div>
+      <ol class="phases">
+        <li class="phase"><span class="no">0</span><div><h3>التجهيز</h3><p class="d">البيئة، Neo4j مع GDS، النماذج، السجلات، وقواعد العمل. 7 مهام.</p></div><span class="pill done">G0 · 31 أكتوبر</span></li>
+        <li class="phase"><span class="no">1</span><div><h3>جمع البيانات</h3><p class="d">تنزيل المصادر وتوثيق بصمة كل ملف (6,252 ملفًا). 4 مهام.</p></div><span class="pill done">G1 · 31 أكتوبر</span></li>
+        <li class="phase"><span class="no">2</span><div><h3>تصميم المخطط</h3><p class="d">العقد والعلاقات والقيود وعقد الاستخراج؛ المخطط 1.1. 3 مهام.</p></div><span class="pill done">G2 · 3 نوفمبر</span></li>
+        <li class="phase"><span class="no">3</span><div><h3>تحميل النص والتفسير</h3><p class="d">الطبقتان L0 وL1 بأعداد مطابقة تمامًا و229,191 علاقة موثّقة المصدر. 5 مهام.</p></div><span class="pill done">G3 · 3 نوفمبر</span></li>
+        <li class="phase cur"><span class="no">4</span><div><h3>تعليم المقاطع</h3><p class="d">الحواشي والقرآن تمّا. استخراج الأحاديث من الكتاب كله انتهى (12,770 نافذة، بلا فشل)، وتجري الآن تمريرة ثانية للآثار الفائتة، ثم التداخل والتغطية الكاملة.</p><div class="bar" aria-label="7 من 9 مهام"><i style="width:78%"></i></div></div><span class="pill wip">جارية · 7 من 9</span></li>
+        <li class="phase"><span class="no">5</span><div><h3>ربط الأحاديث</h3><p class="d">من أرقام الحواشي أولًا، ثم المطابقة التقريبية والتضمينات، ثم مراجعة بشرية.</p></div><span class="pill next">قادمة</span></li>
+        <li class="phase"><span class="no">6</span><div><h3>الدلالات</h3><p class="d">تصنيف الموضوعات، والتضمينات، وتحليل الشبكة بـ GDS.</p></div><span class="pill next">قادمة</span></li>
+        <li class="phase"><span class="no">7</span><div><h3>السؤال والجواب</h3><p class="d">سؤال بالعربية وجواب يقتبس من الشبكة فقط ويعرض مسار المصدر؛ يُختبر بعشرين سؤالًا.</p></div><span class="pill next">قادمة</span></li>
+      </ol>
+      <h3>مهام المرحلة الرابعة</h3>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>المهمة</th><th>العنوان</th><th>الحالة</th><th>النتيجة</th></tr></thead>
+          <tbody>
+            <tr><td class="id">T4.1</td><td>مطبِّع النص، الإصدار 2</td><td><span class="pill done">معتمدة</span></td><td>فروق الكلمات بين المدوّنة وتنزيل من 319 إلى 2</td></tr>
+            <tr><td class="id">T4.2</td><td>حواشي المحقق</td><td><span class="pill done">معتمدة</span></td><td class="n">31,203 حاشية</td></tr>
+            <tr><td class="id">T4.3</td><td>المجموعة الذهبية</td><td><span class="pill done">معتمدة</span></td><td>50 نافذة، 179 مقطعًا، راجعها محمد</td></tr>
+            <tr><td class="id">T4.4</td><td>الاقتباسات القرآنية</td><td><span class="pill done">معتمدة</span></td><td>26,686 اقتباسًا؛ البوابة 79 من 79</td></tr>
+            <tr><td class="id">T4.4b</td><td>فحص الإحالات</td><td><span class="pill done">معتمدة</span></td><td>إصلاح الملاحظة هـ١</td></tr>
+            <tr><td class="id">T4.5</td><td>خطّ استخراج الأحاديث</td><td><span class="pill done">معتمدة</span></td><td>البوابة 4b ناجحة في 3 تشغيلات</td></tr>
+            <tr><td class="id">T4.5b</td><td>تشغيل الكتاب كله</td><td><span class="pill done">معتمدة</span></td><td>12,770 نافذة، 0 فشل، 36.7 ساعة؛ 10,667 مقطعًا</td></tr>
+            <tr><td class="id">T4.5c</td><td>تمريرة ثانية للآثار + تصحيح النوع</td><td><span class="pill wip">جارية</span></td><td>نحو 1,500 نافذة؛ 236 تصحيحًا للنوع</td></tr>
+            <tr><td class="id">T4.6</td><td>التداخل والتغطية الكاملة</td><td><span class="pill next">لم تبدأ</span></td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <aside class="note">
+      <b>بوابة الأحاديث (4b)</b>
+      <span>على المجموعة الذهبية في ثلاث تشغيلات: الدقة 91.7–100٪، والاستدعاء 91.7–95.8٪، وتطابق الحدود فوق 0.97. الحد الأدنى: دقة 90٪ واستدعاء 80٪.</span>
+      <b>طريقة العمل</b>
+      <span>كل مهمة: تنفيذ، ثم مراجعة، ثم اختبارات يشغّلها آية ومحمد بأنفسهما، ولا تبدأ التالية إلا بعد اعتماد صريح.</span>
+    </aside>
+  </section>
+
+  <section id="gantt">
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <h2>الجدول الزمني</h2>
+      <p>الأشرطة المكتملة فعلية، وأشرطة المراحل القادمة تقديرية يُعاد تخطيطها عند بدء كل مرحلة.</p>
+      <div class="gantt">
+<pre class="mermaid">
+gantt
+    dateFormat YYYY-MM-DD
+    axisFormat %d %b
+    todayMarker stroke-width:3px,stroke:#d33
+    section 0 التجهيز
+    البيئة وNeo4j والنماذج        :done, t0, 2026-10-29, 3d
+    G0                            :milestone, g0, 2026-10-31, 0d
+    section 1 البيانات
+    تنزيل المصادر الخمسة          :done, t1, 2026-10-31, 1d
+    G1                            :milestone, g1, 2026-10-31, 0d
+    section 2 المخطط
+    المخطط والقيود وعقد الاستخراج :done, t2, 2026-10-31, 3d
+    G2                            :milestone, g2, 2026-11-03, 0d
+    section 3 التحميل
+    L0 و L1 في Neo4j              :done, t3, 2026-11-03, 1d
+    G3                            :milestone, g3, 2026-11-03, 0d
+    section 4 تعليم المقاطع
+    المطبّع والحواشي والذهبية     :done, t41, 2026-11-03, 1d
+    الاقتباسات القرآنية           :done, t44, 2026-11-03, 1d
+    خط الأحاديث والبوابة          :done, t45, 2026-11-03, 1d
+    تشغيل الكتاب كله              :done, t45b, 2026-11-04, 2d
+    تمريرة الآثار الثانية         :active, t45c, 2026-11-13, 2d
+    التداخل والتغطية              :t46, after t45c, 2d
+    G4                            :milestone, g4, after t46, 0d
+    section 5 ربط الأحاديث
+    أرقام الحواشي                 :p5a, after g4, 2d
+    مطابقة تقريبية وتضمينات       :p5b, after p5a, 4d
+    مراجعة بشرية                  :crit, p5c, after p5b, 2d
+    G5                            :milestone, g5, after p5c, 0d
+    section 6 الدلالات
+    الموضوعات                     :p6a, after g5, 4d
+    التضمينات                     :p6b, after g5, 2d
+    تحليل GDS                     :p6c, after p6a, 3d
+    G6                            :milestone, g6, after p6c, 0d
+    section 7 السؤال والجواب
+    الاسترجاع                     :p7a, after g6, 3d
+    الجواب مع المسار              :p7b, after p7a, 3d
+    الواجهة                       :p7c, after p7b, 2d
+    G7                            :milestone, g7, after p7c, 0d
+</pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="findings">
+    <div class="main">
+      <h2>ما وجدناه في الطريق</h2>
+      <p>كل ملاحظة موثّقة بالأرقام. هذه أهمها، والقائمة الكاملة في <a href="findings/findings-ar.html">صفحة الملاحظات</a>.</p>
+      <div class="findings">
+        <div class="finding"><div class="h"><span class="fid">أ١</span><h3>إحالات مطبوعة تشير إلى غير الآية</h3><span class="tagx src">الطبعة</span></div><p>39 إحالة «[سورة: آية]» بعد الاقتباس تشير إلى آية أخرى. قارنّاها بنسخة quran.com: 38 منها بالخطأ نفسه هناك.</p><a href="findings/reference-typos-ar.html">القائمة كاملة</a></div>
+        <div class="finding"><div class="h"><span class="fid">أ٥</span><h3>حواشي المحقق</h3><span class="tagx src">الطبعة</span></div><p>31,203 حاشية في 1,857 مقطعًا من 1,911؛ تُعلَّم كمقاطع مستقلة ولا تُحذف.</p><a href="findings/findings-ar.html#A5">التفاصيل</a></div>
+        <div class="finding"><div class="h"><span class="fid">ب١</span><h3>البسملة في أول 112 سورة</h3><span class="tagx src">المصدر</span></div><p>تنزيل يضع البسملة في أول الآية الأولى؛ أبقيناها في الفاتحة وحدها كما قرّر آية ومحمد.</p><a href="findings/findings-ar.html#B1">التفاصيل</a></div>
+        <div class="finding"><div class="h"><span class="fid">ج٢ ج٤</span><h3>فجوات في مصدر الحديث</h3><span class="tagx src">المصدر</span></div><p>لا أحكام على أحاديث البخاري ومسلم في هذا المصدر، ومسند أحمد غير موجود رغم أن ابن كثير ينقل منه كثيرًا.</p><a href="findings/findings-ar.html#C4">التفاصيل</a></div>
+        <div class="finding"><div class="h"><span class="fid">هـ٣</span><h3>إجابات النموذج قد تخرج عن الصيغة</h3><span class="tagx fixed">أُصلح</span></div><p>كان الفشل يبدو كأنه «لا حديث هنا». صار البرنامج يعيد المحاولة ويعدّ كل ما يُستبعد، فلا يضيع شيء بصمت.</p><a href="findings/findings-ar.html#E3">التفاصيل</a></div>
+        <div class="finding"><div class="h"><span class="fid">هـ٤</span><h3>تقدير الوقت واختبار خطِر</h3><span class="tagx fixed">أُصلح</span></div><p>المشغّل كان يهدر ثلث وقته، واختبار كان سيحذف مقاطع الأحاديث من القاعدة. أُصلحا قبل التشغيل الكامل.</p><a href="findings/findings-ar.html#E4">التفاصيل</a></div>
+        <div class="finding open"><div class="h"><span class="fid">هـ٥</span><h3>الآثار أصعب على النموذج</h3><span class="tagx open">قيد المعالجة</span></div><p>نحو 1,500 نافذة لم يُستخرج منها شيء رغم وجود ألفاظ الرواية. التمريرة الثانية (T4.5c) تعالج ذلك.</p><a href="findings/findings-ar.html#E5">التفاصيل</a></div>
+        <div class="finding"><div class="h"><span class="fid">هـ١</span><h3>فحص الإحالة وسقوط «ف»</h3><span class="tagx fixed">أُصلح</span></div><p>خطأ منّا كشفه الفحص: إحالة صحيحة عُدّت خطأ لأن الاقتباس أسقط حرفًا. أُصلح في T4.4b.</p><a href="findings/findings-ar.html#E1">التفاصيل</a></div>
+      </div>
+    </div>
+    <aside class="note">
+      <b>أخطاؤنا أيضًا</b>
+      <span>القسم «هـ» في صفحة الملاحظات مخصّص للأخطاء التي وقعنا فيها نحن وكشفتها المراجعة.</span>
+    </aside>
+  </section>
+
+  <section class="sec">
+    <div class="main">
+      <h2>الفريق</h2>
+      <div class="team">
+        <div class="member lead"><span class="r">أصحاب المشروع</span><h3>آية ومحمد</h3><p>يضعان الخطة، يراجعان المجموعة الذهبية، ويعتمدان كل مهمة بعد اختبارها.</p></div>
+        <div class="member"><span class="r">التخطيط والمراجعة</span><h3>Claude</h3><p>يكتب المهام والمخطط، يبني المجموعة الذهبية، ويراجع كل تنفيذ.</p></div>
+        <div class="member"><span class="r">التنفيذ</span><h3>agy</h3><p>ينفّذ مهمة واحدة في كل جلسة: الكود والاختبارات والتقرير.</p></div>
+        <div class="member"><span class="r">الاستخراج بالجملة</span><h3>GLM عبر Ollama</h3><p>يقرأ آلاف النوافذ ويعيد مواضع الأحاديث بصيغة JSON.</p></div>
+      </div>
+    </div>
+    <aside class="note">
+      <b>الأدوات</b>
+      <span>Neo4j 5.26 مع GDS في Docker، وPython 3.12، وOllama لنموذج GLM وتضمينات bge-m3.</span>
+    </aside>
+  </section>
+
+  <section class="sec" id="docs">
+    <div class="main">
+      <h2>الوثائق</h2>
+      <div class="links">
+        <a href="findings/findings-ar.html">الملاحظات<span>كل ما وجدناه، بالأرقام</span></a>
+        <a href="findings/reference-typos-ar.html">الإحالات الخاطئة<span>39 إحالة مع المقارنة</span></a>
+        <a href="notes/test-queries.html">استعلامات الاختبار<span>بالإنجليزية</span></a>
+        <a href="https://github.com/mohamed-soubhi/quran-graph/blob/main/docs/schema.md">مخطط القاعدة<span>schema.md</span></a>
+        <a href="https://github.com/mohamed-soubhi/quran-graph/blob/main/docs/tickets/TRACKER.md">متابعة المهام<span>TRACKER.md</span></a>
+        <a href="https://github.com/mohamed-soubhi/quran-graph/blob/main/docs/decisions.md">القرارات<span>decisions.md</span></a>
+        <a href="https://github.com/mohamed-soubhi/quran-graph/blob/main/docs/sources.md">المصادر وتراخيصها<span>sources.md</span></a>
+        <a href="https://github.com/users/mohamed-soubhi/projects">لوحة المهام<span>GitHub Projects</span></a>
+        <a href="https://github.com/mohamed-soubhi/quran-graph">الكود<span>المستودع على GitHub</span></a>
+      </div>
+    </div>
+    <aside class="note">
+      <b>المصادر</b>
+      <span>Tanzil، وQuranic Arabic Corpus، وتفسير ابن كثير (spa5k/tafsir_api)، وfawazahmed0/hadith-api، وSanadset.</span>
+    </aside>
+  </section>
+
+  <footer>شبكة تفسير القرآن · آية ومحمد · حالة المشروع في 13 نوفمبر 2026.</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>
+  var dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  mermaid.initialize({ startOnLoad: true, theme: dark ? "dark" : "neutral", gantt: { barHeight: 18, fontSize: 12, sectionFontSize: 13, leftPadding: 170 } });
+</script>
+</body>
+</html>
