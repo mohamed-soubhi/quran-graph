@@ -67,7 +67,7 @@ gantt
     GDS analysis                    :p6c, after p6a, 3d
     G6 Phase 6 gate                 :milestone, g6, after p6c, 0d
 
-    section Phase 7 · GraphRAG (est.)
+    section Phase 7 · Question answering using GraphRAG (est.)
     Retrieval (vector + Cypher)     :p7a, after g6, 3d
     Answer with source path         :p7b, after p7a, 3d
     UI (Streamlit / Telegram)       :p7c, after p7b, 2d
@@ -84,7 +84,7 @@ gantt
 | 4 · Span annotation | 7 / 8 | 🔵 T4.5b approved 2026-11-13; whole-book raw run done (12,770 windows, 0 failed, 36.7 h) | next: build + review hadith spans, then write to Neo4j, then T4.6 |
 | 5 · Hadith linking | 0 | ⏳ | — |
 | 6 · Semantics | 0 | ⏳ | — |
-| 7 · GraphRAG | 0 | ⏳ | — |
+| 7 · Question answering using GraphRAG | 0 | ⏳ | — |
 
 ## Waiting on Aya & Mohamed
 - ~~T1.4: download the Quranic Corpus file~~ — done by Claude 2026-10-31.

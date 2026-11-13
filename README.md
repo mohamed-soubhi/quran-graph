@@ -41,7 +41,7 @@
 | 4 تعليم المقاطع | 🔵 7 من 9 مهام: الحواشي والقرآن تمّا؛ استخراج الأحاديث من الكتاب كله تمّ (10,667 مقطعًا)؛ تجري تمريرة ثانية للآثار الفائتة (T4.5c)؛ ثم التداخل والتغطية (T4.6) |
 | 5 ربط الأحاديث | ⏳ |
 | 6 الدلالات | ⏳ |
-| 7 السؤال والجواب | ⏳ |
+| 7 السؤال والجواب باستخدام GraphRAG | ⏳ |
 
 الملاحظات: [`docs/findings/findings-ar.html`](docs/findings/findings-ar.html) · المهام: [`docs/tickets/TRACKER.md`](docs/tickets/TRACKER.md)
 
@@ -91,7 +91,7 @@ relationship carries `source`, `method` and `confidence`. Full rules: [`AGENTS.m
 | 4 Span annotation | 🔵 7 of 9 tickets. Footnotes and Quran quotes done; whole-book hadith run done (12,770 windows, 0 failed, 10,667 spans); T4.5c second pass for missed athar in progress; then T4.6 nesting and coverage |
 | 5 Hadith linking | ⏳ |
 | 6 Semantics | ⏳ |
-| 7 GraphRAG | ⏳ |
+| 7 Question answering using GraphRAG | ⏳ |
 
 Ticket detail: [`docs/tickets/TRACKER.md`](docs/tickets/TRACKER.md) · timeline: [`docs/GANTT.md`](docs/GANTT.md) ·
 findings: [`docs/findings/findings.html`](docs/findings/findings.html) ([Arabic](docs/findings/findings-ar.html)).

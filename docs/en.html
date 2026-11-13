@@ -99,7 +99,7 @@
         <li class="phase cur"><span class="no">4</span><div><h3>Span annotation</h3><p class="d">Footnotes and Quran quotes done. Whole-book hadith extraction finished (12,770 windows, 0 failed); a second pass for missed athar is running, then nesting and full coverage.</p><div class="bar" aria-label="7 of 9 tickets"><i style="width:78%"></i></div></div><span class="pill wip">in progress · 7 of 9</span></li>
         <li class="phase"><span class="no">5</span><div><h3>Hadith linking</h3><p class="d">Footnote numbers first, then fuzzy and embedding matching, then human review.</p></div><span class="pill next">next</span></li>
         <li class="phase"><span class="no">6</span><div><h3>Semantics</h3><p class="d">Topic taxonomy, embeddings, GDS analysis.</p></div><span class="pill next">later</span></li>
-        <li class="phase"><span class="no">7</span><div><h3>Question answering</h3><p class="d">Arabic questions answered only from the graph, with the source path; tested on 20 questions.</p></div><span class="pill next">later</span></li>
+        <li class="phase"><span class="no">7</span><div><h3>Question answering using GraphRAG</h3><p class="d">Arabic questions answered only from the graph, with the source path; tested on 20 questions.</p></div><span class="pill next">later</span></li>
       </ol>
       <h3>Phase 4 tickets</h3>
       <div class="tbl">
@@ -167,7 +167,7 @@ gantt
     Embeddings                    :p6b, after g5, 2d
     GDS analysis                  :p6c, after p6a, 3d
     G6                            :milestone, g6, after p6c, 0d
-    section 7 GraphRAG
+    section 7 Question answering using GraphRAG
     Retrieval                     :p7a, after g6, 3d
     Answer with source path       :p7b, after p7a, 3d
     Interface                     :p7c, after p7b, 2d
