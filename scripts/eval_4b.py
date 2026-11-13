@@ -194,6 +194,11 @@ def run_single_evaluation(
     mean_sec_call = sum(all_call_times) / total_calls if total_calls > 0 else 0.0
     n_fallback = sum(1 for sp in all_predicted if sp.get("fallback_used"))
 
+    gold_athar = [g for g in all_gold_hadiths if g.get("kind") == "athar"]
+    n_gold_athar = len(gold_athar)
+    n_match_athar = sum(1 for p, g, _ in pairs if g.get("kind") == "athar")
+    athar_recall = n_match_athar / n_gold_athar if n_gold_athar > 0 else 0.0
+
     # Gate 4b checks: fails if any window failed
     gate_pass = precision >= 0.90 and recall >= 0.80 and mean_iou >= 0.90 and len(all_failed_windows) == 0
 
@@ -204,6 +209,7 @@ def run_single_evaluation(
     print(f"Matched spans:   {n_match}")
     print(f"Precision:       {precision * 100:.2f}% (target >= 90.0%)")
     print(f"Recall:          {recall * 100:.2f}% (target >= 80.0%)")
+    print(f"Athar recall:    {athar_recall * 100:.2f}% ({n_match_athar}/{n_gold_athar})")
     print(f"Mean IoU:        {mean_iou:.4f} (target >= 0.90)")
     print(f"IoU >= 0.9:      {iou_90_count}/{n_match}")
     print(f"Kind accuracy:   {kind_acc * 100:.2f}%")
@@ -246,6 +252,9 @@ def run_single_evaluation(
         "matched_count": n_match,
         "precision": round(precision, 4),
         "recall": round(recall, 4),
+        "athar_recall": round(athar_recall, 4),
+        "athar_matched": n_match_athar,
+        "athar_gold": n_gold_athar,
         "mean_iou": round(mean_iou, 4),
         "iou_90_count": iou_90_count,
         "kind_accuracy": round(kind_acc, 4),

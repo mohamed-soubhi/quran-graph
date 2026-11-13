@@ -3,6 +3,27 @@
 Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
+## 2026-11-13 — Second pass for missed hadith/athar and chained takhrij rule (T4.5c)
+- Prompt 1.3 for hadith extraction:
+  - System prompt `PROMPT_VERSION = "1.3"`: clarified Rule 1 (takhrij verb without chain inherits preceding kind), Rule 4 (companion/successor sayings as athar), Rule 6 (takhrij chains sharing matn).
+  - Added synthetic few-shot example 3 demonstrating athar with companion isnad and chained takhrij inheriting preceding kind.
+  - Gate 4b verification across 3 runs (`logs/eval-4b-20261113-223028.json`): Precision 96.0%–100.0%, Recall 95.8%–100.0%, Athar recall 100.0% (5/5) in all 3 runs, Mean IoU 0.9843–0.9866. **PASS**.
+- Window selector for targeted second pass (`scripts/select_recheck_windows.py`):
+  - Identifies 0-span windows from `hadith-raw.jsonl` that contain lexical hadith/isnad cues strictly outside segment-level footnotes.
+  - Selected 1,459 recheck windows (out of 3,210 0-span windows; 49 windows had cues only inside footnotes crossing window boundaries and were correctly excluded).
+- Chained-takhrij kind rule (`scripts/run_hadith_book.py --build`):
+  - Applied sequentially per window: when a span begins with optional conjunction/prefix + takhrij verb, contains «به», contains no transmission verb, length < 400 normalized chars, gap from preceding span < 300 chars separated only by punctuation/whitespace, it inherits the preceding span's kind.
+  - Sequential propagation ensures multi-sentence chained takhrij cascades properly.
+  - On pass 1 alone, flipped 190 `athar`→`marfu` (including 16 cascaded flips) and 65 `marfu`→`athar` (total 255 flips; 837 matched same kind).
+  - Records `kind_glm` and `kind_rule: "chained_takhrij"` for full provenance.
+- Multi-file `--raw-path` and prompt version provenance:
+  - `--raw-path` accepts multiple files, reading later files over earlier files per window key.
+  - Kept spans retain `prompt_version` from source raw entry; `--build` summary reports spans broken down by prompt version.
+- Pilot 20 windows:
+  - 20 / 20 ok (100% success rate, 0 failed, 1 attempt each).
+  - 15 of 20 windows recovered hadith spans (19 new spans: 5 marfu, 14 athar).
+  - Zero-span count dropped from 3,210 to 3,195.
+
 ## 2026-11-04 — Hadith extraction review fixes before full run (T4.5b F1–F7)
 - F1 Runner sliding window concurrency:
   - Replaced batch-waiting with sliding-window concurrency (`FIRST_COMPLETED`) keeping up to `concurrency` calls in flight flatly.

@@ -14,6 +14,7 @@ import collections
 import datetime
 import json
 import os
+import re
 import statistics
 import sys
 import threading
@@ -33,19 +34,29 @@ from src.extract.glm_client import (
     FEWSHOT_ANCHOR_1_OUTPUT,
     FEWSHOT_ANCHOR_2_INPUT,
     FEWSHOT_ANCHOR_2_OUTPUT,
+    FEWSHOT_ANCHOR_3_INPUT,
+    FEWSHOT_ANCHOR_3_OUTPUT,
     PROMPT_VERSION,
     GlmResponseError,
     ollama_format,
     parse_anchor_response,
 )
+from src.extract.footnotes import FOOTNOTE_RE
 from src.extract.hadith_spans import (
     find_cue_paragraphs,
     locate_and_check_anchors,
     split_long_paragraph,
 )
+from src.extract.normalize import normalize_with_map
 from src.log import get_logger
 
 logger = get_logger("run_hadith_book")
+
+CHAINED_LEAD_RE = re.compile(
+    r"^\W*(?:(?:و|ثم|فقد|وقد|هكذا|وهكذا|كذا|وكذا|كذلك|وكذلك)\s*)?(?:رواه|اخرجه|اخرجاه)(?!\w)"
+)
+WORD_BIHI_RE = re.compile(r"(?<!\w)به(?!\w)")
+CUE_NARRATION_RE = re.compile(r"حدثن|اخبرن")
 
 SEGMENTS_PATH = ROOT / "data" / "interim" / "tafsir" / "ibn-kathir" / "segments.jsonl"
 SCHEMA_PATH = ROOT / "docs" / "extraction_schema.json"
@@ -177,6 +188,7 @@ def call_glm_for_window(
     user_prompt = (
         f"Example 1:\nInput: {FEWSHOT_ANCHOR_1_INPUT}\nOutput: {json.dumps(FEWSHOT_ANCHOR_1_OUTPUT, ensure_ascii=False)}\n\n"
         f"Example 2:\nInput: {FEWSHOT_ANCHOR_2_INPUT}\nOutput: {json.dumps(FEWSHOT_ANCHOR_2_OUTPUT, ensure_ascii=False)}\n\n"
+        f"Example 3:\nInput: {FEWSHOT_ANCHOR_3_INPUT}\nOutput: {json.dumps(FEWSHOT_ANCHOR_3_OUTPUT, ensure_ascii=False)}\n\n"
         f"Input:\n{win_text}"
     )
 
@@ -277,18 +289,20 @@ def resolve_overlapping_spans(candidates: list[dict]) -> tuple[list[dict], list[
 
 
 def run_build(
-    raw_path: Path = RAW_OUTPUT_PATH,
+    raw_path: Path | Sequence[Path] = RAW_OUTPUT_PATH,
     out_path: Path = SPANS_OUTPUT_PATH,
     rejected_path: Path = REJECTED_OUTPUT_PATH,
     segments_path: Path = SEGMENTS_PATH,
 ) -> dict:
-    """Build step: parse latest ok windows from raw file, locate, resolve overlaps, write outputs."""
+    """Build step: parse latest ok windows from raw file(s), locate, resolve overlaps, write outputs."""
+    raw_paths = [Path(raw_path)] if isinstance(raw_path, (str, Path)) else [Path(p) for p in raw_path]
     print(f"\n=======================================================")
-    print(f"Starting Build Step (reading {raw_path})")
+    print(f"Starting Build Step (reading {', '.join(str(p) for p in raw_paths)})")
     print(f"=======================================================")
 
-    if not raw_path.exists():
-        print(f"Error: Raw file {raw_path} not found.")
+    existing_raw_paths = [p for p in raw_paths if p.exists()]
+    if not existing_raw_paths:
+        print(f"Error: None of the raw files exist: {raw_paths}")
         return {}
 
     # Load segments
@@ -298,20 +312,27 @@ def run_build(
             d = json.loads(line)
             segments_text[d["segment_id"]] = d["text"]
 
-    # Read latest record per key
+    # Read latest record per key across files in given order
+    # For the same key the later file's latest ok answer wins
     latest_by_key: dict[str, dict] = {}
-    with open(raw_path, "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                rec = json.loads(line)
-                k = rec.get("key")
-                if k:
-                    latest_by_key[k] = rec
-            except json.JSONDecodeError:
-                continue
+    for r_path in existing_raw_paths:
+        with open(r_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    rec = json.loads(line)
+                    k = rec.get("key")
+                    if not k:
+                        continue
+                    if rec.get("status") == "ok":
+                        latest_by_key[k] = rec
+                    else:
+                        if k not in latest_by_key or latest_by_key[k].get("status") != "ok":
+                            latest_by_key[k] = rec
+                except json.JSONDecodeError:
+                    continue
 
     windows_ok = 0
     windows_failed = 0
@@ -343,6 +364,7 @@ def run_build(
             w_s = rec["window_start"]
             w_e = rec["window_end"]
             model = rec.get("model", "")
+            p_ver = rec.get("prompt_version", "1.2")
 
             try:
                 parsed = parse_anchor_response(raw_text)
@@ -382,6 +404,7 @@ def run_build(
             for sp in located:
                 # Confidence: 0.9, or 0.8 when fallback_used
                 sp["confidence"] = 0.8 if sp.get("fallback_used") else 0.9
+                sp["prompt_version"] = p_ver
                 candidate_spans.append(sp)
 
         kept_spans, overlap_rejected = resolve_overlapping_spans(candidate_spans)
@@ -389,8 +412,38 @@ def run_build(
         all_rejections.extend(seg_rejected)
         all_rejections.extend(overlap_rejected)
 
-    # Sort kept spans by segment_id then start offset
+    # Sort kept spans by segment_id then start offset (reading order per segment)
     all_kept_spans.sort(key=lambda s: (s["segment_id"], s["start"], s["end"]))
+
+    # Apply chained takhrij kind rule (T4.5c Step 6)
+    kind_rule_changes: Counter = Counter()
+    prev = None
+    for s in all_kept_spans:
+        seg_id = s["segment_id"]
+        seg_text = segments_text.get(seg_id, "")
+        span_text = seg_text[s["start"]:s["end"]]
+        norm_text, _ = normalize_with_map(FOOTNOTE_RE.sub(" ", span_text))
+
+        rule_applies = (
+            bool(CHAINED_LEAD_RE.search(norm_text))
+            and bool(WORD_BIHI_RE.search(norm_text))
+            and not bool(CUE_NARRATION_RE.search(norm_text))
+            and len(norm_text) < 400
+        )
+        if (
+            rule_applies
+            and prev is not None
+            and prev["segment_id"] == seg_id
+            and (s["start"] - prev["end"]) < 300
+        ):
+            target_kind = prev["kind"]
+            orig_kind = s["kind"]
+            if orig_kind != target_kind:
+                s["kind_glm"] = orig_kind
+                s["kind_rule"] = "chained_takhrij"
+                s["kind"] = target_kind
+                kind_rule_changes[f"{orig_kind}->{target_kind}"] += 1
+        prev = s
 
     # Write hadith.jsonl
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -405,6 +458,7 @@ def run_build(
 
     # Totals and stats
     spans_by_kind = Counter(s.get("kind") for s in all_kept_spans)
+    spans_by_prompt_version = Counter(s.get("prompt_version") for s in all_kept_spans)
     rejected_by_reason = Counter(r.get("reason") for r in all_rejections)
     fallback_count = sum(1 for s in all_kept_spans if s.get("fallback_used"))
 
@@ -421,6 +475,8 @@ def run_build(
     print(f"Dropped spans:        {total_dropped_spans}")
     print(f"Unknown collections:  {total_unknown_collections}")
     print(f"Spans by kind:        marfu={spans_by_kind.get('marfu', 0)}, athar={spans_by_kind.get('athar', 0)}")
+    print(f"Spans by prompt ver:  {dict(spans_by_prompt_version)}")
+    print(f"Kind rule changes:    athar->marfu: {kind_rule_changes.get('athar->marfu', 0)}, marfu->athar: {kind_rule_changes.get('marfu->athar', 0)} (total: {sum(kind_rule_changes.values())})")
     print(f"Fallback count:       {fallback_count} (confidence 0.8)")
     print(f"Exact match count:    {len(all_kept_spans) - fallback_count} (confidence 0.9)")
     print(f"Span length min/median/max: {min_len} / {median_len} / {max_len} chars")
@@ -441,6 +497,8 @@ def run_build(
         "dropped_spans": total_dropped_spans,
         "unknown_collections": total_unknown_collections,
         "spans_by_kind": dict(spans_by_kind),
+        "spans_by_prompt_version": dict(spans_by_prompt_version),
+        "kind_rule_changes": dict(kind_rule_changes),
         "rejected_by_reason": dict(rejected_by_reason),
         "fallback_count": fallback_count,
         "length_min": min_len,
@@ -456,22 +514,33 @@ def run_extraction(
     host: str | None = None,
     raw_path: Path = RAW_OUTPUT_PATH,
     segments_path: Path = SEGMENTS_PATH,
+    keys_file: Path | None = None,
 ) -> None:
     """Run whole-book extraction with resume, batching, and stopping rules."""
     model = model or os.getenv("GLM_MODEL", "glm-5.3-flash:cloud")
     host = host or os.getenv("OLLAMA_HOST", "http://localhost:11434")
 
     print(f"\n=======================================================")
-    print(f"Hadith Book Extraction Runner (T4.5b)")
+    print(f"Hadith Book Extraction Runner (T4.5b, T4.5c)")
     print(f"Model: {model}, Host: {host}, Concurrency: {concurrency}")
     if limit is not None:
         print(f"Limit: {limit} windows")
+    if keys_file is not None:
+        print(f"Keys file: {keys_file}")
     print(f"Raw output: {raw_path}")
     print(f"=======================================================")
 
     all_windows = collect_book_windows(segments_path)
+    if keys_file is not None:
+        if not keys_file.exists():
+            raise FileNotFoundError(f"Keys file not found: {keys_file}")
+        with open(keys_file, "r", encoding="utf-8") as f:
+            target_keys = {line.strip() for line in f if line.strip()}
+        all_windows = [w for w in all_windows if w[0] in target_keys]
+        print(f"Restricted to {len(all_windows)} windows from {keys_file}")
+
     total_book_windows = len(all_windows)
-    print(f"Total cue windows in book: {total_book_windows}")
+    print(f"Total candidate windows: {total_book_windows}")
 
     # Load existing status
     raw_status = load_raw_status(raw_path)
@@ -650,9 +719,10 @@ def main():
     parser.add_argument("--build", action="store_true", help="Run build step from raw JSONL (no network calls)")
     parser.add_argument("--concurrency", type=int, default=4, help="Concurrency for GLM calls (default: 4)")
     parser.add_argument("--limit", type=int, default=None, help="Limit number of windows to process")
+    parser.add_argument("--keys-file", type=Path, default=None, help="Path to keys file restricting windows to process")
     parser.add_argument("--model", type=str, default=None, help="Ollama model tag")
     parser.add_argument("--host", type=str, default=None, help="Ollama host URL")
-    parser.add_argument("--raw-path", type=Path, default=RAW_OUTPUT_PATH, help="Path to raw JSONL file")
+    parser.add_argument("--raw-path", type=Path, nargs="+", default=[RAW_OUTPUT_PATH], help="Path(s) to raw JSONL file(s)")
     parser.add_argument("--out-path", type=Path, default=SPANS_OUTPUT_PATH, help="Path to hadith.jsonl output")
     parser.add_argument("--rejected-path", type=Path, default=REJECTED_OUTPUT_PATH, help="Path to hadith-rejected.jsonl output")
     args = parser.parse_args()
@@ -669,7 +739,8 @@ def main():
             concurrency=args.concurrency,
             model=args.model,
             host=args.host,
-            raw_path=args.raw_path,
+            raw_path=args.raw_path[0] if isinstance(args.raw_path, list) else args.raw_path,
+            keys_file=args.keys_file,
         )
 
 

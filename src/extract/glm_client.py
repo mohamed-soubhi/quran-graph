@@ -20,9 +20,9 @@ logger = get_logger("glm_client")
 
 SCHEMA_PATH = ROOT / "docs" / "extraction_schema.json"
 
-PROMPT_VERSION = "1.2"
+PROMPT_VERSION = "1.3"
 
-# Few-shot examples for HadithSpanAnchorList (T4.5 - not from the gold set)
+# Few-shot examples for HadithSpanAnchorList (T4.5, T4.5c - not from the gold set)
 FEWSHOT_ANCHOR_1_INPUT = (
     "قال ابن ماجه: حدثنا محمد بن بشار حدثنا يحيى بن سعيد عن سفيان عن منصور عن ربعي بن حراش عن علي بن أبي طالب قال: "
     "قال رسول الله ﷺ: \"لا تكذبوا علي فإنه من يكذب علي يلج النار\". "
@@ -57,18 +57,43 @@ FEWSHOT_ANCHOR_2_OUTPUT = {
     "spans": [],
 }
 
+FEWSHOT_ANCHOR_3_INPUT = (
+    "وقال أبو زرعة: حدثنا أحمد بن يونس، حدثنا أبو بكر بن عياش، عن الأعمش، عن إبراهيم النخعي قال: "
+    "كان أصحاب عبد الله يعجبهم هذا الشرح. ورواه سعيد بن منصور من حديث الأعمش به."
+)
+FEWSHOT_ANCHOR_3_OUTPUT = {
+    "spans": [
+        {
+            "start_anchor": "وقال أبو زرعة: حدثنا أحمد",
+            "end_anchor": "يعجبهم هذا الشرح",
+            "cue": "وقال أبو زرعة: حدثنا",
+            "collection_hint": "other",
+            "number_hint": None,
+            "kind": "athar",
+        },
+        {
+            "start_anchor": "ورواه سعيد بن منصور من حديث",
+            "end_anchor": "حديث الأعمش به",
+            "cue": "ورواه سعيد بن منصور",
+            "collection_hint": "other",
+            "number_hint": None,
+            "kind": "athar",
+        },
+    ]
+}
+
 ANCHOR_SYSTEM_PROMPT = (
     "You are an expert Arabic hadith extraction assistant.\n"
     "Extract all HADITH spans (narrations, quotations, and chained takhrij lines) from the input Arabic tafsir window.\n"
     "Your response must be EXACTLY ONE JSON object and nothing else, with NO explanation, NO surrounding commentary, and NO markdown code fences.\n"
     "Any quote character \" inside an Arabic string MUST be written as an escaped quote \\\" (never a bare \").\n\n"
     "Extraction rules:\n"
-    "1. WHAT IS A HADITH: A narration with an isnad (حدثنا / أخبرنا / سمعت), an explicit takhrij (رواه / أخرجه / أخرجاه + collector), or the Prophet's ﷺ direct words or acts («قال رسول الله ﷺ», «وفي الحديث»).\n"
+    "1. WHAT IS A HADITH: A narration with an isnad (حدثنا / أخبرنا / سمعت), an explicit takhrij (رواه / أخرجه / أخرجاه / روى + collector), or the Prophet's ﷺ direct words or acts («قال رسول الله ﷺ», «وفي الحديث»). Reports of Companions and Successors (athar) are HADITH spans when they come with an isnad (حدثنا / أخبرنا / سمعت) or a takhrij verb + collector (رواه / أخرجه / روى), even when the content is tafsir; kind = 'athar'.\n"
     "2. START ANCHOR: The first 3-8 words of the span, copied EXACTLY from the input text, starting at the introducing formula (e.g. «قال الإمام أحمد: حدثنا», «وقد رواه مسلم»). Leading connectives like «ولهذا» stay outside.\n"
     "3. END ANCHOR: The last 3-8 words of the span, copied EXACTLY from the input text, ending after the last word of the matn or takhrij (including closing quotes). Sentence-final full stops stay outside.\n"
-    "4. TAKHRIJ: A takhrij line with its own isnad/chain (e.g. «وقد رواه مسلم عن أبي بكر ... عن الجريري به») is its own separate HADITH span. A chainless takhrij line (e.g. «وكذلك رواه ابن جرير», «وعلقه البخاري مجزوما») joins the hadith before it.\n"
+    "4. TAKHRIJ: A takhrij line with its own isnad/chain/route (e.g. «وقد رواه مسلم عن أبي بكر ... عن الجريري به», «رواه X من حديث / من طريق Y ... به», «... بنحوه») is its own separate HADITH span even when the hadith it refers to is not in this window. A chainless takhrij line (e.g. «وكذلك رواه ابن جرير», «وعلقه البخاري مجزوما») joins the hadith before it.\n"
     "5. KIND: 'marfu' if the quoted route reaches the Prophet ﷺ; 'athar' if it stops at a Companion or Successor (e.g. Ibn Abbas, Ibn Umar). Base this on the quoted route as written. Must be exactly 'marfu' or 'athar'.\n"
-    "6. NOT HADITH: Tafsir opinions with short routes or no transmission verbs (e.g. «قال علي بن أبي طلحة عن ابن عباس», «قال مجاهد: ...») are commentary, NOT hadith. Dream or story reports (even with isnad) are commentary, NOT hadith.\n"
+    "6. NOT HADITH: Tafsir opinions with short routes (a name + «عن» + a name with no transmission verb and no takhrij, e.g. «قال علي بن أبي طلحة عن ابن عباس», «قال مجاهد: ...») are commentary, NOT hadith. Dream or story reports (even with isnad) are commentary, NOT hadith.\n"
     "7. FOOTNOTES: Text inside [[...]] is an editor footnote. NEVER extract from [[...]], and anchors must never be inside [[...]].\n"
     "8. COLLECTION HINT: Must be one of 'bukhari', 'muslim', 'abudawud', 'tirmidhi', 'nasai', 'ibnmajah', 'malik', 'ahmad', 'darimi', or 'other' (for any other source like Tabari, Tabarani, Bazzar, Ibn Abi Hatim, Ibn Jarir), or null. Anything else MUST be written as \"other\"."
 )
@@ -418,6 +443,7 @@ def extract_hadith_anchors(
     user_prompt = (
         f"Example 1:\nInput: {FEWSHOT_ANCHOR_1_INPUT}\nOutput: {json.dumps(FEWSHOT_ANCHOR_1_OUTPUT, ensure_ascii=False)}\n\n"
         f"Example 2:\nInput: {FEWSHOT_ANCHOR_2_INPUT}\nOutput: {json.dumps(FEWSHOT_ANCHOR_2_OUTPUT, ensure_ascii=False)}\n\n"
+        f"Example 3:\nInput: {FEWSHOT_ANCHOR_3_INPUT}\nOutput: {json.dumps(FEWSHOT_ANCHOR_3_OUTPUT, ensure_ascii=False)}\n\n"
         f"Input:\n{window_text}"
     )
 
