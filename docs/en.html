@@ -42,6 +42,7 @@
       <h2>The idea</h2>
       <p>Ibn Kathir's tafsir is a long text (13.4 million characters) that mixes explanation with other ayat, hadith, reports of the Companions and editor footnotes. We never change a character of it. Instead we add a layer of structure on top: every part of the text is marked by its exact character offsets, then linked to the ayah or hadith it refers to.</p>
       <p>The graph can then answer questions such as: which hadith did Ibn Kathir cite for this ayah? Where does a given hadith appear across the whole tafsir? Which ayat did he use to explain the Quran by the Quran? Every answer comes with its path to the source.</p>
+      <p><b>A knowledge graph, not RAG.</b> We do not cut the tafsir or the Quran into chunks and search them by similarity. Every ayah, tafsir passage and hadith is a node with a stable ID, and every link between them is a stored relationship with its exact position in the text and its source. A question is answered by querying the graph, so the answer returns the original text word for word with exact references: surah and ayah, the tafsir passage and its character offsets, the hadith number and its grade from the source. No language model writes the answer text.</p>
       <ul class="rules">
         <li><span class="k">1</span><span>Language models <b>only extract and link</b>; they never write tafsir and never grade hadith.</span></li>
         <li><span class="k">2</span><span>Hadith grades come <b>from the source, unchanged</b>, with the grader's name.</span></li>
