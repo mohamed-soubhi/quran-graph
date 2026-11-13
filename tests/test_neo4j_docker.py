@@ -43,29 +43,31 @@ def test_tasks_targets():
 
 
 def test_neo4j_gds_running():
-    """Verify the running Neo4j container has GDS available."""
+    """Verify the running Neo4j container has GDS available.
+
+    Skips when the Docker daemon is not running, unless SMOKE_STRICT=1 (set by `tasks.py smoke`).
+    The password reaches cypher-shell through the environment, never the command line,
+    so it cannot appear in a failure message.
+    """
     user = os.getenv("NEO4J_USER", "neo4j")
     password = os.getenv("NEO4J_PASSWORD")
     if not password:
         pytest.skip("NEO4J_PASSWORD not set in .env")
 
+    daemon = subprocess.run(["docker", "info"], capture_output=True, text=True)
+    if daemon.returncode != 0:
+        if os.getenv("SMOKE_STRICT") == "1":
+            pytest.fail("Docker daemon is not running")
+        pytest.skip("Docker daemon is not running")
+
     res = subprocess.run(
-        [
-            "docker",
-            "compose",
-            "exec",
-            "-T",
-            "neo4j",
-            "cypher-shell",
-            "-u",
-            user,
-            "-p",
-            password,
-            "RETURN gds.version();",
-        ],
+        ["docker", "compose", "exec", "-T", "-e", "NEO4J_USERNAME", "-e", "NEO4J_PASSWORD",
+         "neo4j", "cypher-shell", "RETURN gds.version();"],
         cwd=ROOT,
         capture_output=True,
         text=True,
+        env={**os.environ, "NEO4J_USERNAME": user, "NEO4J_PASSWORD": password},
     )
-    assert res.returncode == 0, f"cypher-shell failed: {res.stderr}"
-    assert re.search(r"\d+\.\d+\.\d+", res.stdout), f"no GDS version in output: {res.stdout}"
+    code, out, err = res.returncode, res.stdout, res.stderr.replace(password, "***")
+    assert code == 0, f"cypher-shell failed: {err}"
+    assert re.search(r"\d+\.\d+\.\d+", out), f"no GDS version in output: {out}"
