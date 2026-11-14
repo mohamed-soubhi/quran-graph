@@ -398,11 +398,23 @@ find /c /v "" data\interim\spans\hadith-raw.jsonl</code></pre>
 <pre><code>.venv\Scripts\python.exe -u scripts\run_hadith_book.py --concurrency 4 &gt;&gt; logs\hadith-book-run.log 2&gt;&amp;1</code></pre>
 <p class="exp">Prints the existing records, skips windows with status ok and retries failed ones. Run it once more at the end if any window failed.</p></div>
 
+<div class="t"><h4>10.1i Both passes built together <span class="src">· T4.5c</span> <span class="tag now">now</span></h4>
+<pre><code>.venv\Scripts\python.exe -c "import json,collections;S=[json.loads(l) for l in open('data/interim/spans/hadith.jsonl',encoding='utf-8')];print(len(S),collections.Counter(s['prompt_version'] for s in S),collections.Counter(s['kind'] for s in S))"</code></pre>
+<p class="exp"><b>11613</b>, prompt 1.2 = 10,667 and 1.3 = 946; marfu 8,066, athar 3,547 (2026-11-14, 1,363 of 1,459 second-pass windows). Grows a little after T4.5c-rest.</p></div>
+
+<div class="t"><h4>10.1j Chained-takhrij kind rule <span class="src">· T4.5c</span> <span class="tag now">now</span></h4>
+<pre><code>.venv\Scripts\python.exe -c "import json,collections;S=[json.loads(l) for l in open('data/interim/spans/hadith.jsonl',encoding='utf-8')];c=[s for s in S if s.get('kind_rule')];print(len(c),collections.Counter((s['kind_glm'],s['kind']) for s in c))"</code></pre>
+<p class="exp"><b>293</b>: athar→marfu 215, marfu→athar 78. Every changed span keeps the GLM answer in <code>kind_glm</code>.</p></div>
+
+<div class="t"><h4>10.1k Finish the second pass after the quota reset <span class="src">· T4.5c-rest</span> <span class="tag once">after 2026-11-16</span></h4>
+<pre><code>.venv\Scripts\python.exe -u scriptsun_hadith_book.py --keys-file data\interim\spansecheck-keys.txt --raw-path data\interim\spans\hadith-raw-pass2.jsonl &gt;&gt; logs\hadith-pass2-run.log 2&gt;&amp;1</code></pre>
+<p class="exp">Skips the 1,363 ok windows and runs the <b>96</b> in <code>recheck-keys-remaining.txt</code>. Then rebuild with <code>--build --raw-path data\interim\spans\hadith-raw.jsonl data\interim\spans\hadith-raw-pass2.jsonl</code> and check 10.1i again.</p></div>
+
 <div class="later">
 
 <div class="t"><h4>10.2 Hadith spans exist and have a kind <span class="tag later">later</span></h4>
 <pre><code>MATCH (s:Span {type:'HADITH'}) RETURN s.kind, count(*) ORDER BY s.kind</code></pre>
-<p class="exp">Only <b>marfu</b> and <b>athar</b>; no null kind.</p></div>
+<p class="exp">Only <b>marfu</b> and <b>athar</b>; no null kind. Totals as in 10.1i (8,066 / 3,547 on 2026-11-14).</p></div>
 
 <div class="t"><h4>10.3 Hadith spans are written with method glm <span class="tag later">later</span></h4>
 <pre><code>MATCH ()-[r:HAS_SPAN]-&gt;(s:Span {type:'HADITH'}) RETURN r.method, r.source, count(*)</code></pre>

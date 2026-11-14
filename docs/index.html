@@ -89,7 +89,7 @@
         <div class="fig"><span class="v">4 / 8</span><span class="t">مراحل اكتملت بوابتها</span></div>
         <div class="fig"><span class="v">31,203</span><span class="t">حاشية محقق معلَّمة</span></div>
         <div class="fig"><span class="v">26,686</span><span class="t">اقتباسًا قرآنيًا معلَّمًا</span></div>
-        <div class="fig"><span class="v">10,667</span><span class="t">مقطع حديث مستخرج (قيد المراجعة)</span></div>
+        <div class="fig"><span class="v">11,613</span><span class="t">مقطع حديث مستخرج (قيد المراجعة)</span></div>
       </div>
       <ol class="phases">
         <li class="phase"><span class="no">0</span><div><h3>التجهيز</h3><p class="d">البيئة، Neo4j مع GDS، النماذج، السجلات، وقواعد العمل. 7 مهام.</p></div><span class="pill done">G0 · 31 أكتوبر</span></li>
@@ -113,7 +113,8 @@
             <tr><td class="id">T4.4b</td><td>فحص الإحالات</td><td><span class="pill done">معتمدة</span></td><td>إصلاح الملاحظة هـ١</td></tr>
             <tr><td class="id">T4.5</td><td>خطّ استخراج الأحاديث</td><td><span class="pill done">معتمدة</span></td><td>البوابة 4b ناجحة في 3 تشغيلات</td></tr>
             <tr><td class="id">T4.5b</td><td>تشغيل الكتاب كله</td><td><span class="pill done">معتمدة</span></td><td>12,770 نافذة، 0 فشل، 36.7 ساعة؛ 10,667 مقطعًا</td></tr>
-            <tr><td class="id">T4.5c</td><td>تمريرة ثانية للآثار + تصحيح النوع</td><td><span class="pill wip">جارية</span></td><td>نحو 1,500 نافذة؛ 236 تصحيحًا للنوع</td></tr>
+            <tr><td class="id">T4.5c</td><td>تمريرة ثانية للآثار + تصحيح النوع</td><td><span class="pill wip">قيد المراجعة</span></td><td>1,363 من 1,459 نافذة؛ 946 مقطعًا جديدًا؛ 293 تصحيحًا للنوع</td></tr>
+            <tr><td class="id">T4.5c-rest</td><td>بقية التمريرة الثانية (96 نافذة)</td><td><span class="pill next">بعد 16 نوفمبر</span></td><td>توقفت عند نفاد حصة Ollama الشهرية</td></tr>
             <tr><td class="id">T4.6</td><td>التداخل والتغطية الكاملة</td><td><span class="pill next">لم تبدأ</span></td><td>—</td></tr>
           </tbody>
         </table>
@@ -156,6 +157,7 @@ gantt
     تشغيل الكتاب كله              :done, t45b, 2026-11-04, 2d
     تمريرة الآثار الثانية         :active, t45c, 2026-11-13, 2d
     التداخل والتغطية              :t46, after t45c, 2d
+    بقية التمريرة الثانية          :t45r, 2026-11-16, 1d
     G4                            :milestone, g4, after t46, 0d
     section 5 ربط الأحاديث
     أرقام الحواشي                 :p5a, after g4, 2d
@@ -188,7 +190,7 @@ gantt
         <div class="finding"><div class="h"><span class="fid">ج٢ ج٤</span><h3>فجوات في مصدر الحديث</h3><span class="tagx src">المصدر</span></div><p>لا أحكام على أحاديث البخاري ومسلم في هذا المصدر، ومسند أحمد غير موجود رغم أن ابن كثير ينقل منه كثيرًا.</p><a href="findings/findings-ar.html#C4">التفاصيل</a></div>
         <div class="finding"><div class="h"><span class="fid">هـ٣</span><h3>إجابات النموذج قد تخرج عن الصيغة</h3><span class="tagx fixed">أُصلح</span></div><p>كان الفشل يبدو كأنه «لا حديث هنا». صار البرنامج يعيد المحاولة ويعدّ كل ما يُستبعد، فلا يضيع شيء بصمت.</p><a href="findings/findings-ar.html#E3">التفاصيل</a></div>
         <div class="finding"><div class="h"><span class="fid">هـ٤</span><h3>تقدير الوقت واختبار خطِر</h3><span class="tagx fixed">أُصلح</span></div><p>المشغّل كان يهدر ثلث وقته، واختبار كان سيحذف مقاطع الأحاديث من القاعدة. أُصلحا قبل التشغيل الكامل.</p><a href="findings/findings-ar.html#E4">التفاصيل</a></div>
-        <div class="finding open"><div class="h"><span class="fid">هـ٥</span><h3>الآثار أصعب على النموذج</h3><span class="tagx open">قيد المعالجة</span></div><p>نحو 1,500 نافذة لم يُستخرج منها شيء رغم وجود ألفاظ الرواية. التمريرة الثانية (T4.5c) تعالج ذلك.</p><a href="findings/findings-ar.html#E5">التفاصيل</a></div>
+        <div class="finding open"><div class="h"><span class="fid">هـ٥</span><h3>الآثار أصعب على النموذج</h3><span class="tagx open">قيد المعالجة</span></div><p>نحو 1,500 نافذة لم يُستخرج منها شيء رغم وجود ألفاظ الرواية. التمريرة الثانية (T4.5c) أنجزت 1,363 نافذة منها وأضافت 946 مقطعًا، أغلبها آثار؛ وتبقى 96 نافذة.</p><a href="findings/findings-ar.html#E5">التفاصيل</a></div>
         <div class="finding"><div class="h"><span class="fid">هـ١</span><h3>فحص الإحالة وسقوط «ف»</h3><span class="tagx fixed">أُصلح</span></div><p>خطأ منّا كشفه الفحص: إحالة صحيحة عُدّت خطأ لأن الاقتباس أسقط حرفًا. أُصلح في T4.4b.</p><a href="findings/findings-ar.html#E1">التفاصيل</a></div>
       </div>
     </div>

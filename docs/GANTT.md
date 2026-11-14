@@ -52,7 +52,9 @@ gantt
     T4.4b Reference clitic fix      :done, t44b, 2026-11-03, 1d
     T4.5 4b Hadith pipeline + gate  :done, t45, 2026-11-03, 1d
     T4.5b Whole-book hadith run     :done, t45b, 2026-11-04, 2d
-    T4.6 4c Nesting + coverage      :p4c, after t45b, 2d
+    T4.5c Second pass (athar)       :active, t45c, 2026-11-13, 2d
+    T4.6 4c Nesting + coverage      :p4c, after t45c, 2d
+    T4.5c-rest 96 windows (quota)   :t45r, 2026-11-16, 1d
     G4 Phase 4 gate                 :milestone, g4, after p4c, 0d
 
     section Phase 5 · Hadith linking (est.)
@@ -81,7 +83,7 @@ gantt
 | 1 · Data acquisition | 4 / 4 | ✅ G1 signed off 2026-10-31 | — |
 | 2 · Schema | 3 / 3 | ✅ G2 signed off 2026-11-03; schema v1.1 (C1–C4) approved | — |
 | 3 · Load L0 + L1 | 5 / 5 | ✅ G3 signed off 2026-11-03 | — |
-| 4 · Span annotation | 7 / 8 | 🔵 T4.5b approved 2026-11-13; whole-book raw run done (12,770 windows, 0 failed, 36.7 h) | next: build + review hadith spans, then write to Neo4j, then T4.6 |
+| 4 · Span annotation | 7 / 9 | 🔵 T4.5c in review: second pass 1,363 of 1,459 windows (96 wait for the Ollama quota, 2026-11-16); 11,613 hadith spans built | next: T4.5c approval, write HADITH spans to Neo4j, T4.6; T4.5c-rest after 2026-11-16 |
 | 5 · Hadith linking | 0 | ⏳ | — |
 | 6 · Semantics | 0 | ⏳ | — |
 | 7 · Question answering using GraphRAG | 0 | ⏳ | — |

@@ -31,14 +31,14 @@
 قواعد ثابتة: النماذج اللغوية تستخرج وتربط فقط، فلا تكتب تفسيرًا ولا تحكم على حديث؛ درجات الأحاديث تؤخذ من المصدر كما هي؛
 نص التفسير لا يُعدَّل، والبنية تُضاف بمواضع الحروف؛ وكل علاقة تحمل مصدرها وطريقتها ودرجة الثقة فيها.
 
-### الحالة (13 نوفمبر 2026)
+### الحالة (14 نوفمبر 2026)
 | المرحلة | الحالة |
 |---|---|
 | 0 التجهيز | ✅ اعتُمدت البوابة في 31 أكتوبر |
 | 1 جمع البيانات | ✅ اعتُمدت البوابة في 31 أكتوبر |
 | 2 المخطط | ✅ اعتُمدت البوابة في 3 نوفمبر (المخطط 1.1) |
 | 3 تحميل النص والتفسير | ✅ اعتُمدت البوابة في 3 نوفمبر |
-| 4 تعليم المقاطع | 🔵 7 من 9 مهام: الحواشي والقرآن تمّا؛ استخراج الأحاديث من الكتاب كله تمّ (10,667 مقطعًا)؛ تجري تمريرة ثانية للآثار الفائتة (T4.5c)؛ ثم التداخل والتغطية (T4.6) |
+| 4 تعليم المقاطع | 🔵 7 من 9 مهام: الحواشي والقرآن تمّا؛ استخراج الأحاديث من الكتاب كله تمّ؛ وأضافت التمريرة الثانية للآثار الفائتة (T4.5c، قيد المراجعة) 946 مقطعًا فصارت 11,613، وتبقى 96 نافذة بعد 16 نوفمبر؛ ثم التداخل والتغطية (T4.6) |
 | 5 ربط الأحاديث | ⏳ |
 | 6 الدلالات | ⏳ |
 | 7 السؤال والجواب باستخدام GraphRAG | ⏳ |
@@ -81,14 +81,14 @@ Rules that never change: language models only extract and link (no tafsir writin
 come from the source unchanged; the tafsir text is never edited (structure is added as character offsets); every
 relationship carries `source`, `method` and `confidence`. Full rules: [`AGENTS.md`](AGENTS.md).
 
-### Status (2026-11-13)
+### Status (2026-11-14)
 | Phase | Status |
 |---|---|
 | 0 Setup | ✅ G0 signed off 2026-10-31 |
 | 1 Data acquisition | ✅ G1 signed off 2026-10-31 |
 | 2 Schema | ✅ G2 signed off 2026-11-03 (schema v1.1) |
 | 3 Load L0 + L1 | ✅ G3 signed off 2026-11-03 |
-| 4 Span annotation | 🔵 7 of 9 tickets. Footnotes and Quran quotes done; whole-book hadith run done (12,770 windows, 0 failed, 10,667 spans); T4.5c second pass for missed athar in progress; then T4.6 nesting and coverage |
+| 4 Span annotation | 🔵 7 of 9 tickets. Footnotes and Quran quotes done; whole-book hadith run done (12,770 windows, 0 failed); T4.5c second pass for missed athar in review (+946 spans, 11,613 in total; 96 windows wait for 2026-11-16); then T4.6 nesting and coverage |
 | 5 Hadith linking | ⏳ |
 | 6 Semantics | ⏳ |
 | 7 Question answering using GraphRAG | ⏳ |

@@ -89,7 +89,7 @@
         <div class="fig"><span class="v">4 / 8</span><span class="t">phases past their gate</span></div>
         <div class="fig"><span class="v">31,203</span><span class="t">editor footnotes marked</span></div>
         <div class="fig"><span class="v">26,686</span><span class="t">Quran quotes marked</span></div>
-        <div class="fig"><span class="v">10,667</span><span class="t">hadith spans extracted (in review)</span></div>
+        <div class="fig"><span class="v">11,613</span><span class="t">hadith spans extracted (in review)</span></div>
       </div>
       <ol class="phases">
         <li class="phase"><span class="no">0</span><div><h3>Setup</h3><p class="d">Environment, Neo4j with GDS, models, logging and working rules. 7 tickets.</p></div><span class="pill done">G0 · 31 Oct</span></li>
@@ -113,7 +113,8 @@
             <tr><td class="id">T4.4b</td><td>Reference check</td><td><span class="pill done">approved</span></td><td>fixes finding E1</td></tr>
             <tr><td class="id">T4.5</td><td>Hadith pipeline</td><td><span class="pill done">approved</span></td><td>gate 4b passed in 3 runs</td></tr>
             <tr><td class="id">T4.5b</td><td>Whole-book run</td><td><span class="pill done">approved</span></td><td>12,770 windows, 0 failed, 36.7 h; 10,667 spans</td></tr>
-            <tr><td class="id">T4.5c</td><td>Second pass for athar + kind fix</td><td><span class="pill wip">in progress</span></td><td>about 1,500 windows; 236 kind corrections</td></tr>
+            <tr><td class="id">T4.5c</td><td>Second pass for athar + kind fix</td><td><span class="pill wip">in review</span></td><td>1,363 of 1,459 windows; 946 new spans; 293 kind corrections</td></tr>
+            <tr><td class="id">T4.5c-rest</td><td>Rest of the second pass (96 windows)</td><td><span class="pill next">after Nov 16</span></td><td>stopped when the Ollama monthly quota ran out</td></tr>
             <tr><td class="id">T4.6</td><td>Nesting and full coverage</td><td><span class="pill next">todo</span></td><td>—</td></tr>
           </tbody>
         </table>
@@ -156,6 +157,7 @@ gantt
     Whole-book run                :done, t45b, 2026-11-04, 2d
     Athar second pass             :active, t45c, 2026-11-13, 2d
     Nesting + coverage            :t46, after t45c, 2d
+    Second pass, last 96 windows  :t45r, 2026-11-16, 1d
     G4                            :milestone, g4, after t46, 0d
     section 5 Hadith linking
     Footnote numbers              :p5a, after g4, 2d
@@ -188,7 +190,7 @@ gantt
         <div class="finding"><div class="h"><span class="fid">C2 C4</span><h3>Gaps in the hadith source</h3><span class="tagx src">source</span></div><p>No grades for Bukhari and Muslim in this source, and Musnad Ahmad is missing although Ibn Kathir cites it often.</p><a href="findings/findings.html#C4">Details</a></div>
         <div class="finding"><div class="h"><span class="fid">E3</span><h3>Model answers can break the format</h3><span class="tagx fixed">fixed</span></div><p>Failures used to look like "no hadith here". The pipeline now retries and counts everything it drops.</p><a href="findings/findings.html#E3">Details</a></div>
         <div class="finding"><div class="h"><span class="fid">E4</span><h3>Time estimate and a dangerous test</h3><span class="tagx fixed">fixed</span></div><p>The runner idled a third of the time, and a test would have deleted the hadith spans. Both fixed before the full run.</p><a href="findings/findings.html#E4">Details</a></div>
-        <div class="finding open"><div class="h"><span class="fid">E5</span><h3>Athar are harder for the model</h3><span class="tagx open">in progress</span></div><p>About 1,500 windows returned nothing although they contain narration words. The second pass (T4.5c) addresses this.</p><a href="findings/findings.html#E5">Details</a></div>
+        <div class="finding open"><div class="h"><span class="fid">E5</span><h3>Athar are harder for the model</h3><span class="tagx open">in progress</span></div><p>About 1,500 windows returned nothing although they contain narration words. The second pass (T4.5c) has done 1,363 of them and added 946 spans, mostly athar; 96 windows remain.</p><a href="findings/findings.html#E5">Details</a></div>
         <div class="finding"><div class="h"><span class="fid">E1</span><h3>Reference check and a dropped «ف»</h3><span class="tagx fixed">fixed</span></div><p>Our own error: a correct reference was flagged because the quote dropped a letter. Fixed in T4.4b.</p><a href="findings/findings.html#E1">Details</a></div>
       </div>
     </div>
