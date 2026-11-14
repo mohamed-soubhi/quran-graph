@@ -33,6 +33,7 @@ ticket or decision relies on an outside source. Accessed dates are when the link
 | [docs.islamic.app tafsirs API](https://docs.islamic.app/api-reference/tafsirs) | Commercial API; not used | 2026-10-29 |
 | [M-AI-C/en-tafsir-ibn-kathir (HF)](https://huggingface.co/datasets/M-AI-C/en-tafsir-ibn-kathir/tree/main) | English abridged; licence unclear; not used | 2026-10-29 |
 | [malekverse/quran-dataset](https://github.com/malekverse/quran-dataset) | Seen in search; not evaluated | 2026-10-29 |
+| [QUL Arabic tafsir list](https://qul.tarteel.ai/resources/tafsir?tags%5B%5D=Arabic) | All Arabic tafsirs on QUL (Tarteel), the upstream of our Ibn Kathir (tafsir 22). For further work and research: more mufassirun as new TafsirBook nodes, cross-tafsir comparison. Not used yet; check each licence before use | 2026-11-14 |
 
 ## Hadith
 | Reference | Used for | Accessed |
