@@ -25,12 +25,17 @@ Full list of every link consulted: `docs/references.md`.
 | Morphology / roots | Quranic Arabic Corpus v0.4 | https://corpus.quran.com/download/ | Plain text, one morpheme per line | GNU licence; verbatim, no changes; credit the source; email needed to download | surah:ayah:word:segment | Buckwalter | Downloaded in T1.4 (version 0.4 zip, verbatim in `data/raw/quranic-corpus/quranic-corpus-morphology-0.4.zip`, SHA-256 `fda26f87…`). Measured stats: 128,219 morpheme rows, 77,429 words, 6,236 ayat (identical to Tanzil simple-clean), 1,642 distinct roots. For L0 `Word` and `Root`. |
 | Narrators / isnad | Sanadset 650K (Mendeley, DOI) | https://data.mendeley.com/datasets/5xth87zwb5 | Text/CSV | CC BY 4.0 | to check | to check | 650k records from 926 books; narrator chains extracted. Needed from Phase 5 on, not for Phase 3. |
 
+## Trusted sources (approved by Aya & Mohamed)
+| Source | URL | What it offers | Terms | Status |
+|---|---|---|---|---|
+| Quranpedia API v1 | https://api.quranpedia.net/ | Free REST API (JSON, no authentication): Quran text, tafsirs, translations, surah information, books, topics, reciters, fatwas; `/v1/changes` lists edited ayat | Attribution optional for live API use, **required** when republishing the data (full or partial) as a dataset; rate limit 120 requests/min and 10,000/day per IP | Marked trusted 2026-11-16. Not downloaded yet; any download goes to `data/raw/quranpedia/` with checksums and a pinned date, like the other sources |
+
 ## Candidates not selected (yet)
 | Source | Why not now |
 |---|---|
 | AhmedBaset/hadith-json (17 collections) | No licence file in repo. Could fill the Musnad Ahmad gap if a licence is confirmed. |
 | quranlab/hadith (Hugging Face) | Mixed per-source licences (ODbL for Ahmad/Darimi matn). **Best candidate for Musnad Ahmad** — evaluate in Phase 5. |
-| Quranpedia dumps (book 136) | Attribution + version required on republish; fine as a fallback. |
+| Quranpedia dumps (book 136) | Attribution + version required on republish; fine as a fallback. The Quranpedia API is now a trusted source (see above). |
 | MIDS (Sahih Muslim isnad, Mendeley) | Muslim only; Sanadset is broader. |
 | risan/quran-json | CC BY-SA; Tanzil is the primary source. |
 
