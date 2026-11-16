@@ -31,6 +31,7 @@ ticket or decision relies on an outside source. Accessed dates are when the link
 | [quranlab/quran-tafsir (HF)](https://huggingface.co/datasets/quranlab/quran-tafsir) | Pointed to spa5k as the Arabic Ibn Kathir source | 2026-10-29 |
 | [Quranpedia dumps](https://quranpedia.net/dumps?lang=en) | Fallback (book 136); attribution + version required | 2026-10-29 |
 | [Quranpedia API v1](https://api.quranpedia.net/) | Trusted source (user decision): REST API for Quran text, tafsirs, translations, books; attribution required on republished data; 120 req/min, 10,000/day | 2026-11-16 |
+| [Quran.ws](https://quran.ws/) and [licensing page](https://quran.ws/docs/reference/licensing/) | Trusted source (user decision): open Quran text, qiraat map, mushaf SVG/PDF, tajweed, provenance; data CC BY 4.0, code MIT | 2026-11-16 |
 | [docs.islamic.app tafsirs API](https://docs.islamic.app/api-reference/tafsirs) | Commercial API; not used | 2026-10-29 |
 | [M-AI-C/en-tafsir-ibn-kathir (HF)](https://huggingface.co/datasets/M-AI-C/en-tafsir-ibn-kathir/tree/main) | English abridged; licence unclear; not used | 2026-10-29 |
 | [malekverse/quran-dataset](https://github.com/malekverse/quran-dataset) | Seen in search; not evaluated | 2026-10-29 |

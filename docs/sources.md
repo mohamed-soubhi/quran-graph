@@ -29,6 +29,7 @@ Full list of every link consulted: `docs/references.md`.
 | Source | URL | What it offers | Terms | Status |
 |---|---|---|---|---|
 | Quranpedia API v1 | https://api.quranpedia.net/ | Free REST API (JSON, no authentication): Quran text, tafsirs, translations, surah information, books, topics, reciters, fatwas; `/v1/changes` lists edited ayat | Attribution optional for live API use, **required** when republishing the data (full or partial) as a dataset; rate limit 120 requests/min and 10,000/day per IP | Marked trusted 2026-11-16. Not downloaded yet; any download goes to `data/raw/quranpedia/` with checksums and a pinned date, like the other sources |
+| Quran.ws | https://quran.ws/ | Open Quran building blocks, free with no key or sign-up: Quran text (text.quran.ws), Qiraat ayah map, mushaf SVG/PDF from King Fahd Complex masters, tajweed rules, a provenance registry and a text-integrity page | Per package (see quran.ws/docs/reference/licensing/): data mostly **CC BY 4.0**, code MIT; attribution required on republication | Marked trusted 2026-11-16. Not downloaded yet; same rules as above (`data/raw/quran-ws/`, checksums, pinned date) |
 
 ## Candidates not selected (yet)
 | Source | Why not now |
