@@ -96,7 +96,7 @@
         <li class="phase"><span class="no">1</span><div><h3>Data acquisition</h3><p class="d">Sources downloaded, every file checksummed (6,252 files). 4 tickets.</p></div><span class="pill done">G1 · 31 Oct</span></li>
         <li class="phase"><span class="no">2</span><div><h3>Schema</h3><p class="d">Nodes, relationships, constraints and the extraction contract; schema v1.1. 3 tickets.</p></div><span class="pill done">G2 · 3 Nov</span></li>
         <li class="phase"><span class="no">3</span><div><h3>Load text and tafsir</h3><p class="d">L0 and L1 with exact counts and 229,191 links carrying provenance. 5 tickets.</p></div><span class="pill done">G3 · 3 Nov</span></li>
-        <li class="phase cur"><span class="no">4</span><div><h3>Span annotation</h3><p class="d">Footnotes and Quran quotes done. Whole-book hadith extraction finished (12,770 windows, 0 failed); a second pass for missed athar is running, then nesting and full coverage.</p><div class="bar" aria-label="7 of 9 tickets"><i style="width:78%"></i></div></div><span class="pill wip">in progress · 7 of 9</span></li>
+        <li class="phase cur"><span class="no">4</span><div><h3>Span annotation</h3><p class="d">Footnotes, Quran quotes, hadith (11,674), poetry, nesting and commentary are all in Neo4j; every character of the tafsir is covered. Next: the Phase 4 gate.</p><div class="bar" aria-label="8 of 9 tickets"><i style="width:89%"></i></div></div><span class="pill wip">in progress · 8 of 9</span></li>
         <li class="phase"><span class="no">5</span><div><h3>Hadith linking</h3><p class="d">Footnote numbers first, then fuzzy and embedding matching, then human review.</p></div><span class="pill next">next</span></li>
         <li class="phase"><span class="no">6</span><div><h3>Semantics</h3><p class="d">Topic taxonomy, embeddings, GDS analysis.</p></div><span class="pill next">later</span></li>
         <li class="phase"><span class="no">7</span><div><h3>Question answering using GraphRAG</h3><p class="d">Arabic questions answered only from the graph, with the source path; tested on 20 questions.</p></div><span class="pill next">later</span></li>
@@ -115,7 +115,7 @@
             <tr><td class="id">T4.5b</td><td>Whole-book run</td><td><span class="pill done">approved</span></td><td>12,770 windows, 0 failed, 36.7 h; 10,667 spans</td></tr>
             <tr><td class="id">T4.5c</td><td>Second pass for athar + kind fix</td><td><span class="pill done">done</span></td><td>1,459 of 1,459 windows; 1,007 new spans; 295 kind corrections</td></tr>
             <tr><td class="id">T4.5c-rest</td><td>Rest of the second pass (96 windows)</td><td><span class="pill done">done</span></td><td>done Nov 17: 96/96 windows, +61 spans</td></tr>
-            <tr><td class="id">T4.6</td><td>Poetry, nesting and full coverage</td><td><span class="pill wip">in review</span></td><td>349 poems; 12,851 nested spans; 58,587 commentary spans; 100% coverage</td></tr>
+            <tr><td class="id">T4.6</td><td>Poetry, nesting and full coverage</td><td><span class="pill done">approved</span></td><td>349 poems; 12,851 nested spans; 58,587 commentary spans; 100% coverage, in Neo4j</td></tr>
           </tbody>
         </table>
       </div>

@@ -21,6 +21,17 @@ All external sources behind these decisions are listed in `docs/references.md`.
   - **58,587** COMMENTARY spans: 14,532 `blank: true` and 44,055 `blank: false` (after the review fix).
   - Exactly 13,401,179 characters covered across 1,911 segments with 0 overlaps and 0 holes.
   - Gate 4c passed (`scripts/gate_4c.py`).
+- Approved by Aya & Mohamed 2026-11-17 and written to Neo4j with `python scripts/tasks.py structure --write`. Neo4j now has these spans:
+
+  | Type | Spans |
+  |---|---|
+  | COMMENTARY | 58,587 (`method` regex) |
+  | FOOTNOTE | 31,203 |
+  | HADITH | 11,674 |
+  | OTHER | 349 |
+  | QURAN | 26,686 |
+
+  There are 12,851 INSIDE edges. Every new HAS_SPAN and INSIDE edge has `source`, `method` and `confidence`. Checks 11.1 (coverage), 11.2 (overlap) and 11.3 (child inside its parent, one parent) all return 0.
 
 ## 2026-11-13 — Second pass for missed hadith/athar and chained takhrij rule (T4.5c)
 - Prompt 1.3 for hadith extraction:

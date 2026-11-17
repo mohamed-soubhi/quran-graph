@@ -457,26 +457,25 @@ not «قال مجاهد» or «قال علي بن أبي طلحة عن ابن ع
 </div>
 
 <!-- ================================================================== -->
-<h2 id="t46">11. Later — T4.6 nesting, COMMENTARY, coverage</h2>
+<h2 id="t46">11. T4.6 nesting, COMMENTARY, coverage</h2>
 <p>Target (gate 4c): top-level spans cover 100 % of every passage with no overlap. A top-level span is one with no
-<code>INSIDE</code> parent. In Neo4j today (HADITH written 2026-11-17, <code>INSIDE</code> = <b>0</b>, no COMMENTARY) 11.1 and 11.2 are not 0.
-After <code>python scripts/tasks.py structure --write</code> (once T4.6 is approved) both must be <b>0</b>. Before that, 11.0 checks the same on the JSONL files.</p>
+<code>INSIDE</code> parent. T4.6 was approved and written to Neo4j on 2026-11-17 (<code>structure --write</code>). Since then 11.1–11.3 all return <b>0</b>,
+and 11.0 checks the same on the JSONL files.</p>
 
 <div class="t"><h4>11.0 Gate 4c on the JSONL files (no Neo4j) <span class="src">· T4.6</span> <span class="tag now">now</span></h4>
 <pre><code>.venv\Scripts\python.exe scripts\tasks.py structure</code></pre>
 <p class="exp"><b>Gate 4c Overall: PASS</b>; coverage 13,401,179 chars, 0 holes; gold OTHER 4/4; last line
 <code>Structure built: 349 OTHER, 12851 INSIDE, 58587 COMMENTARY spans.</code> (2026-11-17, after the review fix that drops 2 narration lines that looked like verse).</p></div>
 
-<div class="later">
-<div class="t"><h4>11.1 Every passage is fully covered <span class="tag later">later</span></h4>
+<div class="t"><h4>11.1 Every passage is fully covered <span class="src">· T4.6</span> <span class="tag now">now</span></h4>
 <pre><code>MATCH (g:TafsirSegment)
 OPTIONAL MATCH (g)-[:HAS_SPAN]-&gt;(s:Span) WHERE NOT (s)-[:INSIDE]-&gt;()
 WITH g, sum(s.end - s.start) AS covered
 WHERE covered &lt;&gt; size(g.text)
 RETURN count(g)</code></pre>
-<p class="exp"><b>0</b> (together with 11.2 this means no gaps).</p></div>
+<p class="exp"><b>0</b> (together with 11.2 this means no gaps). 1,911 passages, 13,401,179 chars.</p></div>
 
-<div class="t"><h4>11.2 Top-level spans never overlap <span class="tag later">later</span></h4>
+<div class="t"><h4>11.2 Top-level spans never overlap <span class="src">· T4.6</span> <span class="tag now">now</span></h4>
 <pre><code>MATCH (g:TafsirSegment)-[:HAS_SPAN]-&gt;(s:Span) WHERE NOT (s)-[:INSIDE]-&gt;()
 WITH g, s ORDER BY s.start
 WITH g, collect(s) AS ss
@@ -485,26 +484,25 @@ WITH ss[i] AS a, ss[i + 1] AS b WHERE a.end &gt; b.start
 RETURN count(*)</code></pre>
 <p class="exp"><b>0</b></p></div>
 
-<div class="t"><h4>11.3 A child lies inside its parent, and has one parent <span class="tag later">later</span></h4>
+<div class="t"><h4>11.3 A child lies inside its parent, and has one parent <span class="src">· T4.6</span> <span class="tag now">now</span></h4>
 <pre><code>MATCH (c:Span)-[:INSIDE]-&gt;(p:Span) WHERE c.start &lt; p.start OR c.end &gt; p.end RETURN count(*)
 MATCH (c:Span)-[r:INSIDE]-&gt;() WITH c, count(r) AS n WHERE n &gt; 1 RETURN count(c)</code></pre>
 <p class="exp"><b>0</b> and <b>0</b></p></div>
 
-<div class="t"><h4>11.4 What is nested in what <span class="tag later">later</span></h4>
+<div class="t"><h4>11.4 What is nested in what <span class="src">· T4.6</span> <span class="tag now">now</span></h4>
 <pre><code>MATCH (c:Span)-[:INSIDE]-&gt;(p:Span) RETURN c.type, p.type, count(*) ORDER BY count(*) DESC</code></pre>
-<p class="exp">Mostly FOOTNOTE in QURAN, QURAN in HADITH, FOOTNOTE in HADITH; never anything inside COMMENTARY or FOOTNOTE.</p></div>
+<p class="exp">FOOTNOTE→HADITH <b>8,559</b>, QURAN→HADITH <b>3,567</b>, FOOTNOTE→QURAN <b>635</b>, FOOTNOTE→OTHER <b>90</b> (total 12,851); never anything inside COMMENTARY or FOOTNOTE, never HADITH inside OTHER.</p></div>
 
-<div class="t"><h4>11.5 COMMENTARY spans <span class="tag later">later</span></h4>
+<div class="t"><h4>11.5 COMMENTARY spans <span class="src">· T4.6</span> <span class="tag now">now</span></h4>
 <pre><code>MATCH (g:TafsirSegment)-[r:HAS_SPAN]-&gt;(s:Span {type:'COMMENTARY'})
 RETURN count(s), r.method, min(s.end - s.start), max(s.end - s.start)</code></pre>
-<p class="exp">Count &gt; 0, the method the T4.6 ticket names for gap filling, no zero-length span.</p></div>
+<p class="exp"><b>58,587</b>, <code>regex</code>, min length <b>1</b>, max <b>5,443</b> (14,532 of them have <code>blank = true</code>).</p></div>
 
-<div class="t"><h4>11.6 Read one passage as a sequence <span class="tag later">later</span></h4>
+<div class="t"><h4>11.6 Read one passage as a sequence <span class="src">· T4.6</span> <span class="tag now">now</span></h4>
 <pre><code>MATCH (g:TafsirSegment {segment_id:'ibn-kathir:2:255-255:1'})-[:HAS_SPAN]-&gt;(s:Span)
 WHERE NOT (s)-[:INSIDE]-&gt;()
 RETURN s.start, s.end, s.type, substring(g.text, s.start, 50) ORDER BY s.start LIMIT 30</code></pre>
-<p class="exp">Spans follow each other with no gap: each <code>start</code> equals the previous <code>end</code>.</p></div>
-</div>
+<p class="exp">Spans follow each other with no gap: each <code>start</code> equals the previous <code>end</code>. Whole passage: <b>227</b> top-level spans from 0 to 36,633 (= text length), no gap; starts COMMENTARY, HADITH, COMMENTARY …</p></div>
 
 <!-- ================================================================== -->
 <h2 id="g4">12. Later — G4 Phase 4 gate</h2>
