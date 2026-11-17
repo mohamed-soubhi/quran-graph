@@ -36,6 +36,7 @@ All external sources behind these decisions are listed in `docs/references.md`.
   - `data/interim/hadith/hadith.jsonl`: 36,104 records with `hadith_id`, `collection`, `number`, `arabic_number`, `book_number`, `number_in_book`, `text` (verbatim), `text_norm` (normalized via `normalize_with_map`), `grades`.
 - Graph loader: `src/graph/hadith.py` (`load_hadith`), idempotent UNWIND MERGE with provenance `source: "hadith-api@df57907"`, `method: "dataset"`, `confidence: 1.0` on `IN_BOOK` and `GRADED`.
 - Full-text index `hadith_text_norm_ft` added to `src/graph/schema.cypher` on `Hadith(text_norm)`.
+- Approved by Aya & Mohamed and loaded into Neo4j on 2026-11-17: Hadith 36,104, HadithBook 10, Grader 9, IN_BOOK 36,104, GRADED 67,334.
 
 ## 2026-11-17 — Poetry (OTHER), Nesting (INSIDE), COMMENTARY gap filling and 100% coverage (T4.6)
 - Decisions D1 & D2 (Aya & Mohamed):
