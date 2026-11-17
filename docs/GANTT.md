@@ -58,7 +58,8 @@ gantt
     G4 Phase 4 gate                 :milestone, g4, after p4c, 0d
 
     section Phase 5 · Hadith linking (est.)
-    Footnote numbers → links        :p5a, after g4, 2d
+    T5.1 Load hadith collections    :done, t51, 2026-11-17, 1d
+    Footnote numbers → links        :p5a, after t51, 2d
     Fuzzy + embedding match         :p5b, after p5a, 4d
     Review queue (human)            :crit, p5c, after p5b, 2d
     G5 Phase 5 gate                 :milestone, g5, after p5c, 0d
@@ -84,7 +85,7 @@ gantt
 | 2 · Schema | 3 / 3 | ✅ G2 signed off 2026-11-03; schema v1.1 (C1–C4) approved | — |
 | 3 · Load L0 + L1 | 5 / 5 | ✅ G3 signed off 2026-11-03 | — |
 | 4 · Span annotation | 9 / 9 | ✅ G4 signed off 2026-11-17: 4a 100 %, 4b P 96 % / R 100 % (3 runs), 4c 100 % coverage; 128,499 spans + 12,851 INSIDE in Neo4j | — |
-| 5 · Hadith linking | 0 | ⏳ | — |
+| 5 · Hadith linking | 1 / 6 | 🔵 T5.1 done (approved 2026-11-17): 36,104 hadith, 10 books, 9 graders, 67,334 GRADED in Neo4j | next: T5.2 footnote-number links |
 | 6 · Semantics | 0 | ⏳ | — |
 | 7 · Question answering using GraphRAG | 0 | ⏳ | — |
 

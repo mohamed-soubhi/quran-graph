@@ -56,7 +56,7 @@ When that happens this page is updated with the ticket review.</p>
 <a href="#t45">10. Later — T4.5 hadith spans</a>
 <a href="#t46">11. Later — T4.6 nesting, COMMENTARY, coverage</a>
 <a href="#g4">12. Later — G4 Phase 4 gate</a>
-<a href="#p5">13. Later — Phase 5 and on</a>
+<a href="#t51">13. T5.1 hadith collections</a> · <a href="#p5">14. Later — Phase 5 and on</a>
 </nav>
 
 <!-- ================================================================== -->
@@ -519,8 +519,28 @@ echo %ERRORLEVEL%</code></pre>
 <p class="exp">L0/L1 equal to the G3 table; Neo4j span counts equal to the JSONL files (128,499 spans, INSIDE 12,851); 11.1–11.3 all 0; 0 relationships without provenance;
 stored HADITH vs gold P 95.8 %, R 95.8 %, IoU 0.9881 (1 false positive W13 1:6#3406-3486, 1 miss 23:1-11#2879-3533); gate 4c PASS; last line <b>G4 checks: PASS</b>, then <b>0</b>.</p></div>
 
-<h2 id="p5">13. Later — Phase 5 and on</h2>
-<p class="muted">Hadith linking (HADITH span → Hadith via CITES, footnote numbers, Muslim <code>arabicnumber</code>),
+<h2 id="t51">13. T5.1 hadith collections (L2)</h2>
+<p>Loaded into Neo4j on 2026-11-17 (<code>tasks.py hadith --write</code>). Source: fawazahmed0 hadith-api @ df57907. The 408 entries with empty text are not loaded.</p>
+
+<div class="t"><h4>13.1 Hadith layer counts <span class="src">· T5.1</span> <span class="tag now">now</span></h4>
+<pre><code>MATCH (b:HadithBook)&lt;-[:IN_BOOK]-(h:Hadith) RETURN b.collection, b.name, count(h) ORDER BY b.collection</code></pre>
+<p class="exp">10 rows: abudawud 5,272 · bukhari 7,580 · dehlawi 40 · ibnmajah 4,338 · malik 1,829 · muslim 7,360 · nasai 5,679 · nawawi 42 · qudsi 40 · tirmidhi 3,924 (total <b>36,104</b>).</p></div>
+
+<div class="t"><h4>13.2 Grades exactly as in the source <span class="src">· T5.1</span> <span class="tag now">now</span></h4>
+<pre><code>MATCH (h:Hadith)-[r:GRADED]-&gt;(g:Grader) RETURN g.name, count(r) ORDER BY count(r) DESC</code></pre>
+<p class="exp">9 graders, <b>67,334</b> edges (Zubair Ali Zai 19,033 … Salim al-Hilali 1,829). <code>MATCH (h:Hadith) WHERE NOT (h)-[:GRADED]-&gt;() RETURN count(h)</code> = <b>15,106</b> (Bukhari, Muslim, the forty-hadith books and 44 sub-numbered entries): no grade in source, never inferred.</p></div>
+
+<div class="t"><h4>13.3 Muslim footnote numbers use arabic_number <span class="src">· T5.1</span> <span class="tag now">now</span></h4>
+<pre><code>MATCH (h:Hadith {arabic_number:'2865.01'}) RETURN h.hadith_id, substring(h.text, 0, 80)</code></pre>
+<p class="exp"><code>muslim:7207</code> (the hadith «خلقت عبادي حنفاء»; footnote «صحيح مسلم برقم (٢٨٦٥)»).</p></div>
+
+<div class="t"><h4>13.4 Full-text search on hadith <span class="src">· T5.1</span> <span class="tag now">now</span></h4>
+<pre><code>CALL db.index.fulltext.queryNodes('hadith_text_norm_ft', '"خلقت عبادي حنفا"') YIELD node, score
+RETURN node.hadith_id, score</code></pre>
+<p class="exp"><b>1</b> row: <code>muslim:7207</code>. The index is on <code>text_norm</code>, so write the phrase without diacritics, with bare alef and without the final hamza.</p></div>
+
+<h2 id="p5">14. Later — Phase 5 and on</h2>
+<p class="muted">Hadith linking (T5.2+: HADITH span → Hadith via CITES, footnote numbers, Muslim <code>arabic_number</code>),
 narrators (IN_CHAIN), embeddings and GDS analysis. Their checks are added here when the tickets are written.</p>
 
 </main>
