@@ -3,6 +3,24 @@
 Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
+## 2026-11-17 — Poetry (OTHER), Nesting (INSIDE), COMMENTARY gap filling and 100% coverage (T4.6)
+- Decisions D1 & D2 (Aya & Mohamed):
+  - D1: Every gap between top-level spans becomes a COMMENTARY span, including gaps without letters (e.g. `" .\n\n"`). Such spans get `blank: true`; gaps with letters get `blank: false`. Top-level coverage across all segments reaches 100% of all characters with 0 overlap.
+  - D2: Poetry is detected deterministically as `OTHER` spans. Poetry inside a `[[…]]` footnote is not a span (Phase 4 scope rule).
+- Poetry detection rule (`src/extract/poetry.py`):
+  - A verse line is a maximal run of non-`\n` characters that, after removing `[[…]]` footnotes and Arabic diacritics (U+064B–U+0652, U+0670) and stripping spaces, contains ` ... ` or ends with ` ...`, and is at most 100 characters long.
+  - Consecutive verse lines separated only by whitespace form one poem. Span start = start of first line; span end = end of last line, trimmed backwards for trailing whitespace, then trailing `[[…]]` footnote and preceding whitespace (repeated).
+  - Lines lying inside FOOTNOTE spans are skipped.
+  - Yields 612 verse lines across 351 poems (vs reference 618 / 353 which did not skip lines in multiline footnotes `[1884:5641]` and `[8176:11822]`). All 4 gold OTHER spans matched with exact offsets (W09, W15, W16, W26).
+- Nesting and parent rule (`src/extract/structure.py`):
+  - For each span, parent = smallest enclosing span (minimum `end - start`). Tie-breaker order: HADITH > QURAN > OTHER > FOOTNOTE.
+  - Partial overlaps strictly forbidden (0 found across whole dataset).
+  - Produces 12,855 `INSIDE` edges written to `data/interim/spans/parents.jsonl` (FOOTNOTE->HADITH: 8,559; FOOTNOTE->OTHER: 92; FOOTNOTE->QURAN: 635; HADITH->OTHER: 2; QURAN->HADITH: 3,567). Gold parent agreement: 19/19 both-present (100%).
+- COMMENTARY gap filling (`data/interim/spans/commentary.jsonl`):
+  - 58,584 COMMENTARY spans: 14,529 `blank: true` and 44,055 `blank: false`.
+  - Exactly 13,401,179 characters covered across 1,911 segments with 0 overlaps and 0 holes.
+  - Gate 4c passed (`scripts/gate_4c.py`).
+
 ## 2026-11-13 — Second pass for missed hadith/athar and chained takhrij rule (T4.5c)
 - Prompt 1.3 for hadith extraction:
   - System prompt `PROMPT_VERSION = "1.3"`: clarified Rule 1 (takhrij verb without chain inherits preceding kind), Rule 4 (companion/successor sayings as athar), Rule 6 (takhrij chains sharing matn).

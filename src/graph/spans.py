@@ -168,6 +168,8 @@ def write_spans(
     FOREACH (_ IN CASE WHEN row.cue IS NOT NULL THEN [1] ELSE [] END | SET s.cue = row.cue)
     FOREACH (_ IN CASE WHEN row.collection_hint IS NOT NULL THEN [1] ELSE [] END | SET s.collection_hint = row.collection_hint)
     FOREACH (_ IN CASE WHEN row.number_hint IS NOT NULL THEN [1] ELSE [] END | SET s.number_hint = row.number_hint)
+    FOREACH (_ IN CASE WHEN row.blank IS NOT NULL THEN [1] ELSE [] END | SET s.blank = row.blank)
+    FOREACH (_ IN CASE WHEN row.lines IS NOT NULL THEN [1] ELSE [] END | SET s.lines = row.lines)
     """
 
     merge_has_span_query = """
@@ -274,6 +276,67 @@ def write_spans(
             "explains": link_counts["explains"],
             "cites": link_counts["cites"],
         }
+    finally:
+        if close_driver:
+            driver.close()
+
+
+def write_inside_edges(
+    rows: list[dict[str, Any]],
+    driver: Driver | None = None,
+    session: Session | None = None,
+    batch_size: int = DEFAULT_BATCH_SIZE,
+    default_source: str = "run:20261117-1414-parents",
+    default_method: str = "regex",
+    default_confidence: float = 1.0,
+) -> int:
+    """Write INSIDE relationships between child and parent Span nodes (T4.6).
+
+    Uses MERGE (child)-[r:INSIDE]->(parent) with provenance.
+    Returns actual DB count of INSIDE edges written for the provided pairs.
+    """
+    if not rows:
+        return 0
+
+    merge_inside_query = """
+    UNWIND $batch AS row
+    MATCH (child:Span {span_id: row.span_id})
+    MATCH (parent:Span {span_id: row.parent})
+    MERGE (child)-[r:INSIDE]->(parent)
+    SET r.source = coalesce(row.source, $default_source),
+        r.method = coalesce(row.method, $default_method),
+        r.confidence = coalesce(row.confidence, $default_confidence)
+    """
+
+    def _execute(sess: Session) -> int:
+        logger.info("Writing INSIDE relationships (%d edges)...", len(rows))
+        for chunk in chunked(rows, batch_size):
+            sess.run(
+                merge_inside_query,
+                batch=chunk,
+                default_source=default_source,
+                default_method=default_method,
+                default_confidence=default_confidence,
+            ).consume()
+
+        child_ids = [r["span_id"] for r in rows]
+        inside_count = sess.run(
+            "MATCH (c:Span)-[r:INSIDE]->(p:Span) WHERE c.span_id IN $ids RETURN count(r) AS cnt",
+            ids=child_ids,
+        ).single()["cnt"]
+        return inside_count
+
+    if session is not None:
+        return _execute(session)
+
+    close_driver = False
+    if driver is None:
+        driver = get_driver()
+        close_driver = True
+
+    try:
+        with driver.session() as sess:
+            return _execute(sess)
     finally:
         if close_driver:
             driver.close()

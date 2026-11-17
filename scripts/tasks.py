@@ -123,6 +123,16 @@ def run_hadith_spans(args=None) -> None:
         print("Usage: python scripts/tasks.py hadith-spans --write")
 
 
+def run_structure(args=None) -> None:
+    """Run Phase 4c structure pipeline (steps 1-4, and optionally write with --write)."""
+    py = get_venv_python()
+    cmd = [py, "src/extract/structure.py"]
+    if args and ("--write" in args or "--load" in args):
+        cmd.append("--write")
+    res = subprocess.run(cmd, cwd=ROOT)
+    sys.exit(res.returncode)
+
+
 TARGETS = {
     "test": run_test,
     "up": run_up,
@@ -133,6 +143,7 @@ TARGETS = {
     "load": run_load,
     "spans": run_spans,
     "hadith-spans": run_hadith_spans,
+    "structure": run_structure,
 }
 
 
@@ -143,7 +154,7 @@ def main() -> None:
 
     target = sys.argv[1]
     extra_args = sys.argv[2:]
-    if target in ("test", "smoke", "load", "spans", "hadith-spans"):
+    if target in ("test", "smoke", "load", "spans", "hadith-spans", "structure"):
         TARGETS[target](extra_args)
     else:
         TARGETS[target]()

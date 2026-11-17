@@ -69,7 +69,7 @@ once** and linked to every ayah of the group by `COVERS` (Option A, approved; de
 ## L2 — Evidence
 | Label | Key | Properties |
 |---|---|---|
-| `Span` | `span_id` `"<segment_id>#141-657"` | `segment_id`, `start`, `end` (offsets in the segment's original `text`, end exclusive), `type` ∈ QURAN, HADITH, COMMENTARY, FOOTNOTE, OTHER; HADITH only: `cue`, `collection_hint`, `number_hint`. Nested spans: see `INSIDE` (C1) |
+| `Span` | `span_id` `"<segment_id>#141-657"` | `segment_id`, `start`, `end` (offsets in the segment's original `text`, end exclusive), `type` ∈ QURAN, HADITH, COMMENTARY, FOOTNOTE, OTHER; HADITH only: `cue`, `collection_hint`, `number_hint`; COMMENTARY only: `blank` (bool); OTHER only: `lines` (int). Nested spans: see `INSIDE` (C1) |
 | `HadithBook` | `collection` `"muslim"` | `name` (Arabic), `edition` `"ara-muslim"`, `source` `hadith-api@df57907` |
 | `Hadith` | `hadith_id` `"muslim:7207"`, `"bukhari:402.2"` | `collection`, `number` (= source `hadithnumber`, string), `arabic_number` (= source `arabicnumber`, e.g. `"2865.01"`, may be null), `book_number`, `number_in_book` (= `reference`), `text` (verbatim, isnad + matn) |
 | `Grader` | `name` `"Al-Albani"` | 9 nodes |
