@@ -90,6 +90,18 @@ def test_trailing_footnote_trimmed():
     assert text[poems[0]["start"]:poems[0]["end"]] == v
 
 
+def test_poem_containing_hadith_is_dropped():
+    """A short narration line with an ellipsis that holds a HADITH span is not a poem (T4.6 review)."""
+    line = 'وروى الزهري عن سالم عن أبيه: "بينما رجل ... " إلى آخره'
+    verse = "قل لمن ساد ثم ساد أبوه ... ثم قد ساد قبل ذلك جده"
+    prose = "وقال الشاعر:"
+    text = line + "\n\n" + prose + "\n\n" + verse
+    no_h = extract_poetry_from_text(text, "seg")
+    assert len(no_h) == 2
+    with_h = extract_poetry_from_text(text, "seg", hadith_spans=[(0, len(line) - len(" إلى آخره"))])
+    assert [(p["start"], p["end"]) for p in with_h] == [(len(text) - len(verse), len(text))]
+
+
 def test_parent_smallest_container():
     """Parent = smallest container: footnote in quote in hadith -> parent is the quote."""
     hadith = {

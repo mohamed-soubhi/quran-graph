@@ -11,13 +11,14 @@ All external sources behind these decisions are listed in `docs/references.md`.
   - A verse line is a maximal run of non-`\n` characters that, after removing `[[…]]` footnotes and Arabic diacritics (U+064B–U+0652, U+0670) and stripping spaces, contains ` ... ` or ends with ` ...`, and is at most 100 characters long.
   - Consecutive verse lines separated only by whitespace form one poem. Span start = start of first line; span end = end of last line, trimmed backwards for trailing whitespace, then trailing `[[…]]` footnote and preceding whitespace (repeated).
   - Lines lying inside FOOTNOTE spans are skipped.
+  - **Claude review:** a candidate poem that contains a HADITH span is dropped (a narration line with an ellipsis, «"بينما رجل ... " إلى آخره», 31:16-19 and 42:29-31). Final: **610 verse lines, 349 poems**.
   - Yields 612 verse lines across 351 poems (vs reference 618 / 353 which did not skip lines in multiline footnotes `[1884:5641]` and `[8176:11822]`). All 4 gold OTHER spans matched with exact offsets (W09, W15, W16, W26).
 - Nesting and parent rule (`src/extract/structure.py`):
   - For each span, parent = smallest enclosing span (minimum `end - start`). Tie-breaker order: HADITH > QURAN > OTHER > FOOTNOTE.
   - Partial overlaps strictly forbidden (0 found across whole dataset).
-  - Produces 12,855 `INSIDE` edges written to `data/interim/spans/parents.jsonl` (FOOTNOTE->HADITH: 8,559; FOOTNOTE->OTHER: 92; FOOTNOTE->QURAN: 635; HADITH->OTHER: 2; QURAN->HADITH: 3,567). Gold parent agreement: 19/19 both-present (100%).
+  - Produces **12,851** `INSIDE` edges in `data/interim/spans/parents.jsonl` (FOOTNOTE->HADITH 8,559; FOOTNOTE->OTHER 90; FOOTNOTE->QURAN 635; QURAN->HADITH 3,567). agy's first build had 12,855, including 2 false HADITH->OTHER. Gold parent agreement: 19/19 both-present (100%).
 - COMMENTARY gap filling (`data/interim/spans/commentary.jsonl`):
-  - 58,584 COMMENTARY spans: 14,529 `blank: true` and 44,055 `blank: false`.
+  - **58,587** COMMENTARY spans: 14,532 `blank: true` and 44,055 `blank: false` (after the review fix).
   - Exactly 13,401,179 characters covered across 1,911 segments with 0 overlaps and 0 holes.
   - Gate 4c passed (`scripts/gate_4c.py`).
 

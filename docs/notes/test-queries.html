@@ -459,8 +459,13 @@ not «قال مجاهد» or «قال علي بن أبي طلحة عن ابن ع
 <!-- ================================================================== -->
 <h2 id="t46">11. Later — T4.6 nesting, COMMENTARY, coverage</h2>
 <p>Target (gate 4c): top-level spans cover 100 % of every passage with no overlap. A top-level span is one with no
-<code>INSIDE</code> parent. Today <code>INSIDE</code> = <b>0</b>, so 11.1 gives <b>1911</b> (no COMMENTARY yet) and 11.2 gives
-<b>619</b> (footnotes inside Quran quotes are not nested yet). Both must reach 0 after T4.6.</p>
+<code>INSIDE</code> parent. In Neo4j today (HADITH written 2026-11-17, <code>INSIDE</code> = <b>0</b>, no COMMENTARY) 11.1 and 11.2 are not 0.
+After <code>python scripts/tasks.py structure --write</code> (once T4.6 is approved) both must be <b>0</b>. Before that, 11.0 checks the same on the JSONL files.</p>
+
+<div class="t"><h4>11.0 Gate 4c on the JSONL files (no Neo4j) <span class="src">· T4.6</span> <span class="tag now">now</span></h4>
+<pre><code>.venv\Scripts\python.exe scripts\tasks.py structure</code></pre>
+<p class="exp"><b>Gate 4c Overall: PASS</b>; coverage 13,401,179 chars, 0 holes; gold OTHER 4/4; last line
+<code>Structure built: 349 OTHER, 12851 INSIDE, 58587 COMMENTARY spans.</code> (2026-11-17, after the review fix that drops 2 narration lines that looked like verse).</p></div>
 
 <div class="later">
 <div class="t"><h4>11.1 Every passage is fully covered <span class="tag later">later</span></h4>

@@ -26,6 +26,7 @@ FOOTNOTE_DOTALL_RE: re.Pattern[str] = re.compile(r"\[\[.*?\]\]", re.DOTALL)
 
 DEFAULT_SEGMENTS_PATH = ROOT / "data" / "interim" / "tafsir" / "ibn-kathir" / "segments.jsonl"
 DEFAULT_OUTPUT_PATH = ROOT / "data" / "interim" / "spans" / "poetry.jsonl"
+DEFAULT_HADITH_PATH = ROOT / "data" / "interim" / "spans" / "hadith.jsonl"
 DEFAULT_SOURCE = "run:20261117-1414-poetry"
 
 
@@ -52,6 +53,7 @@ def extract_poetry_from_text(
     segment_id: str,
     fn_spans: list[tuple[int, int]] | None = None,
     source: str = DEFAULT_SOURCE,
+    hadith_spans: list[tuple[int, int]] | None = None,
 ) -> list[dict[str, Any]]:
     """Extract poetry spans (OTHER) from a segment's text.
 
@@ -61,6 +63,8 @@ def extract_poetry_from_text(
       trailing whitespace, then a trailing [[...]] footnote and whitespace
       before it (repeated while one ends the span).
     - Skip any verse line that lies inside a FOOTNOTE span.
+    - Drop a candidate poem that contains a HADITH span: it is a narration line
+      with an ellipsis («"بينما رجل ... " إلى آخره»), not verse (T4.6 review).
     """
     if not text:
         return []
@@ -126,6 +130,10 @@ def extract_poetry_from_text(
                 continue
             break
 
+        if hadith_spans and any(p_start <= hs and he <= p_end for hs, he in hadith_spans):
+            i = j
+            continue
+
         poems.append({
             "span_id": f"{segment_id}#{p_start}-{p_end}",
             "segment_id": segment_id,
@@ -147,6 +155,7 @@ def extract_poetry(
     segments_path: Path | str | None = None,
     output_path: Path | str | None = None,
     source: str = DEFAULT_SOURCE,
+    hadith_path: Path | str | None = None,
 ) -> Path:
     """Extract poetry spans for all segments and write data/interim/spans/poetry.jsonl."""
     in_path = Path(segments_path) if segments_path else DEFAULT_SEGMENTS_PATH
@@ -160,6 +169,15 @@ def extract_poetry(
     poems: list[dict[str, Any]] = []
     total_verse_lines = 0
 
+    hadith_by_seg: dict[str, list[tuple[int, int]]] = {}
+    h_path = Path(hadith_path) if hadith_path else DEFAULT_HADITH_PATH
+    if h_path.exists():
+        with h_path.open("r", encoding="utf-8") as hf:
+            for hline in hf:
+                if hline.strip():
+                    h = json.loads(hline)
+                    hadith_by_seg.setdefault(h["segment_id"], []).append((h["start"], h["end"]))
+
     with in_path.open("r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
@@ -168,7 +186,9 @@ def extract_poetry(
             row = json.loads(line)
             seg_id = row["segment_id"]
             text = row["text"]
-            seg_poems = extract_poetry_from_text(text, seg_id, source=source)
+            seg_poems = extract_poetry_from_text(
+                text, seg_id, source=source, hadith_spans=hadith_by_seg.get(seg_id)
+            )
             for p in seg_poems:
                 total_verse_lines += p["lines"]
             poems.extend(seg_poems)
