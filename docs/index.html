@@ -26,7 +26,7 @@
 <main class="page">
 
   <section class="hero">
-    <div class="eyebrow">مشروع آية ومحمد · بدأ في 29 أكتوبر 2026 · آخر تحديث 13 نوفمبر 2026</div>
+    <div class="eyebrow">مشروع آية ومحمد · بدأ في 29 أكتوبر 2026 · آخر تحديث 17 نوفمبر 2026</div>
     <h1>شبكة تفسير القرآن</h1>
     <p class="lead">قاعدة بيانات رسومية تربط كل آية بتفسيرها عند ابن كثير، وتربط التفسير بأدلّته من آيات وأحاديث، بحيث يمكن تتبّع كل صلة إلى مصدرها.</p>
     <div class="path" aria-label="مسار التتبع">
@@ -86,18 +86,18 @@
     <div class="main">
       <h2>التقدّم</h2>
       <div class="status">
-        <div class="fig"><span class="v">4 / 8</span><span class="t">مراحل اكتملت بوابتها</span></div>
+        <div class="fig"><span class="v">5 / 8</span><span class="t">مراحل اكتملت بوابتها</span></div>
         <div class="fig"><span class="v">31,203</span><span class="t">حاشية محقق معلَّمة</span></div>
         <div class="fig"><span class="v">26,686</span><span class="t">اقتباسًا قرآنيًا معلَّمًا</span></div>
-        <div class="fig"><span class="v">11,674</span><span class="t">مقطع حديث مستخرج (قيد المراجعة)</span></div>
+        <div class="fig"><span class="v">11,674</span><span class="t">مقطع حديث في الشبكة</span></div>
       </div>
       <ol class="phases">
         <li class="phase"><span class="no">0</span><div><h3>التجهيز</h3><p class="d">البيئة، Neo4j مع GDS، النماذج، السجلات، وقواعد العمل. 7 مهام.</p></div><span class="pill done">G0 · 31 أكتوبر</span></li>
         <li class="phase"><span class="no">1</span><div><h3>جمع البيانات</h3><p class="d">تنزيل المصادر وتوثيق بصمة كل ملف (6,252 ملفًا). 4 مهام.</p></div><span class="pill done">G1 · 31 أكتوبر</span></li>
         <li class="phase"><span class="no">2</span><div><h3>تصميم المخطط</h3><p class="d">العقد والعلاقات والقيود وعقد الاستخراج؛ المخطط 1.1. 3 مهام.</p></div><span class="pill done">G2 · 3 نوفمبر</span></li>
         <li class="phase"><span class="no">3</span><div><h3>تحميل النص والتفسير</h3><p class="d">الطبقتان L0 وL1 بأعداد مطابقة تمامًا و229,191 علاقة موثّقة المصدر. 5 مهام.</p></div><span class="pill done">G3 · 3 نوفمبر</span></li>
-        <li class="phase cur"><span class="no">4</span><div><h3>تعليم المقاطع</h3><p class="d">الحواشي والقرآن والأحاديث (11,674) والشعر والتداخل والتعليق كلها في Neo4j؛ كل حرف من التفسير مغطّى. بوابة المرحلة الرابعة اجتازت كل أجزائها، بانتظار الاعتماد.</p><div class="bar" aria-label="8 من 9 مهام"><i style="width:89%"></i></div></div><span class="pill wip">جارية · 8 من 9</span></li>
-        <li class="phase"><span class="no">5</span><div><h3>ربط الأحاديث</h3><p class="d">من أرقام الحواشي أولًا، ثم المطابقة التقريبية والتضمينات، ثم مراجعة بشرية.</p></div><span class="pill next">قادمة</span></li>
+        <li class="phase"><span class="no">4</span><div><h3>تعليم المقاطع</h3><p class="d">الحواشي والقرآن والأحاديث (11,674) والشعر والتداخل والتعليق كلها في Neo4j؛ كل حرف من التفسير مغطّى. 9 مهام.</p></div><span class="pill done">G4 · 17 نوفمبر</span></li>
+        <li class="phase cur"><span class="no">5</span><div><h3>ربط الأحاديث</h3><p class="d">من أرقام الحواشي أولًا، ثم المطابقة التقريبية والتضمينات، ثم مراجعة بشرية.</p></div><span class="pill next">قادمة</span></li>
         <li class="phase"><span class="no">6</span><div><h3>الدلالات</h3><p class="d">تصنيف الموضوعات، والتضمينات، وتحليل الشبكة بـ GDS.</p></div><span class="pill next">قادمة</span></li>
         <li class="phase"><span class="no">7</span><div><h3>السؤال والجواب باستخدام GraphRAG</h3><p class="d">سؤال بالعربية وجواب يقتبس من الشبكة فقط ويعرض مسار المصدر؛ يُختبر بعشرين سؤالًا.</p></div><span class="pill next">قادمة</span></li>
       </ol>
@@ -155,10 +155,10 @@ gantt
     الاقتباسات القرآنية           :done, t44, 2026-11-03, 1d
     خط الأحاديث والبوابة          :done, t45, 2026-11-03, 1d
     تشغيل الكتاب كله              :done, t45b, 2026-11-04, 2d
-    تمريرة الآثار الثانية         :active, t45c, 2026-11-13, 2d
-    التداخل والتغطية              :t46, after t45c, 2d
-    بقية التمريرة الثانية          :t45r, 2026-11-16, 1d
-    G4                            :milestone, g4, after t46, 0d
+    تمريرة الآثار الثانية         :done, t45c, 2026-11-13, 5d
+    بقية التمريرة الثانية          :done, t45r, 2026-11-17, 1d
+    التداخل والتغطية              :done, t46, 2026-11-17, 1d
+    G4                            :milestone, g4, 2026-11-17, 0d
     section 5 ربط الأحاديث
     أرقام الحواشي                 :p5a, after g4, 2d
     مطابقة تقريبية وتضمينات       :p5b, after p5a, 4d
@@ -237,7 +237,7 @@ gantt
     </aside>
   </section>
 
-  <footer>شبكة تفسير القرآن · آية ومحمد · حالة المشروع في 13 نوفمبر 2026.</footer>
+  <footer>شبكة تفسير القرآن · آية ومحمد · حالة المشروع في 17 نوفمبر 2026.</footer>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
 <script>
