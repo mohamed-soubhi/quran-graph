@@ -84,7 +84,7 @@ The span `text` is not stored twice: it is `substring(segment.text, start, end -
 | `INSIDE` | Span → Span | the span lies inside its parent span (C1) |
 | `EXPLAINS` | Span(QURAN) → Ayah | the quote is an ayah this segment `COVERS` |
 | `CITES` | Span(QURAN) → Ayah | the quote is another ayah (tafsir of Quran by Quran); `ref_text` = a written reference after the quote, e.g. «[الرُّومِ:٢٥]» (C4) |
-| `CITES` | Span(HADITH) → Hadith | linked hadith; `evidence` = span_id of the footnote that gave the number, if any |
+| `CITES` | Span(HADITH) → Hadith | linked hadith; `evidence` = list of footnote span_ids that gave the number, `ref_text` = list of matched citation texts, `number_kind` (`"hadithnumber"` or `"arabicnumber"`), `outcome` (`"auto"`), `text_sim` (4-gram containment similarity float) |
 | `IN_BOOK` | Hadith → HadithBook | |
 | `GRADED` | Hadith → Grader | `grade` exactly as in the source (e.g. `"Sahih"`); no edge = no grade in source (Q5, approved) |
 | `IN_CHAIN` | Hadith → Narrator, or Span(HADITH) → Narrator | `position` (1 = narrator nearest the collector); from a Span also `mention_start`, `mention_end` (C2) |

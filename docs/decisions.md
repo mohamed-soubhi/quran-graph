@@ -3,6 +3,30 @@
 Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
+## 2026-11-17 — Explicit hadith links from editor footnote numbers (T5.2)
+- Decision D1 (Aya & Mohamed): «صحيح مسلم برقم (٢٨٦٥)» links to all narrations of Abd al-Baqi number 2865 (`arabic_number` `2865` or `2865.*`). In our source that number can have several entries (`arabic_number` `"2865.01"`, `"2865.02"`, ...), which are the same hadith through different chains. Link the span to every entry whose `arabic_number` is `2865` or starts with `2865.`. Nothing is guessed and nothing goes to review.
+- Footnote owner rule:
+  - Inside: footnote has a HADITH ancestor in `parents.jsonl` (8,639).
+  - After: footnote starts right after a HADITH span's end, with only `[\s.,،:؛"»)]*` between them (6,208).
+  - Unattached: footnotes not attached to any HADITH span (16,356).
+- Collection reference parsing & resolution (`src/extract/hadith_refs.py`):
+  - Deterministic regex for 6 canonical collections + `nasai_kubra` (tried in priority order).
+  - Resolved references attached to HADITH spans: **4,521** (+0.35% vs Claude's reference 4,505 due to 16 additional valid citations with plain «البخاري برقم»):
+    - `bukhari`: 1,407 resolved, 2 not found
+    - `muslim`: 1,350 resolved, 18 not found
+    - `tirmidhi`: 695 resolved, 19 not found
+    - `abudawud`: 590 resolved, 3 not found
+    - `ibnmajah`: 479 resolved, 0 not found
+    - `nasai`: 0 resolved, 3 not found
+  - Kubra (not in sources): 409 attached to HADITH spans, 34 unattached.
+  - References to our collections in unattached footnotes: 882 (+34 Kubra).
+  - Distinct (span, hadith) pairs: **7,307** on **2,889** HADITH spans, pointing to **5,165** distinct Hadith nodes.
+  - Pairs by collection: `muslim` 4,136, `bukhari` 1,407, `tirmidhi` 695, `abudawud` 590, `ibnmajah` 479.
+- Outputs generated:
+  - `data/interim/links/footnote_links.jsonl`: 7,307 rows sorted by `(span_id, hadith_id)`.
+  - `data/interim/links/footnote_refs_unlinked.jsonl`: 1,370 rows (reasons: 409 `not_in_sources`, 45 `not_found`, 916 `unattached`).
+- Graph loader: `src/graph/hadith_links.py` (`write_cites`), idempotent MERGE on `(Span)-[:CITES]->(Hadith)` with `evidence`, `ref_text`, `number_kind`, `outcome`, `method`, `source`, `confidence`, `text_sim`. Real Neo4j write left for Claude after user approval.
+
 ## 2026-11-17 — Hadith collection parsing and Neo4j loader (T5.1)
 - Source: 10 pinned fawazahmed0 editions in `data/raw/hadith/fawazahmed0/` at commit `df57907` (`hadith-api@df57907`).
 - Total hadiths: **36,104** loaded (out of 36,512 raw; 408 entries with empty `text` skipped as upstream structural placeholders).

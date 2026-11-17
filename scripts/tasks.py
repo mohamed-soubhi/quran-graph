@@ -172,6 +172,19 @@ def run_hadith(args=None) -> None:
             sys.exit(res2.returncode)
 
 
+def run_links(args=None) -> None:
+    """Build footnote hadith links and print counts; with --write load into Neo4j (T5.2)."""
+    py = get_venv_python()
+    res = subprocess.run([py, "src/extract/hadith_refs.py"], cwd=ROOT)
+    if res.returncode != 0:
+        sys.exit(res.returncode)
+
+    if args and ("--write" in args or "--load" in args):
+        res2 = subprocess.run([py, "src/graph/hadith_links.py"], cwd=ROOT)
+        if res2.returncode != 0:
+            sys.exit(res2.returncode)
+
+
 TARGETS = {
     "test": run_test,
     "up": run_up,
@@ -184,6 +197,7 @@ TARGETS = {
     "hadith-spans": run_hadith_spans,
     "structure": run_structure,
     "hadith": run_hadith,
+    "links": run_links,
 }
 
 
@@ -194,7 +208,7 @@ def main() -> None:
 
     target = sys.argv[1]
     extra_args = sys.argv[2:]
-    if target in ("test", "smoke", "load", "spans", "hadith-spans", "structure", "hadith"):
+    if target in ("test", "smoke", "load", "spans", "hadith-spans", "structure", "hadith", "links"):
         TARGETS[target](extra_args)
     else:
         TARGETS[target]()
