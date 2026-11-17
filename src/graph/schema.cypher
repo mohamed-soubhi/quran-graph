@@ -16,3 +16,4 @@ CREATE INDEX hadith_arabic_number_idx IF NOT EXISTS FOR (n:Hadith) ON (n.arabic_
 CREATE INDEX hadith_collection_idx IF NOT EXISTS FOR (n:Hadith) ON (n.collection);
 CREATE FULLTEXT INDEX ayah_text_norm_ft IF NOT EXISTS FOR (n:Ayah) ON EACH [n.text_norm];
 CREATE FULLTEXT INDEX segment_text_norm_ft IF NOT EXISTS FOR (n:TafsirSegment) ON EACH [n.text_norm];
+CREATE FULLTEXT INDEX hadith_text_norm_ft IF NOT EXISTS FOR (n:Hadith) ON EACH [n.text_norm];

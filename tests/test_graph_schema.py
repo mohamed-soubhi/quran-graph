@@ -47,7 +47,7 @@ def test_schema_idempotency(driver):
     """Applying schema twice should execute without error (idempotent)."""
     first_names = apply_schema(driver)
     second_names = apply_schema(driver)
-    assert len(first_names) == 18
+    assert len(first_names) == 19
     assert first_names == second_names
 
 
@@ -92,10 +92,11 @@ def test_schema_indexes(driver):
         assert label in idx["labelsOrTypes"]
         assert prop in idx["properties"]
 
-    # 2 Full-text indexes
+    # 3 Full-text indexes
     ft_expected = {
         "ayah_text_norm_ft": ("Ayah", "text_norm"),
         "segment_text_norm_ft": ("TafsirSegment", "text_norm"),
+        "hadith_text_norm_ft": ("Hadith", "text_norm"),
     }
     for name, (label, prop) in ft_expected.items():
         assert name in index_map, f"Missing full-text index {name}"

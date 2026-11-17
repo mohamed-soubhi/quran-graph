@@ -3,6 +3,40 @@
 Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
+## 2026-11-17 — Hadith collection parsing and Neo4j loader (T5.1)
+- Source: 10 pinned fawazahmed0 editions in `data/raw/hadith/fawazahmed0/` at commit `df57907` (`hadith-api@df57907`).
+- Total hadiths: **36,104** loaded (out of 36,512 raw; 408 entries with empty `text` skipped as upstream structural placeholders).
+- Per-collection loaded counts:
+  - Sunan Abu Dawud (`abudawud`): 5,272
+  - Sahih al Bukhari (`bukhari`): 7,580
+  - Forty Hadith of Shah Waliullah Dehlawi (`dehlawi`): 40
+  - Sunan Ibn Majah (`ibnmajah`): 4,338
+  - Muwatta Malik (`malik`): 1,829
+  - Sahih Muslim (`muslim`): 7,360
+  - Sunan an Nasai (`nasai`): 5,679
+  - Forty Hadith of an-Nawawi (`nawawi`): 42
+  - Forty Hadith Qudsi (`qudsi`): 40
+  - Jami At Tirmidhi (`tirmidhi`): 3,924
+- Grades: **67,334** grade relationships across **9** distinct named graders:
+  - Zubair Ali Zai: 19,033
+  - Al-Albani: 18,925
+  - Shuaib Al Arnaut: 6,409
+  - Abu Ghuddah: 5,609
+  - Muhammad Muhyi Al-Din Abdul Hamid: 5,169
+  - Muhammad Fouad Abd al-Baqi: 4,309
+  - Ahmad Muhammad Shakir: 3,667
+  - Bashar Awad Maarouf: 2,384
+  - Salim al-Hilali: 1,829
+- Hadiths without grade: **15,106** (all of Bukhari, Muslim, Dehlawi, Nawawi, Qudsi).
+- Identifiers and numbers:
+  - Float numbers: 70 total float numbers preserved as string in `hadith_id` and `number` (Bukhari 26, Ibn Majah 2, Nasai 7, Tirmidhi 35).
+  - Arabic numbers: 148 Muslim hadiths lack `arabicnumber` and have `arabic_number = null`. All other hadiths retain string representation of `arabicnumber`.
+- Interim outputs:
+  - `data/interim/hadith/books.jsonl`: 10 collections with `collection`, `name` (Arabic), `name_en` (English), `edition`, `source`.
+  - `data/interim/hadith/hadith.jsonl`: 36,104 records with `hadith_id`, `collection`, `number`, `arabic_number`, `book_number`, `number_in_book`, `text` (verbatim), `text_norm` (normalized via `normalize_with_map`), `grades`.
+- Graph loader: `src/graph/hadith.py` (`load_hadith`), idempotent UNWIND MERGE with provenance `source: "hadith-api@df57907"`, `method: "dataset"`, `confidence: 1.0` on `IN_BOOK` and `GRADED`.
+- Full-text index `hadith_text_norm_ft` added to `src/graph/schema.cypher` on `Hadith(text_norm)`.
+
 ## 2026-11-17 — Poetry (OTHER), Nesting (INSIDE), COMMENTARY gap filling and 100% coverage (T4.6)
 - Decisions D1 & D2 (Aya & Mohamed):
   - D1: Every gap between top-level spans becomes a COMMENTARY span, including gaps without letters (e.g. `" .\n\n"`). Such spans get `blank: true`; gaps with letters get `blank: false`. Top-level coverage across all segments reaches 100% of all characters with 0 overlap.

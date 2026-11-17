@@ -133,6 +133,45 @@ def run_structure(args=None) -> None:
     sys.exit(res.returncode)
 
 
+def run_hadith(args=None) -> None:
+    """Parse hadith collections and print counts; with --write load into Neo4j (T5.1)."""
+    py = get_venv_python()
+    res = subprocess.run([py, "src/ingest/parse_hadith.py"], cwd=ROOT)
+    if res.returncode != 0:
+        sys.exit(res.returncode)
+
+    import json
+    books_file = ROOT / "data" / "interim" / "hadith" / "books.jsonl"
+    hadith_file = ROOT / "data" / "interim" / "hadith" / "hadith.jsonl"
+
+    with open(books_file, "r", encoding="utf-8") as f:
+        books_count = sum(1 for line in f if line.strip())
+
+    graders = set()
+    hadith_count = 0
+    graded_count = 0
+    with open(hadith_file, "r", encoding="utf-8") as f:
+        for line in f:
+            if not line.strip():
+                continue
+            hadith_count += 1
+            rec = json.loads(line)
+            grades = rec.get("grades", [])
+            graded_count += len(grades)
+            for g in grades:
+                graders.add(g["grader"])
+
+    graders_count = len(graders)
+    in_book_count = hadith_count
+
+    print(f"{hadith_count} hadith, {books_count} books, {graders_count} graders, {graded_count} GRADED, {in_book_count} IN_BOOK")
+
+    if args and ("--write" in args or "--load" in args):
+        res2 = subprocess.run([py, "src/graph/hadith.py"], cwd=ROOT)
+        if res2.returncode != 0:
+            sys.exit(res2.returncode)
+
+
 TARGETS = {
     "test": run_test,
     "up": run_up,
@@ -144,6 +183,7 @@ TARGETS = {
     "spans": run_spans,
     "hadith-spans": run_hadith_spans,
     "structure": run_structure,
+    "hadith": run_hadith,
 }
 
 
@@ -154,7 +194,7 @@ def main() -> None:
 
     target = sys.argv[1]
     extra_args = sys.argv[2:]
-    if target in ("test", "smoke", "load", "spans", "hadith-spans", "structure"):
+    if target in ("test", "smoke", "load", "spans", "hadith-spans", "structure", "hadith"):
         TARGETS[target](extra_args)
     else:
         TARGETS[target]()

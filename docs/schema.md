@@ -70,8 +70,8 @@ once** and linked to every ayah of the group by `COVERS` (Option A, approved; de
 | Label | Key | Properties |
 |---|---|---|
 | `Span` | `span_id` `"<segment_id>#141-657"` | `segment_id`, `start`, `end` (offsets in the segment's original `text`, end exclusive), `type` ∈ QURAN, HADITH, COMMENTARY, FOOTNOTE, OTHER; HADITH only: `cue`, `collection_hint`, `number_hint`; COMMENTARY only: `blank` (bool); OTHER only: `lines` (int). Nested spans: see `INSIDE` (C1) |
-| `HadithBook` | `collection` `"muslim"` | `name` (Arabic), `edition` `"ara-muslim"`, `source` `hadith-api@df57907` |
-| `Hadith` | `hadith_id` `"muslim:7207"`, `"bukhari:402.2"` | `collection`, `number` (= source `hadithnumber`, string), `arabic_number` (= source `arabicnumber`, e.g. `"2865.01"`, may be null), `book_number`, `number_in_book` (= `reference`), `text` (verbatim, isnad + matn) |
+| `HadithBook` | `collection` `"muslim"` | `name` (Arabic), `name_en` (English), `edition` `"ara-muslim"`, `source` `hadith-api@df57907` |
+| `Hadith` | `hadith_id` `"muslim:7207"`, `"bukhari:402.2"` | `collection`, `number` (= source `hadithnumber`, string), `arabic_number` (= source `arabicnumber`, e.g. `"2865.01"`, may be null), `book_number`, `number_in_book` (= `reference`), `text` (verbatim, isnad + matn), `text_norm` |
 | `Grader` | `name` `"Al-Albani"` | 9 nodes |
 | `Narrator` | `narrator_id` (Phase 5, source: Sanadset) | `name` (Arabic) |
 
@@ -118,7 +118,7 @@ not in our sources) keeps its hints and has no `CITES` edge: "not found", never 
 Unique: `Surah.surah_id`, `Ayah.ayah_id`, `Word.word_id`, `Root.root_id`, `Lemma.lemma_id`, `Mufassir.mufassir_id`,
 `TafsirBook.book_id`, `TafsirSegment.segment_id`, `Span.span_id`, `HadithBook.collection`, `Hadith.hadith_id`,
 `Grader.name`, `Narrator.narrator_id`.
-Indexes: `Span.type`, `Hadith.arabic_number`, `Hadith.collection`, full-text on `Ayah.text_norm` and `TafsirSegment.text_norm`.
+Indexes: `Span.type`, `Hadith.arabic_number`, `Hadith.collection`, full-text on `Ayah.text_norm`, `TafsirSegment.text_norm`, and `Hadith.text_norm` (`hadith_text_norm_ft`).
 
 ## Expected counts after Phase 3 (from Phase 1 measurements)
 Surah 114 · Ayah 6,236 · Word 77,429 · Root 1,642 · Lemma 4,832 · TafsirBook 1 · Mufassir 1 · Hadith 36,104 (36,512 − 408 empty) ·
