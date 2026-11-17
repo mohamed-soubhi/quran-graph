@@ -27,7 +27,7 @@ All external sources behind these decisions are listed in `docs/references.md`.
   - Ahmad Muhammad Shakir: 3,667
   - Bashar Awad Maarouf: 2,384
   - Salim al-Hilali: 1,829
-- Hadiths without grade: **15,106** (all of Bukhari, Muslim, Dehlawi, Nawawi, Qudsi).
+- Hadiths without grade: **15,106**. These are all of Bukhari, Muslim, Dehlawi, Nawawi and Qudsi (15,062), plus 44 sub-numbered entries (Tirmidhi 35, Nasai 7, Ibn Majah 2, e.g. `tirmidhi:815.2`).
 - Identifiers and numbers:
   - Float numbers: 70 total float numbers preserved as string in `hadith_id` and `number` (Bukhari 26, Ibn Majah 2, Nasai 7, Tirmidhi 35).
   - Arabic numbers: 148 Muslim hadiths lack `arabicnumber` and have `arabic_number = null`. All other hadiths retain string representation of `arabicnumber`.
