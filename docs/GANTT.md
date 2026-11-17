@@ -55,7 +55,7 @@ gantt
     T4.5c Second pass (athar)       :done, t45c, 2026-11-13, 5d
     T4.6 4c Poetry + nesting + coverage :done, p4c, 2026-11-17, 2d
     T4.5c-rest 96 windows (quota)   :done, t45r, 2026-11-17, 1d
-    G4 Phase 4 gate                 :milestone, g4, after p4c, 0d
+    G4 Phase 4 gate (in review)     :milestone, g4, after p4c, 0d
 
     section Phase 5 · Hadith linking (est.)
     Footnote numbers → links        :p5a, after g4, 2d
@@ -83,7 +83,7 @@ gantt
 | 1 · Data acquisition | 4 / 4 | ✅ G1 signed off 2026-10-31 | — |
 | 2 · Schema | 3 / 3 | ✅ G2 signed off 2026-11-03; schema v1.1 (C1–C4) approved | — |
 | 3 · Load L0 + L1 | 5 / 5 | ✅ G3 signed off 2026-11-03 | — |
-| 4 · Span annotation | 8 / 9 | 🔵 T4.6 done (approved 2026-11-17): 349 poems, 12,851 INSIDE, 58,587 COMMENTARY written to Neo4j; checks 11.1–11.3 all 0 (100% coverage) | next: G4 |
+| 4 · Span annotation | 8 / 9 | 🔵 T4.6 done (approved 2026-11-17): 349 poems, 12,851 INSIDE, 58,587 COMMENTARY written to Neo4j; checks 11.1–11.3 all 0 (100% coverage). G4 run 2026-11-17, all parts PASS, waiting for sign-off | next: G4 sign-off, then Phase 5 |
 | 5 · Hadith linking | 0 | ⏳ | — |
 | 6 · Semantics | 0 | ⏳ | — |
 | 7 · Question answering using GraphRAG | 0 | ⏳ | — |

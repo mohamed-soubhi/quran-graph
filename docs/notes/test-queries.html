@@ -65,12 +65,13 @@ When that happens this page is updated with the ticket review.</p>
 
 <div class="t"><h4>1.1 Full test suite <span class="src">· all tickets</span> <span class="tag now">now</span></h4>
 <pre><code>.venv\Scripts\python.exe scripts\tasks.py test</code></pre>
-<p class="exp"><b>111 passed, 3 skipped</b> (about 2 minutes). This suite no longer touches real HADITH spans. The 3 skipped tests need a Neo4j that is empty or stopped.</p></div>
+<p class="exp"><b>128 passed, 3 skipped</b> (about 2–3 minutes, 2026-11-17). This suite no longer touches real HADITH spans. The 3 skipped tests need a Neo4j that is empty or stopped.</p></div>
 
 <div class="t"><h4>1.2 Phase 3 gate: two full loads give identical counts <span class="src">· G3, T4.1</span> <span class="tag now">now</span></h4>
 <pre><code>.venv\Scripts\python.exe -X utf8 scripts\gate_g3.py
 echo %ERRORLEVEL%</code></pre>
-<p class="exp">Two runs with the same counts, last line <b>G3: PASS</b>, then <b>0</b> (about 1 minute).</p></div>
+<p class="exp">Two runs with the same counts, last line <b>G3: PASS</b>, then <b>0</b> (about 1 minute).
+<b>Since Phase 4 this script reports FAIL by design</b>: it compares <i>all</i> labels and now also sees the Span nodes. Use <b>12.2</b> (<code>gate_g4.py</code> step 1), which checks the same L0/L1 counts read-only and ignores Phase 4 labels.</p></div>
 
 <div class="t"><h4>1.3 Gate 4a: Quran spans against the gold set <span class="src">· T4.4, T4.4b</span> <span class="tag now">now</span></h4>
 <pre><code>.venv\Scripts\python.exe scripts\eval_4a.py</code></pre>
@@ -505,15 +506,18 @@ RETURN s.start, s.end, s.type, substring(g.text, s.start, 50) ORDER BY s.start L
 <p class="exp">Spans follow each other with no gap: each <code>start</code> equals the previous <code>end</code>. Whole passage: <b>227</b> top-level spans from 0 to 36,633 (= text length), no gap; starts COMMENTARY, HADITH, COMMENTARY …</p></div>
 
 <!-- ================================================================== -->
-<h2 id="g4">12. Later — G4 Phase 4 gate</h2>
-<div class="later">
-<div class="t"><h4>12.1 All three targets on the gold set <span class="tag later">later</span></h4>
+<h2 id="g4">12. G4 Phase 4 gate</h2>
+<div class="t"><h4>12.1 All three targets on the gold set <span class="src">· G4</span> <span class="tag now">now</span></h4>
 <pre><code>.venv\Scripts\python.exe scripts\eval_4a.py
 .venv\Scripts\python.exe scripts\eval_4b.py --runs 3
 .venv\Scripts\python.exe scripts\tasks.py test</code></pre>
-<p class="exp">4a precision ≥ 98 %; 4b targets as in 10.1; 4c queries 11.1–11.3 all <b>0</b>; full suite passes;
-1.2 still <b>G3: PASS</b> (Phase 4 must not change L0/L1).</p></div>
-</div>
+<p class="exp">4a <b>100 % (79 / 79)</b>; 4b 3 runs P <b>96 %</b>, R <b>100 %</b>, IoU 0.985–0.987, athar 5/5 (log <code>eval-4b-20261117-155610.json</code>); 128 passed, 3 skipped (2026-11-17).</p></div>
+
+<div class="t"><h4>12.2 G4 gate script (read-only) <span class="src">· G4</span> <span class="tag now">now</span></h4>
+<pre><code>.venv\Scripts\python.exe -X utf8 scripts\gate_g4.py
+echo %ERRORLEVEL%</code></pre>
+<p class="exp">L0/L1 equal to the G3 table; Neo4j span counts equal to the JSONL files (128,499 spans, INSIDE 12,851); 11.1–11.3 all 0; 0 relationships without provenance;
+stored HADITH vs gold P 95.8 %, R 95.8 %, IoU 0.9881 (1 false positive W13 1:6#3406-3486, 1 miss 23:1-11#2879-3533); gate 4c PASS; last line <b>G4 checks: PASS</b>, then <b>0</b>.</p></div>
 
 <h2 id="p5">13. Later — Phase 5 and on</h2>
 <p class="muted">Hadith linking (HADITH span → Hadith via CITES, footnote numbers, Muslim <code>arabicnumber</code>),
