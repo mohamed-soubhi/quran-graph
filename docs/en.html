@@ -26,7 +26,7 @@
 <main class="page">
 
   <section class="hero">
-    <div class="eyebrow">A project by Aya &amp; Mohamed · started 29 Oct 2026 · updated 17 Nov 2026</div>
+    <div class="eyebrow">A project by Aya &amp; Mohamed · started 29 Oct 2026 · updated 18 Nov 2026</div>
     <h1>Quran Tafsir Graph</h1>
     <p class="lead">A graph database that links every ayah to Ibn Kathir's tafsir, and the tafsir to its evidence (other ayat and hadith), so every link can be traced back to its source.</p>
     <div class="path" aria-label="Trace path">
@@ -97,7 +97,7 @@
         <li class="phase"><span class="no">2</span><div><h3>Schema</h3><p class="d">Nodes, relationships, constraints and the extraction contract; schema v1.1. 3 tickets.</p></div><span class="pill done">G2 · 3 Nov</span></li>
         <li class="phase"><span class="no">3</span><div><h3>Load text and tafsir</h3><p class="d">L0 and L1 with exact counts and 229,191 links carrying provenance. 5 tickets.</p></div><span class="pill done">G3 · 3 Nov</span></li>
         <li class="phase"><span class="no">4</span><div><h3>Span annotation</h3><p class="d">Footnotes, Quran quotes, hadith (11,674), poetry, nesting and commentary are all in Neo4j; every character of the tafsir is covered. 9 tickets.</p></div><span class="pill done">G4 · 17 Nov</span></li>
-        <li class="phase cur"><span class="no">5</span><div><h3>Hadith linking</h3><p class="d">36,104 hadith from 10 collections are in the graph, with their grades exactly as in the source. Next: links from footnote numbers, then fuzzy and embedding matching, then human review.</p><div class="bar" aria-label="1 of 6 tickets"><i style="width:17%"></i></div></div><span class="pill wip">in progress · 1 of 6</span></li>
+        <li class="phase cur"><span class="no">5</span><div><h3>Hadith linking</h3><p class="d">36,104 hadith from 10 collections are in the graph, with their grades exactly as in the source. 7,307 links from the editor's footnote numbers connect 2,889 hadith quotes to their hadith. Next: a checked sample (gold set), then fuzzy and embedding matching, then human review.</p><div class="bar" aria-label="2 of 6 tickets"><i style="width:33%"></i></div></div><span class="pill wip">in progress · 2 of 6</span></li>
         <li class="phase"><span class="no">6</span><div><h3>Semantics</h3><p class="d">Topic taxonomy, embeddings, GDS analysis.</p></div><span class="pill next">later</span></li>
         <li class="phase"><span class="no">7</span><div><h3>Question answering using GraphRAG</h3><p class="d">Arabic questions answered only from the graph, with the source path; tested on 20 questions.</p></div><span class="pill next">later</span></li>
       </ol>
@@ -237,7 +237,7 @@ gantt
     </aside>
   </section>
 
-  <footer>Quran Tafsir Graph · Aya &amp; Mohamed · status as of 17 Nov 2026.</footer>
+  <footer>Quran Tafsir Graph · Aya &amp; Mohamed · status as of 18 Nov 2026.</footer>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
 <script>

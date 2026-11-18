@@ -4,6 +4,7 @@ Newest first. Each entry: date, decision, reason.
 All external sources behind these decisions are listed in `docs/references.md`.
 
 ## 2026-11-17 — Explicit hadith links from editor footnote numbers (T5.2)
+- **Loaded 2026-11-18** after Aya & Mohamed approved (`tasks.py links --write`): CITES (Span→Hadith) **7,307** on **2,889** HADITH spans → **5,165** hadith; by collection muslim 4,136, bukhari 1,407, tirmidhi 695, abudawud 590, ibnmajah 479. All with source `run:20261117-0000-footnote-links`, method `regex`, confidence 0.95. 0 CITES from non-HADITH spans, 0 without provenance, 0 `test-coll` left. `gate_g4.py` still PASS.
 - Decision D1 (Aya & Mohamed): «صحيح مسلم برقم (٢٨٦٥)» links to all narrations of Abd al-Baqi number 2865 (`arabic_number` `2865` or `2865.*`). In our source that number can have several entries (`arabic_number` `"2865.01"`, `"2865.02"`, ...), which are the same hadith through different chains. Link the span to every entry whose `arabic_number` is `2865` or starts with `2865.`. Nothing is guessed and nothing goes to review.
 - Footnote owner rule:
   - Inside: footnote has a HADITH ancestor in `parents.jsonl` (8,639).
@@ -11,7 +12,7 @@ All external sources behind these decisions are listed in `docs/references.md`.
   - Unattached: footnotes not attached to any HADITH span (16,356).
 - Collection reference parsing & resolution (`src/extract/hadith_refs.py`):
   - Deterministic regex for 6 canonical collections + `nasai_kubra` (tried in priority order).
-  - Resolved references attached to HADITH spans: **4,521** (+0.35% vs Claude's reference 4,505 due to 16 additional valid citations with plain «البخاري برقم»):
+  - Resolved references attached to HADITH spans: **4,521** (+0.35% vs Claude's reference 4,505: 16 chained Bukhari numbers «برقم (…) وبرقم (…، …)» that the reference run missed; Claude review):
     - `bukhari`: 1,407 resolved, 2 not found
     - `muslim`: 1,350 resolved, 18 not found
     - `tirmidhi`: 695 resolved, 19 not found

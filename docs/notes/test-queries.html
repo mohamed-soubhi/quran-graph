@@ -56,7 +56,7 @@ When that happens this page is updated with the ticket review.</p>
 <a href="#t45">10. Later — T4.5 hadith spans</a>
 <a href="#t46">11. Later — T4.6 nesting, COMMENTARY, coverage</a>
 <a href="#g4">12. Later — G4 Phase 4 gate</a>
-<a href="#t51">13. T5.1 hadith collections</a> · <a href="#p5">14. Later — Phase 5 and on</a>
+<a href="#t51">13. T5.1 hadith collections</a> · <a href="#t52">14. T5.2 footnote links</a> · <a href="#p5">15. Later — Phase 5 and on</a>
 </nav>
 
 <!-- ================================================================== -->
@@ -539,8 +539,31 @@ stored HADITH vs gold P 95.8 %, R 95.8 %, IoU 0.9881 (1 false positive W13 1:6#3
 RETURN node.hadith_id, score</code></pre>
 <p class="exp"><b>1</b> row: <code>muslim:7207</code>. The index is on <code>text_norm</code>, so write the phrase without diacritics, with bare alef and without the final hamza.</p></div>
 
-<h2 id="p5">14. Later — Phase 5 and on</h2>
-<p class="muted">Hadith linking (T5.2+: HADITH span → Hadith via CITES, footnote numbers, Muslim <code>arabic_number</code>),
+<h2 id="t52">14. T5.2 links from footnote numbers (CITES)</h2>
+<p>Written to Neo4j on 2026-11-18 (<code>tasks.py links --write</code>). Source <code>run:20261117-0000-footnote-links</code>, method <code>regex</code>, confidence 0.95.</p>
+
+<div class="t"><h4>14.1 Links by collection <span class="src">· T5.2</span> <span class="tag now">now</span></h4>
+<pre><code>MATCH (s:Span)-[r:CITES]-&gt;(h:Hadith) RETURN h.collection, count(r), count(DISTINCT s) ORDER BY count(r) DESC</code></pre>
+<p class="exp">muslim 4,136 · bukhari 1,407 · tirmidhi 695 · abudawud 590 · ibnmajah 479 (total <b>7,307</b> on <b>2,889</b> spans, <b>5,165</b> distinct hadith).</p></div>
+
+<div class="t"><h4>14.2 Only HADITH spans cite hadith, all with provenance <span class="src">· T5.2</span> <span class="tag now">now</span></h4>
+<pre><code>MATCH (s:Span)-[r:CITES]-&gt;(:Hadith)
+WHERE s.type &lt;&gt; 'HADITH' OR r.source IS NULL OR r.method IS NULL OR r.confidence IS NULL
+RETURN count(r)</code></pre>
+<p class="exp"><b>0</b>.</p></div>
+
+<div class="t"><h4>14.3 One span and its evidence <span class="src">· T5.2</span> <span class="tag now">now</span></h4>
+<pre><code>MATCH (s:Span {span_id:'ibn-kathir:101:1-11:1#4085-4175'})-[r:CITES]-&gt;(h:Hadith)
+RETURN h.hadith_id, r.number_kind, r.ref_text, r.text_sim ORDER BY h.hadith_id</code></pre>
+<p class="exp">3 rows: <code>bukhari:3265</code> (hadithnumber), <code>muslim:7165</code> and <code>muslim:7166</code> (arabicnumber, «صحيح مسلم برقم (٢٨٤٣)»).</p></div>
+
+<div class="t"><h4>14.4 Muslim number → all narrations (D1) <span class="src">· T5.2</span> <span class="tag now">now</span></h4>
+<pre><code>MATCH (:Span)-[:CITES]-&gt;(h:Hadith) WHERE h.arabic_number STARTS WITH '2865.'
+RETURN DISTINCT h.hadith_id ORDER BY h.hadith_id</code></pre>
+<p class="exp"><code>muslim:7207</code>, <code>7208</code>, <code>7209</code>, <code>7210</code>.</p></div>
+
+<h2 id="p5">15. Later — Phase 5 and on</h2>
+<p class="muted">Hadith linking without a footnote number (T5.3 gold set, T5.4 fuzzy + bge-m3 candidates, T5.5 review queue),
 narrators (IN_CHAIN), embeddings and GDS analysis. Their checks are added here when the tickets are written.</p>
 
 </main>
